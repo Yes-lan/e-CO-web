@@ -5,11 +5,16 @@ services:
     restart: always
     ports:
       - 8080:8080
-
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
   php:
     image: ${IMAGES_PREFIX:-}app-php
     restart: unless-stopped
     environment:
+      MAILER_DSN: smtp://mailpit:1025
       SERVER_NAME: ${SERVER_NAME:-localhost}, php:80
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}

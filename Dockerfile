@@ -21,7 +21,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	file \
 	git \
 	&& rm -rf /var/lib/apt/lists/*
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash 
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash && apt-get install -y nodejs
 RUN set -eux; \
 	install-php-extensions \
 		@composer \
@@ -33,7 +34,6 @@ RUN set -eux; \
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1
-
 # Transport to use by Mercure (default to Bolt)
 ENV MERCURE_TRANSPORT_URL=bolt:///data/mercure.db
 
