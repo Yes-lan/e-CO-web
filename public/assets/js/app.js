@@ -1256,15 +1256,14 @@ if (typeof OrienteeringApp === 'undefined') {
     }
 
     async getSavedCourses() {
-        // Read from JSON file instead of localStorage
-        // Add cache busting to ensure fresh data after course creation
+        // Fetch courses from database via API
         try {
             const cacheBuster = `?t=${Date.now()}`;
-            const response = await fetch(`/assets/data/courses.json${cacheBuster}`, {
-                cache: 'no-store' // Disable caching
+            const response = await fetch(`/api/courses${cacheBuster}`, {
+                cache: 'no-store'
             });
             if (!response.ok) {
-                console.error('Failed to fetch courses.json');
+                console.error('Failed to fetch courses from database');
                 return [];
             }
             const data = await response.json();

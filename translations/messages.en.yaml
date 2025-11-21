@@ -1,0 +1,93 @@
+# English translations
+nav:
+    courses: "Sessions"
+    parcours: "Courses"
+    
+header:
+    logout: "Logout"
+    settings: "Settings"
+    
+courses:
+    title: "Sessions"
+    new_course: "New Session"
+    search_placeholder: "Search..."
+    no_courses: "No sessions available."
+    create_course: "Create a session"
+    view: "View"
+    edit: "Edit"
+    delete: "Delete"
+    loading: "Loading sessions..."
+    error_loading: "Error loading sessions"
+    
+    modal:
+        create_title: "Create a New Session"
+        name_label: "Session name"
+        parcours_label: "Associated course"
+        parcours_select: "Select a course..."
+        nb_runners_label: "Number of runners"
+        cancel: "Cancel"
+        create: "Create"
+        
+    status:
+        active: "Active"
+        
+    info:
+        runners: "runner(s)"
+        no_parcours: "No course associated"
+        
+    messages:
+        created: "Session created successfully!"
+        deleted: "Session deleted successfully!"
+        confirm_delete: "Are you sure you want to delete the session \"%name%\"?"
+        error_create: "Error creating session"
+        error_delete: "Error deleting session"
+
+parcours:
+    title: "Courses"
+    new_parcours: "New Course"
+    search_placeholder: "Search..."
+    no_parcours: "No courses available."
+    create_parcours: "Create a course"
+    view: "View"
+    edit: "Edit"
+    delete: "Delete"
+    qr_codes: "QR Codes"
+    loading: "Loading courses..."
+    error_loading: "Error loading courses"
+    
+    status:
+        in_creation: "In progress"
+        completed: "Completed"
+        
+    info:
+        beacons: "beacon(s)"
+        boundaries: "Boundaries defined"
+        no_boundaries: "No boundaries"
+        
+    description:
+        default: "Start at the south entrance on the table"
+        
+    messages:
+        created: "Course created successfully!"
+        updated: "Changes saved successfully!"
+        deleted: "Course deleted successfully!"
+        confirm_delete: "Are you sure you want to delete the course \"%name%\"?"
+        error_create: "Error creating"
+        error_update: "Error saving"
+        error_delete: "Error deleting"
+
+login:
+    title: "Login"
+    email: "Email"
+    password: "Password"
+    sign_in: "Sign In"
+    forgot_password: "Forgot password?"
+    
+common:
+    save: "Save"
+    cancel: "Cancel"
+    close: "Close"
+    confirm: "Confirm"
+    back: "Back"
+    home: "Home"
+    no_name: "No name"

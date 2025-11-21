@@ -10,8 +10,8 @@
 {% block body %}
     <div class="course-creation-container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <a href="{{ path('app_home') }}" class="back-link">← Retour à l'accueil</a>
-            <a href="{{ path('app_course_manage') }}" class="btn btn-info btn-small">🗂️ Gérer les parcours</a>
+            <a href="{{ path('app_parcours_list', {'_locale': app.request.locale}) }}" class="back-link">← Retour à la liste</a>
+            <a href="{{ path('app_parcours_list', {'_locale': app.request.locale}) }}" class="btn btn-info btn-small">🗂️ Gérer les parcours</a>
         </div>
 
         <div class="creation-header">
@@ -690,7 +690,7 @@
                     
                     try {
                         // Save to backend API
-                        const response = await fetch('{{ path('api_course_save') }}', {
+                        const response = await fetch('{{ path('api_parcours_save', {'_locale': app.request.locale}) }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -703,9 +703,9 @@
                         if (response.ok && result.success) {
                             showNotification(`Parcours "${formData.name}" créé avec succès!`, 'success');
                             
-                            // Redirect to home after notification
+                            // Redirect to parcours list after notification
                             setTimeout(() => {
-                                window.location.href = '{{ path('app_home') }}';
+                                window.location.href = '{{ path('app_parcours_list', {'_locale': app.request.locale}) }}';
                             }, 1500);
                         } else {
                             throw new Error(result.message || 'Erreur lors de la sauvegarde');

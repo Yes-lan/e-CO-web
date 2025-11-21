@@ -12,6 +12,146 @@ body {
     color: #333;
 }
 
+/* Global Header */
+.app-header {
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0.75rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.app-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1976d2;
+    letter-spacing: 0.5px;
+}
+
+.header-nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-link {
+    padding: 0.75rem 1.5rem;
+    background: #f5f5f5;
+    color: #666;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.nav-link.active {
+    background: #1976d2;
+    color: white;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #f5f5f5;
+    border-radius: 20px;
+}
+
+.user-info span {
+    font-weight: 500;
+    color: #333;
+}
+
+.btn-logout {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: #ff6b35;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-logout:hover {
+    background: #e55a2b;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.btn-settings {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+}
+
+.btn-settings:hover {
+    background: #f5f5f5;
+}
+
+.language-switcher {
+    display: flex;
+    gap: 0.25rem;
+    background: #f5f5f5;
+    padding: 0.25rem;
+    border-radius: 6px;
+}
+
+.language-btn {
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border: none;
+    color: #666;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.language-btn:hover {
+    background: #e0e0e0;
+}
+
+.language-btn.active {
+    background: #1976d2;
+    color: white;
+}
+
 .container {
     max-width: 100%;
     margin: 0 auto;
@@ -794,6 +934,202 @@ body {
    Course Management Page Styles
    ======================================== */
 
+/* Parcours Page Styles */
+.parcours-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: white;
+    min-height: calc(100vh - 80px);
+}
+
+.parcours-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.parcours-header h1 {
+    font-size: 2rem;
+    color: #1976d2;
+    margin: 0;
+}
+
+.parcours-header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    min-width: 300px;
+}
+
+.search-box svg {
+    flex-shrink: 0;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 0.95rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.parcours-card {
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.parcours-card:hover {
+    border-color: #1976d2;
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
+    transform: translateY(-2px);
+}
+
+.parcours-card-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.parcours-icon {
+    width: 40px;
+    height: 40px;
+    background: #1976d2;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.parcours-title h3 {
+    margin: 0 0 0.25rem 0;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.status-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.parcours-description {
+    color: #1976d2;
+    font-size: 0.95rem;
+    margin: 0 0 1rem 0;
+    line-height: 1.5;
+}
+
+.parcours-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.parcours-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.parcours-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 0.9rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+}
+
+.btn-view {
+    background: #42a5f5;
+}
+
+.btn-view:hover {
+    background: #2196f3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(66, 165, 245, 0.3);
+}
+
+.btn-qr {
+    background: #66bb6a;
+}
+
+.btn-qr:hover {
+    background: #4caf50;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(102, 187, 106, 0.3);
+}
+
+.btn-edit {
+    background: #42a5f5;
+}
+
+.btn-edit:hover {
+    background: #2196f3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(66, 165, 245, 0.3);
+}
+
+.btn-delete {
+    background: #ef5350;
+    padding: 0.6rem;
+}
+
+.btn-delete:hover {
+    background: #e53935;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 83, 80, 0.3);
+}
+
+/* Legacy styles for compatibility */
 .manage-container {
     max-width: 1400px;
     margin: 2rem auto;

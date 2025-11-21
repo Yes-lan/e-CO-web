@@ -12,8 +12,99 @@
     {% block javascripts %}
         {% block importmap %}{{ importmap('app') }}{% endblock %}
     {% endblock %}
+    <script src="{{ asset('assets/js/translations.js') }}"></script>
+    <script>
+        // Set document language for translation helper
+        document.documentElement.lang = '{{ app.request.locale }}';
+        
+        function changeLanguage(locale) {
+            // Store locale in localStorage
+            localStorage.setItem('locale', locale);
+            // Update document lang
+            document.documentElement.lang = locale;
+            // Reload page with new locale in URL path
+            const currentPath = window.location.pathname;
+            const pathParts = currentPath.split('/').filter(p => p);
+            
+            // Remove old locale if present
+            if (['fr', 'en', 'eu'].includes(pathParts[0])) {
+                pathParts.shift();
+            }
+            
+            // Add new locale
+            const newPath = '/' + locale + (pathParts.length ? '/' + pathParts.join('/') : '');
+            window.location.href = newPath + window.location.search + window.location.hash;
+        }
+        
+        // Check for stored locale on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const storedLocale = localStorage.getItem('locale');
+            const currentLocale = '{{ app.request.locale }}';
+            if (storedLocale && storedLocale !== currentLocale && ['fr', 'en', 'eu'].includes(storedLocale)) {
+                changeLanguage(storedLocale);
+            }
+        });
+    </script>
 </head>
 <body>
+    {% if app.user %}
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-logo">
+                <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="80" r="35" fill="none" stroke="#1976d2" stroke-width="2"/>
+                    <line x1="100" y1="48" x2="100" y2="55" stroke="#1976d2" stroke-width="2"/>
+                    <line x1="100" y1="105" x2="100" y2="112" stroke="#1976d2" stroke-width="2"/>
+                    <line x1="68" y1="80" x2="75" y2="80" stroke="#1976d2" stroke-width="2"/>
+                    <line x1="125" y1="80" x2="132" y2="80" stroke="#1976d2" stroke-width="2"/>
+                    <polygon points="100,60 95,80 100,100 105,80" fill="#c62828"/>
+                    <polygon points="100,60 95,80 100,100 105,80" fill="#1976d2" opacity="0.5"/>
+                    <circle cx="100" cy="80" r="5" fill="#333"/>
+                    <rect x="70" y="130" width="60" height="8" rx="2" fill="#1976d2"/>
+                    <rect x="75" y="138" width="4" height="30" fill="#1976d2"/>
+                    <rect x="121" y="138" width="4" height="30" fill="#1976d2"/>
+                    <rect x="70" y="163" width="60" height="5" rx="2" fill="#1976d2"/>
+                </svg>
+                <span class="app-title">e-CO</span>
+            </div>
+            
+            <nav class="header-nav">
+                <a href="{{ path('app_courses_list', {'_locale': app.request.locale}) }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_courses' %}active{% endif %}">{{ 'nav.courses'|trans }}</a>
+                <a href="{{ path('app_parcours_list', {'_locale': app.request.locale}) }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_parcours' %}active{% endif %}">{{ 'nav.parcours'|trans }}</a>
+            </nav>
+            
+            <div class="header-actions">
+                <div class="language-switcher">
+                    <button class="language-btn {% if app.request.locale == 'fr' %}active{% endif %}" onclick="changeLanguage('fr')">FR</button>
+                    <button class="language-btn {% if app.request.locale == 'en' %}active{% endif %}" onclick="changeLanguage('en')">EN</button>
+                    <button class="language-btn {% if app.request.locale == 'eu' %}active{% endif %}" onclick="changeLanguage('eu')">EU</button>
+                </div>
+                <div class="user-info">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="8" r="4" stroke="#1976d2" stroke-width="2"/>
+                        <path d="M5 20c0-4 3-7 7-7s7 3 7 7" stroke="#1976d2" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>{{ app.user.email|split('@')[0]|title }}</span>
+                </div>
+                <a href="{{ path('app_logout', {'_locale': app.request.locale}) }}" class="btn-logout">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M16 17l5-5-5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M21 12H9" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    {{ 'header.logout'|trans }}
+                </a>
+                <button class="btn-settings" title="{{ 'header.settings'|trans }}">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="3" stroke="#666" stroke-width="2"/>
+                        <path d="M12 1v3m0 16v3M3.93 3.93l2.12 2.12m12.02 12.02l2.12 2.12M1 12h3m16 0h3M3.93 20.07l2.12-2.12m12.02-12.02l2.12-2.12" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+    {% endif %}
+    
     {% block body %}{% endblock %}
 </body>
 </html>

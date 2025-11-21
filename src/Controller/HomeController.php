@@ -2,6 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Course;
+use App\Entity\Beacon;
+use App\Entity\BoundariesCourse;
+use App\Repository\CourseRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,10 +15,21 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private CourseRepository $courseRepository
+    ) {}
+
     #[Route('/', name: 'app_home')]
     public function index(): Response
     {
-        return $this->render('home/index.html.twig');
+        // Redirect to login if not authenticated
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login', ['_locale' => 'fr']);
+        }
+        
+        // Redirect to parcours list (no homepage)
+        return $this->redirectToRoute('app_parcours_list', ['_locale' => 'fr']);
     }
 
     #[Route('/map', name: 'app_map')]
@@ -22,16 +38,49 @@ class HomeController extends AbstractController
         return $this->render('map/index.html.twig');
     }
 
-    #[Route('/course/create', name: 'app_course_create')]
-    public function createCourse(): Response
+    // DEPRECATED: This legacy endpoint has been replaced by CourseController::apiListCourses
+    // which properly returns Session entities. This route is kept for backwards compatibility
+    // but should not be used. Use /api/sessions or CourseController's /api/courses instead.
+    #[Route('/api/courses/legacy', name: 'api_courses_legacy', methods: ['GET'])]
+    public function listCourses(): JsonResponse
     {
-        return $this->render('course/create.html.twig');
-    }
-
-    #[Route('/course/manage', name: 'app_course_manage')]
-    public function manageCourses(): Response
-    {
-        return $this->render('course/manage.html.twig');
+        $courses = $this->courseRepository->findAll();
+        
+        $coursesData = [];
+        foreach ($courses as $course) {
+            $waypoints = [];
+            foreach ($course->getBeacons() as $beacon) {
+                $waypoints[] = [
+                    'id' => $beacon->getId(),
+                    'name' => $beacon->getName(),
+                    'latitude' => (float)$beacon->getLatitude(),
+                    'longitude' => (float)$beacon->getLongitude(),
+                    'type' => $beacon->getType(),
+                    'description' => '',
+                    'qr' => $beacon->getQr()
+                ];
+            }
+            
+            $boundaryPoints = [];
+            foreach ($course->getBoundariesCourses() as $boundary) {
+                $boundaryPoints[] = [
+                    'lat' => (float)$boundary->getLatitude(),
+                    'lng' => (float)$boundary->getLongitude()
+                ];
+            }
+            
+            $coursesData[] = [
+                'id' => $course->getId(),
+                'name' => $course->getName(),
+                'description' => $course->getDescription(),
+                'status' => $course->getStatus(),
+                'created_at' => $course->getCreateAt()?->format('Y-m-d H:i:s'),
+                'waypoints' => $waypoints,
+                'boundary_points' => $boundaryPoints
+            ];
+        }
+        
+        return new JsonResponse(['courses' => $coursesData]);
     }
 
     #[Route('/api/course/save', name: 'api_course_save', methods: ['POST'])]
@@ -43,25 +92,145 @@ class HomeController extends AbstractController
             return new JsonResponse(['error' => 'Invalid data'], 400);
         }
 
-        // Path to courses JSON file
-        $coursesFile = $this->getParameter('kernel.project_dir') . '/public/assets/data/courses.json';
-        
-        // Read existing courses
-        $coursesData = ['description' => 'Courses créés - Fichier de stockage temporaire avant implémentation BDD', 'courses' => []];
-        if (file_exists($coursesFile)) {
-            $content = file_get_contents($coursesFile);
-            $coursesData = json_decode($content, true) ?: $coursesData;
+        // Create course entity
+        $course = new Course();
+        $course->setName($data['name']);
+        $course->setDescription($data['description'] ?? '');
+        $course->setStatus($data['status'] ?? 'draft');
+        $course->setCreateAt(new \DateTime());
+        $course->setUpdateAt(new \DateTime());
+        $course->setPlacementCompletedAt(new \DateTime());
+
+        $this->entityManager->persist($course);
+
+        // Create boundary points
+        if (isset($data['boundary_points']) && is_array($data['boundary_points'])) {
+            foreach ($data['boundary_points'] as $point) {
+                $boundary = new BoundariesCourse();
+                $boundary->setLatitude((string)$point['lat']);
+                $boundary->setLongitude((string)$point['lng']);
+                $boundary->addIdCourse($course);
+                
+                $this->entityManager->persist($boundary);
+            }
         }
 
-        // Generate unique ID
-        $data['id'] = time() . rand(1000, 9999);
+        // Create start point beacon
+        if (isset($data['startPoint']) && is_array($data['startPoint'])) {
+            $startPoint = $data['startPoint'];
+            if (isset($startPoint['lat']) && isset($startPoint['lng'])) {
+                $beacon = new Beacon();
+                $beacon->setName($startPoint['name'] ?? 'Départ');
+                $beacon->setLatitude((string)$startPoint['lat']);
+                $beacon->setLongitude((string)$startPoint['lng']);
+                $beacon->setType('start');
+                $beacon->setQr('');
+                $beacon->setIsPlaced(false);
+                $beacon->setCreatedAt(new \DateTime());
+                $beacon->addIdCourse($course);
+                
+                $this->entityManager->persist($beacon);
+            }
+        }
 
-        // Add new course
-        $coursesData['courses'][] = $data;
+        // Create waypoints/beacons
+        if (isset($data['waypoints']) && is_array($data['waypoints'])) {
+            foreach ($data['waypoints'] as $waypoint) {
+                $beacon = new Beacon();
+                $beacon->setName($waypoint['name']);
+                $beacon->setLatitude((string)$waypoint['latitude']);
+                $beacon->setLongitude((string)$waypoint['longitude']);
+                $beacon->setType($waypoint['type'] ?? 'control');
+                $beacon->setQr($waypoint['qr'] ?? '');
+                $beacon->setIsPlaced(false);
+                $beacon->setCreatedAt(new \DateTime());
+                $beacon->addIdCourse($course);
+                
+                $this->entityManager->persist($beacon);
+            }
+        }
 
-        // Save to file
-        file_put_contents($coursesFile, json_encode($coursesData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        $this->entityManager->flush();
 
-        return new JsonResponse(['success' => true, 'id' => $data['id']]);
+        return new JsonResponse(['success' => true, 'id' => $course->getId()]);
+    }
+
+    #[Route('/api/course/{id}', name: 'api_course_update', methods: ['PUT'])]
+    public function updateCourse(int $id, Request $request): JsonResponse
+    {
+        $course = $this->courseRepository->find($id);
+        
+        if (!$course) {
+            return new JsonResponse(['error' => 'Course not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        
+        if (!$data || !isset($data['name'])) {
+            return new JsonResponse(['error' => 'Invalid data'], 400);
+        }
+
+        // Update course basic info
+        $course->setName($data['name']);
+        $course->setDescription($data['description'] ?? '');
+        $course->setUpdateAt(new \DateTime());
+
+        // Remove existing boundaries
+        foreach ($course->getBoundariesCourses() as $boundary) {
+            $boundary->removeIdCourse($course);
+            $this->entityManager->remove($boundary);
+        }
+
+        // Add new boundaries
+        if (isset($data['boundaryPoints']) && is_array($data['boundaryPoints'])) {
+            foreach ($data['boundaryPoints'] as $point) {
+                $boundary = new BoundariesCourse();
+                $boundary->setLatitude((string)$point['lat']);
+                $boundary->setLongitude((string)$point['lng']);
+                $boundary->addIdCourse($course);
+                $this->entityManager->persist($boundary);
+            }
+        }
+
+        // Remove existing beacons
+        foreach ($course->getBeacons() as $beacon) {
+            $beacon->removeIdCourse($course);
+            $this->entityManager->remove($beacon);
+        }
+
+        // Add new beacons
+        if (isset($data['waypoints']) && is_array($data['waypoints'])) {
+            foreach ($data['waypoints'] as $waypoint) {
+                $beacon = new Beacon();
+                $beacon->setName($waypoint['name']);
+                $beacon->setLatitude((string)$waypoint['latitude']);
+                $beacon->setLongitude((string)$waypoint['longitude']);
+                $beacon->setType($waypoint['type'] ?? 'control');
+                $beacon->setQr($waypoint['qr'] ?? '');
+                $beacon->setIsPlaced(false);
+                $beacon->setCreatedAt(new \DateTime());
+                $beacon->addIdCourse($course);
+                $this->entityManager->persist($beacon);
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'id' => $course->getId()]);
+    }
+
+    #[Route('/api/course/{id}', name: 'api_course_delete', methods: ['DELETE'])]
+    public function deleteCourse(int $id): JsonResponse
+    {
+        $course = $this->courseRepository->find($id);
+        
+        if (!$course) {
+            return new JsonResponse(['error' => 'Course not found'], 404);
+        }
+
+        $this->entityManager->remove($course);
+        $this->entityManager->flush();
+
+        return new JsonResponse(['success' => true]);
     }
 }

@@ -18,9 +18,8 @@
                     <path d="M21 21l-4.35-4.35" stroke="#666" stroke-width="2" stroke-linecap="round"/>
                 </svg>
                 <input type="text" placeholder="Rechercher..." id="searchInput">
-                <span class="status-badge">Mathis Bongo</span>
             </div>
-            <button class="btn btn-primary" onclick="window.location.href='{{ path('app_course_create') }}'">
+            <button class="btn btn-primary" onclick="window.location.href='{{ path('app_parcours_create', {'_locale': app.request.locale}) }}'"
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/>
                     <path d="M12 8v8M8 12h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
@@ -140,12 +139,13 @@
 
         async function loadCourses() {
             try {
-                const response = await fetch(`/api/courses?t=${Date.now()}`);
+                const response = await fetch('{{ path('api_parcours_list', {'_locale': app.request.locale}) }}');
                 const data = await response.json();
                 window.manageCourses = data.courses || [];
+                console.log('COURSES PAGE: Loaded', window.manageCourses.length, 'courses:', window.manageCourses);
                 displayCourses();
             } catch (error) {
-                console.error('Error loading courses:', error);
+                console.error('Error loading parcours:', error);
                 document.getElementById('courseList').innerHTML = '<p style="color: #d32f2f; text-align: center;">Erreur de chargement des parcours</p>';
             }
         }
@@ -154,7 +154,7 @@
             const container = document.getElementById('courseList');
             
             if (window.manageCourses.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666;">Aucun parcours disponible. <a href="{{ path('app_course_create') }}">Créer un parcours</a></p>';
+                container.innerHTML = '<p style="text-align: center; color: #666;">Aucun parcours disponible. <a href="{{ path('app_parcours_create', {'_locale': app.request.locale}) }}">Créer un parcours</a></p>';
                 return;
             }
 
@@ -231,7 +231,34 @@
         }
 
         function editCourse(index) {
-            window.currentEditingCourse = { ...window.manageCourses[index], index };
+            const course = { ...window.manageCourses[index], index };
+            
+            // Convert waypoint coordinates from strings to numbers
+            if (course.waypoints) {
+                course.waypoints = course.waypoints.map(wp => ({
+                    ...wp,
+                    latitude: parseFloat(wp.latitude),
+                    longitude: parseFloat(wp.longitude),
+                    lat: parseFloat(wp.lat || wp.latitude),
+                    lng: parseFloat(wp.lng || wp.longitude)
+                }));
+            }
+            
+            // Convert boundary coordinates from strings to numbers
+            if (course.boundaryPoints) {
+                course.boundaryPoints = course.boundaryPoints.map(p => ({
+                    lat: parseFloat(p.lat),
+                    lng: parseFloat(p.lng)
+                }));
+            }
+            if (course.boundary_points) {
+                course.boundary_points = course.boundary_points.map(p => ({
+                    lat: parseFloat(p.lat),
+                    lng: parseFloat(p.lng)
+                }));
+            }
+            
+            window.currentEditingCourse = course;
             showEditModal();
         }
 
@@ -347,8 +374,12 @@
             });
 
             // Initialize boundary management (check both property names)
-            window.editBoundaryPoints = course.boundaryPoints ? [...course.boundaryPoints] : 
-                                        course.boundary_points ? [...course.boundary_points] : [];
+            // Convert string coordinates to numbers
+            const rawBoundaryPoints = course.boundaryPoints || course.boundary_points || [];
+            window.editBoundaryPoints = rawBoundaryPoints.map(p => ({
+                lat: parseFloat(p.lat),
+                lng: parseFloat(p.lng)
+            }));
             window.editBoundaryMarkers = [];
             window.editBoundaryPolygon = null;
             window.isEditAddingPoint = false;
@@ -628,7 +659,7 @@
             };
             
             try {
-                const response = await fetch(`/api/course/${course.id}`, {
+                const response = await fetch(`{{ path('api_parcours_update', {'_locale': app.request.locale, id: '__ID__'}) }}`.replace('__ID__', course.id), {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -850,7 +881,7 @@
             }
             
             try {
-                const response = await fetch(`/api/course/${course.id}`, {
+                const response = await fetch(`{{ path('api_parcours_delete', {'_locale': app.request.locale, id: '__ID__'}) }}`.replace('__ID__', course.id), {
                     method: 'DELETE'
                 });
                 
