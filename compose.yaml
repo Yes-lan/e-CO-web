@@ -1,10 +1,16 @@
 ---
 services:
-  adminer:
-    image: adminer
+  phpmyadmin:
+    image: phpmyadmin:latest
     restart: always
     ports:
-      - 8080:8080
+      - "8080:80"
+    environment:
+      PMA_HOST: database
+      PMA_USER: root
+      PMA_PASSWORD: example
+    depends_on:
+      - database
   mailpit:
     image: axllent/mailpit:latest
     ports:
