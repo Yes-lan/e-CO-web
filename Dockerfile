@@ -32,6 +32,8 @@ RUN set -eux; \
 	zip \
 	;
 
+RUN echo 'alias sf="php bin/console"' >> ~/.bashrc
+
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1
 # Transport to use by Mercure (default to Bolt)
