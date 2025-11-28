@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\BeaconRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BeaconRepository::class)]
@@ -44,6 +45,9 @@ class Beacon
      */
     #[ORM\ManyToMany(targetEntity: Course::class, inversedBy: 'beacons')]
     private Collection $course;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $beacon = null;
 
     public function __construct()
     {
@@ -171,6 +175,18 @@ class Beacon
     public function removeCourse(Course $course): static
     {
         $this->course->removeElement($course);
+
+        return $this;
+    }
+
+    public function getBeacon(): ?string
+    {
+        return $this->beacon;
+    }
+
+    public function setBeacon(?string $beacon): static
+    {
+        $this->beacon = $beacon;
 
         return $this;
     }
