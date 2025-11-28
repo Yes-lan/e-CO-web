@@ -31,8 +31,6 @@ RUN set -eux; \
 	opcache \
 	zip \
 	;
-RUN npm install | bash \
-	npm run build | bash;
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1
