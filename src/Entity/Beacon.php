@@ -19,11 +19,11 @@ class Beacon
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
-    private ?string $longitude = null;
+    #[ORM\Column]
+    private ?float $longitude = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
-    private ?string $latitude = null;
+    #[ORM\Column]
+    private ?float $latitude = null;
 
     #[ORM\Column(length: 255)]
     private ?string $type = null;
@@ -31,10 +31,10 @@ class Beacon
     #[ORM\Column]
     private ?bool $isPlaced = null;
 
-    #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
+    #[ORM\Column(nullable: true)]
     private ?\DateTime $placedAt = null;
 
-    #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
+    #[ORM\Column(nullable: true)]
     private ?\DateTime $createdAt = null;
 
     #[ORM\Column(length: 255)]
@@ -44,11 +44,14 @@ class Beacon
      * @var Collection<int, Course>
      */
     #[ORM\ManyToMany(targetEntity: Course::class, inversedBy: 'beacons')]
-    private Collection $idCourse;
+    private Collection $course;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $beacon = null;
 
     public function __construct()
     {
-        $this->idCourse = new ArrayCollection();
+        $this->course = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -68,24 +71,24 @@ class Beacon
         return $this;
     }
 
-    public function getLongitude(): ?string
+    public function getLongitude(): ?float
     {
         return $this->longitude;
     }
 
-    public function setLongitude(string $longitude): static
+    public function setLongitude(float $longitude): static
     {
         $this->longitude = $longitude;
 
         return $this;
     }
 
-    public function getLatitude(): ?string
+    public function getLatitude(): ?float
     {
         return $this->latitude;
     }
 
-    public function setLatitude(string $latitude): static
+    public function setLatitude(float $latitude): static
     {
         $this->latitude = $latitude;
 
@@ -155,23 +158,35 @@ class Beacon
     /**
      * @return Collection<int, Course>
      */
-    public function getIdCourse(): Collection
+    public function getCourse(): Collection
     {
-        return $this->idCourse;
+        return $this->course;
     }
 
-    public function addIdCourse(Course $idCourse): static
+    public function addCourse(Course $course): static
     {
-        if (!$this->idCourse->contains($idCourse)) {
-            $this->idCourse->add($idCourse);
+        if (!$this->course->contains($course)) {
+            $this->course->add($course);
         }
 
         return $this;
     }
 
-    public function removeIdCourse(Course $idCourse): static
+    public function removeCourse(Course $course): static
     {
-        $this->idCourse->removeElement($idCourse);
+        $this->course->removeElement($course);
+
+        return $this;
+    }
+
+    public function getBeacon(): ?string
+    {
+        return $this->beacon;
+    }
+
+    public function setBeacon(?string $beacon): static
+    {
+        $this->beacon = $beacon;
 
         return $this;
     }

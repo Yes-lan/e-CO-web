@@ -3,7 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\RunnerRepository;
-use Doctrine\DBAL\Types\Types;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: RunnerRepository::class)]
@@ -17,14 +18,25 @@ class Runner
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::TIME_MUTABLE)]
+    #[ORM\Column]
     private ?\DateTime $departure = null;
 
-    #[ORM\Column(type: Types::TIME_MUTABLE)]
+    #[ORM\Column]
     private ?\DateTime $arrival = null;
 
+    /**
+     * @var Collection<int, LogSession>
+     */
+    #[ORM\OneToMany(targetEntity: LogSession::class, mappedBy: 'runner')]
+    private Collection $logSessions;
+
     #[ORM\ManyToOne(inversedBy: 'runners')]
-    private ?Session $idSession = null;
+    private ?Session $session = null;
+
+    public function __construct()
+    {
+        $this->logSessions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -67,14 +79,44 @@ class Runner
         return $this;
     }
 
-    public function getIdSession(): ?Session
+    /**
+     * @return Collection<int, LogSession>
+     */
+    public function getLogSessions(): Collection
     {
-        return $this->idSession;
+        return $this->logSessions;
     }
 
-    public function setIdSession(?Session $idSession): static
+    public function addLogSession(LogSession $logSession): static
     {
-        $this->idSession = $idSession;
+        if (!$this->logSessions->contains($logSession)) {
+            $this->logSessions->add($logSession);
+            $logSession->setRunner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLogSession(LogSession $logSession): static
+    {
+        if ($this->logSessions->removeElement($logSession)) {
+            // set the owning side to null (unless already changed)
+            if ($logSession->getRunner() === $this) {
+                $logSession->setRunner(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getSession(): ?Session
+    {
+        return $this->session;
+    }
+
+    public function setSession(?Session $session): static
+    {
+        $this->session = $session;
 
         return $this;
     }

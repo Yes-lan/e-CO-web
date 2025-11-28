@@ -3,9 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\BoundariesCourseRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BoundariesCourseRepository::class)]
@@ -16,72 +13,52 @@ class BoundariesCourse
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
-    private ?string $longitude = null;
+    #[ORM\Column]
+    private ?float $longitude = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
-    private ?string $latitude = null;
+    #[ORM\Column]
+    private ?float $latitude = null;
 
-    /**
-     * @var Collection<int, Course>
-     */
-    #[ORM\ManyToMany(targetEntity: Course::class, inversedBy: 'boundariesCourses')]
-    private Collection $idCourse;
-
-    public function __construct()
-    {
-        $this->idCourse = new ArrayCollection();
-    }
+    #[ORM\ManyToOne(inversedBy: 'boundariesCourses')]
+    private ?Course $course = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getLongitude(): ?string
+    public function getLongitude(): ?float
     {
         return $this->longitude;
     }
 
-    public function setLongitude(string $longitude): static
+    public function setLongitude(float $longitude): static
     {
         $this->longitude = $longitude;
 
         return $this;
     }
 
-    public function getLatitude(): ?string
+    public function getLatitude(): ?float
     {
         return $this->latitude;
     }
 
-    public function setLatitude(string $latitude): static
+    public function setLatitude(float $latitude): static
     {
         $this->latitude = $latitude;
 
         return $this;
     }
 
-    /**
-     * @return Collection<int, Course>
-     */
-    public function getIdCourse(): Collection
+    public function getCourse(): ?Course
     {
-        return $this->idCourse;
+        return $this->course;
     }
 
-    public function addIdCourse(Course $idCourse): static
+    public function setCourse(?Course $course): static
     {
-        if (!$this->idCourse->contains($idCourse)) {
-            $this->idCourse->add($idCourse);
-        }
-
-        return $this;
-    }
-
-    public function removeIdCourse(Course $idCourse): static
-    {
-        $this->idCourse->removeElement($idCourse);
+        $this->course = $course;
 
         return $this;
     }

@@ -20,6 +20,14 @@ courses:
     loading: "Chargement des sessions..."
     error_loading: "Erreur de chargement des sessions"
     
+    table:
+        name: "Nom Course"
+        parcours: "Nom Parcours"
+        nb_participants: "Nb. part."
+        created_date: "Créé le"
+        actions: "Actions"
+        max_per_page: "Max par page"
+    
     modal:
         create_title: "Créer une Nouvelle Session"
         name_label: "Nom de la session"
@@ -44,17 +52,17 @@ courses:
         error_delete: "Erreur lors de la suppression"
 
 parcours:
-    title: "Courses"
-    new_parcours: "Nouvelle Course"
+    title: "Parcours"
+    new_parcours: "Nouveau Parcours"
     search_placeholder: "Rechercher..."
-    no_parcours: "Aucune course disponible."
-    create_parcours: "Créer une course"
+    no_parcours: "Aucun parcours disponible."
+    create_parcours: "Créer un parcours"
     view: "Voir"
     edit: "Modifier"
     delete: "Supprimer"
     qr_codes: "Qr Codes"
-    loading: "Chargement des courses..."
-    error_loading: "Erreur de chargement des courses"
+    loading: "Chargement des parcours..."
+    error_loading: "Erreur de chargement des parcours"
     
     status:
         in_creation: "En cours de création"
@@ -69,10 +77,10 @@ parcours:
         default: "Départ à l'entrée sud sur la table"
         
     messages:
-        created: "Course créée avec succès !"
+        created: "Parcours créé avec succès !"
         updated: "Modifications enregistrées avec succès !"
-        deleted: "Course supprimée avec succès !"
-        confirm_delete: "Êtes-vous sûr de vouloir supprimer la course \"%name%\" ?"
+        deleted: "Parcours supprimé avec succès !"
+        confirm_delete: "Êtes-vous sûr de vouloir supprimer le parcours \"%name%\" ?"
         error_create: "Erreur lors de la création"
         error_update: "Erreur lors de la sauvegarde"
         error_delete: "Erreur lors de la suppression"
@@ -83,6 +91,46 @@ login:
     password: "Password"
     sign_in: "Sign In"
     forgot_password: "Forgot password?"
+
+home:
+    title: "Accueil - e-CO Web"
+    welcome: "Bienvenue sur e-CO Web"
+    subtitle: "Créateur de Parcours d'Orientation pour Enseignants"
+    description: "Créez des parcours d'orientation engageants pour vos élèves avec notre outil de création intuitif."
+    create_course: "Créer un Parcours"
+    view_map: "Visualiser les Parcours"
+    manage_courses: "Gérer les Parcours"
+
+map:
+    title: "Visualiseur de Parcours"
+    subtitle: "Consultez et analysez les parcours d'orientation de vos étudiants"
+    manage: "Gérer"
+    home: "Accueil"
+    refresh: "Actualiser"
+    hide_fill: "Masquer remplissage"
+    show_fill: "Afficher remplissage"
+    no_course_selected: "Aucun parcours sélectionné"
+    
+    guide:
+        title: "Guide d'utilisation du visualiseur :"
+        load_course: "Charger un parcours : Cliquez sur un parcours dans la liste"
+        view_coords: "Voir les coordonnées : Cliquez n'importe où sur la carte pour afficher lat/lng"
+        point_details: "Détails d'un point : Cliquez sur un marqueur pour voir les informations"
+        statistics: "Statistiques : Distance totale et nombre de points affichés dans le panneau de droite"
+        click_coords: "Cliquez sur la carte pour voir les coordonnées"
+        copy_coords: "Copier les coordonnées"
+    
+    control_points:
+        title: "Points de Contrôle"
+        no_course: "Aucun parcours chargé"
+        total_points: "Total Points"
+        distance: "Distance Parcours"
+        
+    available_courses:
+        title: "Parcours Disponibles"
+        no_courses: "Aucun parcours disponible"
+        beacons: "balises"
+        finished: "Terminé"
     
 common:
     save: "Enregistrer"

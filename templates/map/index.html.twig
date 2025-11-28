@@ -1,172 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Visualiseur de Parcours - e-CO Web{% endblock %}
+{% block title %}{{ 'map.title'|trans }} - e-CO Web{% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <!-- OrienteeringApp class - MUST load before map initialization -->
-    <script src="{{ asset('assets/js/app.js') }}"></script>
-    
-    <!-- Google Maps API with async loading -->
-    <script>
-        // Global variables to track state
-        window.mapPageReady = false;
-        
-        // Clean up previous map instance before Turbo navigation
-        document.addEventListener('turbo:before-visit', function() {
-            console.log('Turbo: before-visit - cleaning up map');
-            if (window.app && window.app.map) {
-                // Clean up the map
-                window.app.map = null;
-                window.app.mapsLoaded = false;
-                window.app.initialized = false;
-            }
-            window.mapPageReady = false;
-        });
-        
-        // Handle Turbo navigation - this script runs on each page visit
-        document.addEventListener('turbo:load', function() {
-            console.log('Turbo:load event fired');
-            // Small delay to ensure DOM is fully ready
-            setTimeout(function() {
-                // Only initialize if we're on the map page
-                if (document.getElementById('map')) {
-                    console.log('Turbo:load - initializing map page');
-                    // Force reload courses list when returning to map page
-                    if (window.app && window.app.loadSavedCourses) {
-                        console.log('Reloading courses list...');
-                        window.app.loadSavedCourses();
-                    }
-                    initializeMapPage();
-                }
-            }, 100);
-        });
-        
-        // Handle frame load for better compatibility
-        document.addEventListener('turbo:frame-load', function() {
-            if (document.getElementById('map')) {
-                console.log('Turbo:frame-load - initializing map page');
-                setTimeout(initializeMapPage, 100);
-            }
-        });
-        
-        async function initializeMapPage() {
-            console.log('initializeMapPage called');
-            
-            // Prevent multiple initializations
-            if (window.mapPageReady) {
-                console.log('Map page already ready, skipping');
-                return;
-            }
-            
-            // Ensure the map container exists and is visible
-            const mapContainer = document.getElementById('map');
-            if (!mapContainer) {
-                console.error('Map container not found');
-                return;
-            }
-            
-            console.log('Map container found, initializing...');
-            window.mapPageReady = true;
-            
-            // Check if OrienteeringApp class is loaded
-            if (typeof OrienteeringApp === 'undefined') {
-                console.error('OrienteeringApp class not loaded! Check if assets/js/app.js is loaded.');
-                return;
-            }
-            
-            // Initialize the orienteering app first (async) and WAIT for completion
-            if (window.initializeOrienteeringApp) {
-                console.log('Initializing orienteering app...');
-                await window.initializeOrienteeringApp();
-                console.log('App initialization complete');
-            } else {
-                console.error('initializeOrienteeringApp function not found!');
-                return;
-            }
-            
-            // Ensure app and config are ready before proceeding
-            if (!window.app) {
-                console.error('App instance not created! Check app.js loading.');
-                return;
-            }
-            
-            if (!window.app.config) {
-                console.error('Configuration not loaded! Check map-config.json file and network.');
-                console.error('App state:', {
-                    initialized: window.app.initialized,
-                    config: window.app.config
-                });
-                return;
-            }
-            
-            console.log('App ready with config:', window.app.config.defaultLocation);
-            
-            // Check if Google Maps is already loaded
-            if (window.google && window.google.maps) {
-                console.log('Google Maps already loaded, initializing map now');
-                initMapApp();
-            } else {
-                console.log('Loading Google Maps API');
-                loadGoogleMaps();
-            }
-        }
-        
-        // Load Google Maps API asynchronously
-        function loadGoogleMaps() {
-            // Prevent multiple script loading
-            if (window.googleMapsLoading) {
-                console.log('Google Maps already loading...');
-                return;
-            }
-            window.googleMapsLoading = true;
-            
-            const script = document.createElement('script');
-            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBi8sXKGGafzB837kvxraWuqohlZ-JJRu8&libraries=geometry,places,marker&loading=async&callback=initMap';
-            script.async = true;
-            script.defer = true;
-            script.onerror = function() {
-                console.error('Failed to load Google Maps API');
-                window.googleMapsLoading = false;
-            };
-            document.head.appendChild(script);
-        }
-        
-        // Callback function for when Google Maps API is loaded
-        function initMap() {
-            console.log('Google Maps API loaded successfully via callback');
-            window.googleMapsLoading = false;
-            
-            // Double-check that config is loaded before initializing map
-            if (!window.app || !window.app.config) {
-                console.warn('Config not loaded yet, waiting...');
-                setTimeout(initMap, 100);
-                return;
-            }
-            
-            initMapApp();
-        }
-        
-        function initMapApp() {
-            console.log('initMapApp called');
-            
-            // Ensure app is ready AND config is loaded
-            if (window.app && window.app.config && window.app.initializeMap) {
-                if (!window.app.mapsLoaded) {
-                    console.log('Initializing map with config:', window.app.config.defaultLocation);
-                    window.app.initializeMap();
-                } else {
-                    console.log('Map already loaded in app');
-                }
-            } else {
-                console.log('App or config not ready, retrying in 200ms...');
-                setTimeout(initMapApp, 200);
-            }
-        }
-        
-        // Make initMap globally available
-        window.initMap = initMap;
-    </script>
+    {# Load OrienteeringApp directly as a script to ensure it's available #}
+    {# Cache busting to force reload of app.js #}
+    <script src="{{ asset('assets/js/app.js') }}?v={{ 'now'|date('U') }}"></script>
 {% endblock %}
 
 {% block body %}
@@ -174,27 +14,25 @@
     <header class="header">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h1>🧭 Visualiseur de Parcours d'Orientation</h1>
-                <p>Consultez et analysez les parcours d'orientation de vos étudiants</p>
+                <h1>🧭 {{ 'map.title'|trans }}</h1>
+                <p>{{ 'map.subtitle'|trans }}</p>
             </div>
             <div style="display: flex; gap: 0.5rem;">
-                <a href="{{ path('app_parcours_list') }}" class="btn btn-info">🗂️ Gérer</a>
-                <a href="{{ path('app_home') }}" class="btn btn-secondary">🏠 Accueil</a>
+                <a href="{{ path('app_parcours_list') }}" class="btn btn-info">🗂️ {{ 'map.manage'|trans }}</a>
+                <a href="{{ path('app_home') }}" class="btn btn-secondary">🏠 {{ 'map.home'|trans }}</a>
             </div>
         </div>
     </header>
 
     <div class="toolbar">
         <div class="toolbar-section">
-            <button id="loadCourseBtn" class="btn btn-info">📁 Charger un parcours</button>
-            <button id="refreshBtn" class="btn btn-secondary">🔄 Actualiser</button>
-            <button id="showOptimalPathBtn" class="btn btn-success" style="display: none;">🎯 Afficher chemin optimal</button>
+            <button id="refreshBtn" class="btn btn-secondary">🔄 {{ 'map.refresh'|trans }}</button>
         </div>
         <div class="toolbar-section">
-            <button id="toggleBoundaryFillBtn" class="btn btn-warning" style="display: none;">&#x1F3A8; Masquer remplissage</button>
+            <button id="toggleBoundaryFillBtn" class="btn btn-warning" style="display: none;" data-hide-text="{{ 'map.hide_fill'|trans }}" data-show-text="{{ 'map.show_fill'|trans }}">&#x1F3A8; {{ 'map.hide_fill'|trans }}</button>
         </div>
         <div class="toolbar-section">
-            <span id="courseNameDisplay" class="course-name-display">Aucun parcours sélectionné</span>
+            <span id="courseNameDisplay" class="course-name-display">{{ 'map.no_course_selected'|trans }}</span>
         </div>
     </div>
 
@@ -202,37 +40,36 @@
         <div class="map-container">
             <div id="map"></div>
             <div class="map-info">
-                <p><strong>📖 Guide d'utilisation du visualiseur :</strong></p>
+                <p><strong>📖 {{ 'map.guide.title'|trans }}</strong></p>
                 <ul style="margin: 0.5rem 0; padding-left: 1.5rem; font-size: 0.85rem; line-height: 1.6;">
-                    <li><strong>Charger un parcours :</strong> Cliquez sur "📁 Charger un parcours" dans la barre d'outils</li>
-                    <li><strong>Voir les coordonnées :</strong> Cliquez n'importe où sur la carte pour afficher lat/lng</li>
-                    <li><strong>Détails d'un point :</strong> Cliquez sur un marqueur pour voir les informations</li>
-                    <li><strong>Chemin optimal :</strong> Une fois le parcours chargé, cliquez "🎯 Afficher chemin optimal" pour voir le trajet le plus court</li>
-                    <li><strong>Statistiques :</strong> Distance totale et nombre de points affichés dans le panneau de droite</li>
+                    <li>{{ 'map.guide.load_course'|trans }}</li>
+                    <li>{{ 'map.guide.view_coords'|trans }}</li>
+                    <li>{{ 'map.guide.point_details'|trans }}</li>
+                    <li>{{ 'map.guide.statistics'|trans }}</li>
                 </ul>
                 <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
-                    <p id="coordinatesDisplay" style="margin: 0; flex: 1; font-size: 0.85rem;">Cliquez sur la carte pour voir les coordonnées</p>
-                    <button id="copyCoordinatesBtn" class="btn btn-info" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; display: none;" title="Copier les coordonnées">📋</button>
+                    <p id="coordinatesDisplay" style="margin: 0; flex: 1; font-size: 0.85rem;">{{ 'map.guide.click_coords'|trans }}</p>
+                    <button id="copyCoordinatesBtn" class="btn btn-info" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; display: none;" title="{{ 'map.guide.copy_coords'|trans }}">📋</button>
                 </div>
             </div>
         </div>
 
         <div class="sidebar">
             <div class="control-points-panel">
-                <h3>Points de Contrôle</h3>
+                <h3>{{ 'map.control_points.title'|trans }}</h3>
                 <div id="pointsList" class="points-list">
-                    <p class="no-points">Aucun parcours chargé</p>
+                    <p class="no-points">{{ 'map.control_points.no_course'|trans }}</p>
                 </div>
                 <div class="course-stats">
-                    <p>Total Points: <span id="totalPoints">0</span></p>
-                    <p>Distance Parcours: <span id="courseDistance">0 km</span></p>
+                    <p>{{ 'map.control_points.total_points'|trans }}: <span id="totalPoints">0</span></p>
+                    <p>{{ 'map.control_points.distance'|trans }}: <span id="courseDistance">0 km</span></p>
                 </div>
             </div>
 
             <div class="saved-courses-panel">
-                <h3>Parcours Disponibles</h3>
+                <h3>{{ 'map.available_courses.title'|trans }}</h3>
                 <div id="savedCoursesList" class="saved-courses-list">
-                    <p class="no-courses">Aucun parcours disponible</p>
+                    <p class="no-courses">{{ 'map.available_courses.no_courses'|trans }}</p>
                 </div>
             </div>
         </div>
@@ -272,5 +109,241 @@
     </div>
 </div>
 
+<!-- Load app.js at the end of body for proper initialization -->
 <script src="{{ asset('assets/js/app.js') }}"></script>
+<script>
+    // Initialize immediately after app.js is loaded
+    (function() {
+        console.log('[Map Page] Script loaded, checking if on map page...');
+        
+        // Wait for DOM to be fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initMapPage);
+        } else {
+            initMapPage();
+        }
+        
+        function initMapPage() {
+            const mapElement = document.getElementById('map');
+            if (!mapElement) {
+                console.log('[Map Page] Not on map page, skipping initialization');
+                return;
+            }
+            
+            console.log('[Map Page] Initializing...');
+            
+            // Set explicit dimensions on map element
+            mapElement.style.width = '100%';
+            mapElement.style.height = '100%';
+            
+            // Initialize app
+            if (typeof OrienteeringApp === 'undefined') {
+                console.error('[Map Page] OrienteeringApp not defined!');
+                return;
+            }
+            
+            async function start() {
+                try {
+                    // Create and initialize app (this loads config)
+                    // Always create a fresh instance for the map page
+                    console.log('[Map Page] Creating app instance');
+                    window.app = new OrienteeringApp();
+                    console.log('[Map Page] Calling init()...');
+                    await window.app.init();
+                    console.log('[Map Page] App initialized, config:', window.app.config);
+                    
+                    // Config should always be available (either loaded or fallback)
+                    if (!window.app.config) {
+                        console.error('[Map Page] CRITICAL: Config is null after init!');
+                        // This should never happen since loadConfiguration sets fallback
+                        // But let's set it here just in case
+                        window.app.config = {
+                            defaultLocation: { lat: 45.5017, lng: -73.5673 },
+                            defaultZoom: 15,
+                            defaultMapType: 'hybrid'
+                        };
+                    }
+                    
+                    console.log('[Map Page] App ready with config:', window.app.config.defaultLocation);
+                    
+                    // Load available courses
+                    loadAvailableCourses();
+                    
+                    // Check if Google Maps is loaded
+                    if (window.google && window.google.maps) {
+                        console.log('[Map Page] Google Maps already loaded');
+                        window.app.initializeMap();
+                    } else {
+                        console.log('[Map Page] Loading Google Maps API...');
+                        loadGoogleMapsAPI();
+                    }
+                } catch (error) {
+                    console.error('[Map Page] Initialization error:', error);
+                }
+            }
+            
+            async function loadAvailableCourses() {
+                try {
+                    const response = await fetch('/api/parcours');
+                    const data = await response.json();
+                    const courses = data.courses || [];
+                    
+                    const locale = document.documentElement.lang || 'fr';
+                    const listContainer = document.getElementById('savedCoursesList');
+                    if (courses.length === 0) {
+                        listContainer.innerHTML = `<p class="no-courses">${translations.get('map.available_courses.no_courses', locale)}</p>`;
+                        return;
+                    }
+                    
+                    const beaconsText = translations.get('map.available_courses.beacons', locale);
+                    const finishedText = translations.get('map.available_courses.finished', locale);
+                    
+                    listContainer.innerHTML = courses.map(course => `
+                        <div class="course-list-item" onclick="loadCourseOnMap(${course.id})">
+                            <div class="course-item-header">
+                                <strong>${course.name}</strong>
+                                ${course.status === 'finished' ? `<span class="badge-finished">✓ ${finishedText}</span>` : ''}
+                            </div>
+                            <div class="course-item-meta">
+                                <span>📍 ${(course.waypoints || []).length} ${beaconsText}</span>
+                                <span>⏱️ ${new Date(course.createdAt).toLocaleDateString(locale)}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    window.availableCourses = courses;
+                } catch (error) {
+                    console.error('Error loading courses:', error);
+                    const locale = document.documentElement.lang || 'fr';
+                    document.getElementById('savedCoursesList').innerHTML = `<p class="no-courses" style="color: #d32f2f;">${translations.get('parcours.error_loading', locale)}</p>`;
+                }
+            }
+            
+            window.loadCourseOnMap = function(courseId) {
+                const course = window.availableCourses?.find(c => c.id === courseId);
+                if (!course) {
+                    console.error('Course not found:', courseId);
+                    return;
+                }
+                
+                // Clear existing markers
+                if (window.app && window.app.map) {
+                    // Clear old markers/polygons if they exist
+                    if (window.courseMarkers) {
+                        window.courseMarkers.forEach(m => m.setMap(null));
+                    }
+                    if (window.coursePolygon) {
+                        window.coursePolygon.setMap(null);
+                    }
+                    
+                    window.courseMarkers = [];
+                    const bounds = new google.maps.LatLngBounds();
+                    
+                    // Display boundaries
+                    if (course.boundaryPoints && course.boundaryPoints.length >= 3) {
+                        const boundaryPath = course.boundaryPoints.map(p => ({
+                            lat: parseFloat(p.lat),
+                            lng: parseFloat(p.lng)
+                        }));
+                        
+                        window.coursePolygon = new google.maps.Polygon({
+                            paths: boundaryPath,
+                            strokeColor: '#FF6B35',
+                            strokeOpacity: 0.8,
+                            strokeWeight: 2,
+                            fillColor: '#FF6B35',
+                            fillOpacity: 0.2,
+                            map: window.app.map
+                        });
+                        
+                        boundaryPath.forEach(p => bounds.extend(p));
+                    }
+                    
+                    // Display beacons
+                    if (course.waypoints && course.waypoints.length > 0) {
+                        course.waypoints.forEach((waypoint, idx) => {
+                            if (waypoint.lat && waypoint.lng) {
+                                const marker = new google.maps.Marker({
+                                    position: {
+                                        lat: parseFloat(waypoint.lat),
+                                        lng: parseFloat(waypoint.lng)
+                                    },
+                                    map: window.app.map,
+                                    title: waypoint.name || `Balise ${idx + 1}`,
+                                    icon: {
+                                        path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                                        fillColor: '#2196F3',
+                                        fillOpacity: 1,
+                                        strokeColor: '#ffffff',
+                                        strokeWeight: 2,
+                                        scale: 1,
+                                        anchor: new google.maps.Point(0, 0)
+                                    },
+                                    label: {
+                                        text: waypoint.name || `${idx + 1}`,
+                                        color: 'white',
+                                        fontSize: '10px',
+                                        fontWeight: 'bold'
+                                    }
+                                });
+                                
+                                window.courseMarkers.push(marker);
+                                bounds.extend({ lat: parseFloat(waypoint.lat), lng: parseFloat(waypoint.lng) });
+                            }
+                        });
+                    }
+                    
+                    // Fit map to show all markers
+                    if (!bounds.isEmpty()) {
+                        window.app.map.fitBounds(bounds);
+                    }
+                    
+                    // Update UI
+                    document.getElementById('courseNameDisplay').textContent = course.name;
+                }
+            }
+            
+            function loadGoogleMapsAPI() {
+                if (window.googleMapsLoading) {
+                    console.log('[Map Page] Google Maps already loading...');
+                    return;
+                }
+                
+                window.googleMapsLoading = true;
+                
+                // Global callback for Google Maps - MUST check if app and config are ready
+                window.initMap = function() {
+                    console.log('[Map Page] Google Maps callback triggered');
+                    window.googleMapsLoading = false;
+                    
+                    // Wait for app and config to be ready
+                    if (!window.app || !window.app.config) {
+                        console.log('[Map Page] App/config not ready yet, waiting...');
+                        setTimeout(window.initMap, 100);
+                        return;
+                    }
+                    
+                    if (window.app.initializeMap) {
+                        console.log('[Map Page] Initializing map now');
+                        window.app.initializeMap();
+                    } else {
+                        console.error('[Map Page] initializeMap method not found!');
+                    }
+                };
+                
+                const script = document.createElement('script');
+                script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBi8sXKGGafzB837kvxraWuqohlZ-JJRu8&libraries=geometry,places&callback=initMap';
+                script.async = true;
+                script.defer = true;
+                script.onerror = function() {
+                    console.error('[Map Page] Failed to load Google Maps API');
+                    window.googleMapsLoading = false;
+                };
+                document.head.appendChild(script);
+            }
+            
+            start();
+        }
+    })();
+</script>
 {% endblock %}

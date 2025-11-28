@@ -44,21 +44,31 @@ if (typeof OrienteeringApp === 'undefined') {
     }
 
     async init() {
+        console.log('[init] Starting initialization, initialized status:', this.initialized);
+        
         // Prevent double initialization
         if (this.initialized) {
+            console.log('[init] Already initialized, skipping');
             return;
         }
         
+        console.log('[init] Loading configuration...');
         // Load configuration from JSON FIRST (await to ensure it completes)
         await this.loadConfiguration();
+        console.log('[init] Configuration loaded, setting up event listeners');
         
         this.setupEventListeners();
         this.loadSavedCourses();
         this.initialized = true;
         
+        console.log('[init] Initialization complete');
+        
         // If Google Maps is already loaded, initialize the map
         if (window.google && window.google.maps) {
+            console.log('[init] Google Maps already loaded, initializing map');
             this.initializeMap();
+        } else {
+            console.log('[init] Waiting for Google Maps API to load');
         }
         // Otherwise, wait for the callback from Google Maps API
     }
@@ -70,13 +80,26 @@ if (typeof OrienteeringApp === 'undefined') {
         try {
             // Add cache busting to ensure fresh configuration
             const cacheBuster = `?t=${Date.now()}`;
-            const response = await fetch(`/assets/data/map-config.json${cacheBuster}`, {
+            const configUrl = `/assets/data/map-config.json${cacheBuster}`;
+            console.log('[loadConfiguration] Attempting to fetch:', configUrl);
+            
+            const response = await fetch(configUrl, {
                 cache: 'no-store' // Disable caching
             });
-            this.config = await response.json();
-            console.log('Configuration loaded:', this.config);
+            
+            console.log('[loadConfiguration] Response status:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            this.config = data;
+            console.log('[loadConfiguration] ✅ Configuration loaded from file:', this.config);
+            console.log('[loadConfiguration] Map center:', this.config.defaultLocation);
         } catch (error) {
-            console.error('Failed to load configuration:', error);
+            console.error('[loadConfiguration] ❌ Failed to load configuration:', error.message);
+            console.error('[loadConfiguration] Full error:', error);
             // Set default fallback values
             this.config = {
                 defaultLocation: { lat: 45.5017, lng: -73.5673 },
@@ -89,6 +112,7 @@ if (typeof OrienteeringApp === 'undefined') {
                     maxZoom: 20
                 }
             };
+            console.log('[loadConfiguration] 🔄 Using fallback configuration (Montreal):', this.config.defaultLocation);
         }
     }
 
@@ -690,32 +714,35 @@ if (typeof OrienteeringApp === 'undefined') {
 
     /**
      * Add a demo button for testing boundaries (for demonstration purposes)
+     * DISABLED - Not needed for production
      */
-    addDemoBoundaryButton() {
-        const demoButton = document.createElement('button');
-        demoButton.textContent = '🧪 Test Limites Parcours';
-        demoButton.className = 'btn btn-info';
-        demoButton.style.position = 'absolute';
-        demoButton.style.top = '10px';
-        demoButton.style.right = '10px';
-        demoButton.style.zIndex = '1000';
-        
-        demoButton.addEventListener('click', () => {
-            this.loadTestBoundaryPoints();
-        });
-        
-        document.body.appendChild(demoButton);
-    }
+    // addDemoBoundaryButton() {
+    //     const demoButton = document.createElement('button');
+    //     demoButton.textContent = '🧪 Test Limites Parcours';
+    //     demoButton.className = 'btn btn-info';
+    //     demoButton.style.position = 'absolute';
+    //     demoButton.style.top = '10px';
+    //     demoButton.style.right = '10px';
+    //     demoButton.style.zIndex = '1000';
+    //     
+    //     demoButton.addEventListener('click', () => {
+    //         this.loadTestBoundaryPoints();
+    //     });
+    //     
+    //     document.body.appendChild(demoButton);
+    // }
 
     /**
      * Load test boundary points and auto-fit map view
      * Uses LatLngBounds.extend() and fitBounds() from Google Maps API
+     * DISABLED - Not needed for production
      */
     /**
      * Load test boundary points from JSON file
      * Uses fetch API to load data from /assets/data/test-boundary-points.json
+     * DISABLED - Not needed for production
      */
-    async loadTestBoundaryPoints() {
+    /* async loadTestBoundaryPoints() {
         try {
             // Fetch boundary points and waypoints from JSON files
             const [boundaryResponse, waypointsResponse] = await Promise.all([
@@ -833,7 +860,7 @@ if (typeof OrienteeringApp === 'undefined') {
             console.error('Failed to load test boundary points:', error);
             alert('Erreur lors du chargement des points de test. Vérifiez le fichier JSON.');
         }
-    }
+    } */
 
     /**
      * Get waypoint name based on type

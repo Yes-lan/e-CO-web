@@ -20,6 +20,14 @@ courses:
     loading: "Loading sessions..."
     error_loading: "Error loading sessions"
     
+    table:
+        name: "Session Name"
+        parcours: "Course Name"
+        nb_participants: "Nb. part."
+        created_date: "Created"
+        actions: "Actions"
+        max_per_page: "Max per page"
+    
     modal:
         create_title: "Create a New Session"
         name_label: "Session name"
@@ -83,6 +91,46 @@ login:
     password: "Password"
     sign_in: "Sign In"
     forgot_password: "Forgot password?"
+
+home:
+    title: "Home - e-CO Web"
+    welcome: "Welcome to e-CO Web"
+    subtitle: "Orienteering Course Creator for Teachers"
+    description: "Create engaging orienteering courses for your students with our intuitive creation tool."
+    create_course: "Create a Course"
+    view_map: "View Courses"
+    manage_courses: "Manage Courses"
+
+map:
+    title: "Course Viewer"
+    subtitle: "View and analyze your students' orienteering courses"
+    manage: "Manage"
+    home: "Home"
+    refresh: "Refresh"
+    hide_fill: "Hide fill"
+    show_fill: "Show fill"
+    no_course_selected: "No course selected"
+    
+    guide:
+        title: "Viewer usage guide:"
+        load_course: "Load a course: Click on a course in the list"
+        view_coords: "View coordinates: Click anywhere on the map to display lat/lng"
+        point_details: "Point details: Click on a marker to see information"
+        statistics: "Statistics: Total distance and number of points displayed in the right panel"
+        click_coords: "Click on the map to see coordinates"
+        copy_coords: "Copy coordinates"
+    
+    control_points:
+        title: "Control Points"
+        no_course: "No course loaded"
+        total_points: "Total Points"
+        distance: "Course Distance"
+        
+    available_courses:
+        title: "Available Courses"
+        no_courses: "No courses available"
+        beacons: "beacons"
+        finished: "Finished"
     
 common:
     save: "Save"

@@ -34,11 +34,15 @@ const translations = {
         'parcours.no_parcours': 'Aucun parcours disponible.',
         'parcours.create_parcours': 'Cr├®er un parcours',
         'parcours.error_loading': 'Erreur de chargement des parcours',
-        'parcours.messages.updated': 'Modifications enregistr├®es avec succ├¿s !',
-        'parcours.messages.deleted': 'Parcours supprim├® avec succ├¿s !',
-        'parcours.messages.confirm_delete': '├ètes-vous s├╗r de vouloir supprimer le parcours "%name%" ?',
+        'parcours.messages.updated': 'Modifications enregistrées avec succès !',
+        'parcours.messages.deleted': 'Parcours supprimé avec succès !',
+        'parcours.messages.confirm_delete': 'Êtes-vous sûr de vouloir supprimer le parcours "%name%" ?',
         'parcours.messages.error_update': 'Erreur lors de la sauvegarde',
-        'parcours.messages.error_delete': 'Erreur lors de la suppression'
+        'parcours.messages.error_delete': 'Erreur lors de la suppression',
+        
+        'map.available_courses.no_courses': 'Aucun parcours disponible',
+        'map.available_courses.beacons': 'balises',
+        'map.available_courses.finished': 'Terminé'
     },
     en: {
         'courses.view': 'View',
@@ -76,7 +80,11 @@ const translations = {
         'parcours.messages.deleted': 'Course deleted successfully!',
         'parcours.messages.confirm_delete': 'Are you sure you want to delete the course "%name%"?',
         'parcours.messages.error_update': 'Error saving',
-        'parcours.messages.error_delete': 'Error deleting'
+        'parcours.messages.error_delete': 'Error deleting',
+        
+        'map.available_courses.no_courses': 'No courses available',
+        'map.available_courses.beacons': 'beacons',
+        'map.available_courses.finished': 'Finished'
     },
     eu: {
         'courses.view': 'Ikusi',
@@ -114,8 +122,16 @@ const translations = {
         'parcours.messages.deleted': 'Ibilbidea ondo ezabatu da!',
         'parcours.messages.confirm_delete': '"%name%" ibilbidea ezabatu nahi duzu?',
         'parcours.messages.error_update': 'Errorea gordetzerakoan',
-        'parcours.messages.error_delete': 'Errorea ezabatzerakoan'
+        'parcours.messages.error_delete': 'Errorea ezabatzerakoan',
+        
+        'map.available_courses.no_courses': 'Ez dago ibilbiderik eskuragarri',
+        'map.available_courses.beacons': 'balizak',
+        'map.available_courses.finished': 'Amaituta'
     }
+};
+
+translations.get = function(key, locale = 'fr') {
+    return this[locale]?.[key] || this['fr']?.[key] || key;
 };
 
 function trans(key, params = {}) {

@@ -17,20 +17,20 @@ class LogSession
     #[ORM\Column(length: 255)]
     private ?string $type = null;
 
-    #[ORM\Column(type: Types::TIME_MUTABLE)]
+    #[ORM\Column]
     private ?\DateTime $time = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
-    private ?string $position = null;
+    #[ORM\Column(nullable: true)]
+    private ?float $latitude = null;
 
-    #[ORM\Column(type: Types::BIGINT, nullable: true)]
-    private ?string $latitude = null;
+    #[ORM\Column(nullable: true)]
+    private ?float $longitude = null;
 
-    #[ORM\Column(type: Types::BIGINT, nullable: true)]
-    private ?string $longitude = null;
-
-    #[ORM\Column(type: Types::BIGINT, nullable: true)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $additionalData = null;
+
+    #[ORM\ManyToOne(inversedBy: 'logSessions')]
+    private ?Runner $runner = null;
 
     public function getId(): ?int
     {
@@ -61,36 +61,24 @@ class LogSession
         return $this;
     }
 
-    public function getPosition(): ?string
-    {
-        return $this->position;
-    }
-
-    public function setPosition(string $position): static
-    {
-        $this->position = $position;
-
-        return $this;
-    }
-
-    public function getLatitude(): ?string
+    public function getLatitude(): ?float
     {
         return $this->latitude;
     }
 
-    public function setLatitude(?string $latitude): static
+    public function setLatitude(?float $latitude): static
     {
         $this->latitude = $latitude;
 
         return $this;
     }
 
-    public function getLongitude(): ?string
+    public function getLongitude(): ?float
     {
         return $this->longitude;
     }
 
-    public function setLongitude(?string $longitude): static
+    public function setLongitude(?float $longitude): static
     {
         $this->longitude = $longitude;
 
@@ -105,6 +93,18 @@ class LogSession
     public function setAdditionalData(?string $additionalData): static
     {
         $this->additionalData = $additionalData;
+
+        return $this;
+    }
+
+    public function getRunner(): ?Runner
+    {
+        return $this->runner;
+    }
+
+    public function setRunner(?Runner $runner): static
+    {
+        $this->runner = $runner;
 
         return $this;
     }

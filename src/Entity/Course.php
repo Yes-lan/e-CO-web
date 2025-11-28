@@ -2,15 +2,12 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CourseRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CourseRepository::class)]
-#[ApiResource]
 class Course
 {
     #[ORM\Id]
@@ -27,32 +24,35 @@ class Course
     #[ORM\Column(length: 255)]
     private ?string $status = null;
 
-    #[ORM\Column(type: Types::TIME_MUTABLE)]
+    #[ORM\Column]
     private ?\DateTime $createAt = null;
 
-    #[ORM\Column(type: Types::TIME_MUTABLE)]
+    #[ORM\Column]
     private ?\DateTime $placementCompletedAt = null;
 
-    #[ORM\Column(type: Types::TIME_MUTABLE)]
+    #[ORM\Column]
     private ?\DateTime $updateAt = null;
 
     /**
      * @var Collection<int, BoundariesCourse>
      */
-    #[ORM\ManyToMany(targetEntity: BoundariesCourse::class, mappedBy: 'idCourse')]
+    #[ORM\OneToMany(targetEntity: BoundariesCourse::class, mappedBy: 'course')]
     private Collection $boundariesCourses;
 
     /**
      * @var Collection<int, Beacon>
      */
-    #[ORM\ManyToMany(targetEntity: Beacon::class, mappedBy: 'idCourse')]
+    #[ORM\ManyToMany(targetEntity: Beacon::class, mappedBy: 'course')]
     private Collection $beacons;
 
     /**
      * @var Collection<int, Session>
      */
-    #[ORM\OneToMany(targetEntity: Session::class, mappedBy: 'idCourse')]
+    #[ORM\OneToMany(targetEntity: Session::class, mappedBy: 'course')]
     private Collection $sessions;
+
+    #[ORM\ManyToOne(inversedBy: 'course')]
+    private ?User $user = null;
 
     public function __construct()
     {
@@ -150,7 +150,7 @@ class Course
     {
         if (!$this->boundariesCourses->contains($boundariesCourse)) {
             $this->boundariesCourses->add($boundariesCourse);
-            $boundariesCourse->addIdCourse($this);
+            $boundariesCourse->setCourse($this);
         }
 
         return $this;
@@ -159,7 +159,10 @@ class Course
     public function removeBoundariesCourse(BoundariesCourse $boundariesCourse): static
     {
         if ($this->boundariesCourses->removeElement($boundariesCourse)) {
-            $boundariesCourse->removeIdCourse($this);
+            // set the owning side to null (unless already changed)
+            if ($boundariesCourse->getCourse() === $this) {
+                $boundariesCourse->setCourse(null);
+            }
         }
 
         return $this;
@@ -177,7 +180,7 @@ class Course
     {
         if (!$this->beacons->contains($beacon)) {
             $this->beacons->add($beacon);
-            $beacon->addIdCourse($this);
+            $beacon->addCourse($this);
         }
 
         return $this;
@@ -186,7 +189,7 @@ class Course
     public function removeBeacon(Beacon $beacon): static
     {
         if ($this->beacons->removeElement($beacon)) {
-            $beacon->removeIdCourse($this);
+            $beacon->removeCourse($this);
         }
 
         return $this;
@@ -204,7 +207,7 @@ class Course
     {
         if (!$this->sessions->contains($session)) {
             $this->sessions->add($session);
-            $session->setIdCourse($this);
+            $session->setCourse($this);
         }
 
         return $this;
@@ -214,10 +217,22 @@ class Course
     {
         if ($this->sessions->removeElement($session)) {
             // set the owning side to null (unless already changed)
-            if ($session->getIdCourse() === $this) {
-                $session->setIdCourse(null);
+            if ($session->getCourse() === $this) {
+                $session->setCourse(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }

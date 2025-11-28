@@ -10,8 +10,8 @@
 {% block body %}
     <div class="course-creation-container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <a href="{{ path('app_parcours_list', {'_locale': app.request.locale}) }}" class="back-link">← Retour à la liste</a>
-            <a href="{{ path('app_parcours_list', {'_locale': app.request.locale}) }}" class="btn btn-info btn-small">🗂️ Gérer les parcours</a>
+            <a href="{{ path('app_parcours_list') }}" class="back-link">← Retour à la liste</a>
+            <a href="{{ path('app_parcours_list') }}" class="btn btn-info btn-small">🗂️ Gérer les parcours</a>
         </div>
 
         <div class="creation-header">
@@ -110,8 +110,7 @@
                     <div class="waypoint-count-selector">
                         <input type="number" id="waypointCount" name="waypointCount" 
                                min="1" max="20" value="5">
-                        <button type="button" class="btn btn-secondary btn-small" id="generateWaypoints" 
-                                onclick="console.log('[HTML ONCLICK] Button clicked directly via HTML onclick!');">
+                        <button type="button" class="btn btn-secondary btn-small" id="generateWaypoints">
                             Générer les balises
                         </button>
                     </div>
@@ -124,9 +123,6 @@
 
             <!-- Actions -->
             <div class="form-actions">
-                <button type="button" class="btn btn-secondary" id="saveDraft">
-                    💾 Enregistrer le brouillon
-                </button>
                 <button type="submit" class="btn btn-success">
                     ✅ Créer le parcours
                 </button>
@@ -462,69 +458,30 @@
                 }
 
                 function initializeCourseForm() {
-                    console.log('[INIT] Starting initializeCourseForm()');
-                    console.log('[INIT] Document readyState:', document.readyState);
-                    console.log('[INIT] Timestamp:', new Date().toISOString());
-                    
                     const form = document.getElementById('courseCreationForm');
                     const generateBtn = document.getElementById('generateWaypoints');
                     const waypointCountInput = document.getElementById('waypointCount');
                     const waypointsContainer = document.getElementById('waypointsContainer');
 
-                    console.log('[INIT] Elements found:');
-                    console.log('  - form:', !!form, form);
-                    console.log('  - generateBtn:', !!generateBtn, generateBtn);
-                    console.log('  - waypointCountInput:', !!waypointCountInput, waypointCountInput);
-                    console.log('  - waypointsContainer:', !!waypointsContainer, waypointsContainer);
-
                     if (!form || !generateBtn || !waypointCountInput || !waypointsContainer) {
-                        console.error('[INIT] ❌ Form elements not found - aborting initialization');
                         return;
                     }
-
-                    console.log('[INIT] ✅ All elements found');
 
                     // Check if event listeners are already attached
                     const hasListeners = generateBtn.hasAttribute('data-listeners-attached');
-                    console.log('[INIT] Generate button already has listeners?', hasListeners);
 
                     if (hasListeners) {
-                        console.warn('[INIT] ⚠️ Event listeners already attached, skipping...');
                         return;
                     }
 
-                    console.log('[INIT] 🔗 About to attach addEventListener to generate button');
-                    console.log('[INIT] Button element:', generateBtn);
-                    console.log('[INIT] Button type:', generateBtn.type);
-                    console.log('[INIT] Button id:', generateBtn.id);
-
-                    // Test: Add a simple click handler first
-                    generateBtn.onclick = function() {
-                        console.log('[ONCLICK PROPERTY] Button clicked via onclick property!');
-                    };
-                    console.log('[INIT] onclick property set');
-
                     // Generate waypoint forms
                     const clickHandler = function(e) {
-                        console.log('[CLICK] ========================================');
-                        console.log('[CLICK] Generate button clicked via addEventListener!');
-                        console.log('[CLICK] Event:', e);
-                        console.log('[CLICK] Event type:', e.type);
-                        console.log('[CLICK] Event target:', e.target);
-                        console.log('[CLICK] Current waypoint count value:', waypointCountInput.value);
-                        
                         e.preventDefault();
-                        console.log('[CLICK] Default prevented');
                         
                         const count = parseInt(waypointCountInput.value);
-                        console.log('[CLICK] Parsed count:', count);
-                        
-                        console.log('[CLICK] Clearing waypointsContainer...');
                         waypointsContainer.innerHTML = '';
 
-                        console.log('[CLICK] Generating', count, 'waypoints...');
                         for (let i = 1; i <= count; i++) {
-                            console.log('[CLICK] Creating waypoint', i);
                             const waypointHtml = `
                                 <div class="waypoint-item" data-waypoint-id="${i}">
                                     <div class="waypoint-header">
@@ -540,11 +497,6 @@
                                         <input type="text" id="waypoint_${i}_name" name="waypoint_${i}_name" 
                                                placeholder="Ex: Balise ${i}" value="Balise ${i}">
                                     </div>
-                                    <div class="form-group">
-                                        <label for="waypoint_${i}_description">Description</label>
-                                        <textarea id="waypoint_${i}_description" name="waypoint_${i}_description" 
-                                                  placeholder="Description de la balise..."></textarea>
-                                    </div>
                                     <p style="color: #666; font-size: 0.9rem; margin: 0;">
                                         📱 Position GPS à définir sur le terrain via scan QR code
                                     </p>
@@ -552,10 +504,8 @@
                             `;
                             waypointsContainer.insertAdjacentHTML('beforeend', waypointHtml);
                         }
-                        console.log('[CLICK] Waypoints inserted into DOM');
 
                         // Add remove handlers
-                        console.log('[CLICK] Adding remove handlers...');
                         document.querySelectorAll('.remove-waypoint').forEach(btn => {
                             btn.addEventListener('click', function() {
                                 const waypointId = this.getAttribute('data-waypoint');
@@ -564,20 +514,14 @@
                                 showNotification(`Balise ${waypointId} supprimée`, 'info');
                             });
                         });
-                        console.log('[CLICK] Remove handlers attached');
 
                         showNotification(`${count} balises générées!`, 'success');
-                        console.log('[CLICK] ✅ Generation complete!');
-                        console.log('[CLICK] ========================================');
                     };
 
-                    console.log('[INIT] Calling addEventListener...');
                     generateBtn.addEventListener('click', clickHandler);
-                    console.log('[INIT] addEventListener called successfully');
 
                     // Mark button as having listeners attached
                     generateBtn.setAttribute('data-listeners-attached', 'true');
-                    console.log('[INIT] ✅ Event listener attached and marked');
 
                 // Form submission
                 // Function to generate random point within polygon
@@ -666,7 +610,6 @@
                         const waypoint = {
                             id: parseInt(id),
                             name: document.getElementById(`waypoint_${id}_name`)?.value || `Balise ${id}`,
-                            description: document.getElementById(`waypoint_${id}_description`)?.value || '',
                             latitude: null,
                             longitude: null,
                             type: 'control',
@@ -679,7 +622,6 @@
                             if (coords) {
                                 waypoint.latitude = coords.lat;
                                 waypoint.longitude = coords.lng;
-                                console.log(`Generated waypoint ${id} coordinates:`, coords);
                             }
                         }
 
@@ -705,7 +647,7 @@
                             
                             // Redirect to parcours list after notification
                             setTimeout(() => {
-                                window.location.href = '{{ path('app_parcours_list', {'_locale': app.request.locale}) }}';
+                                window.location.href = '{{ path('app_parcours_list') }}';
                             }, 1500);
                         } else {
                             throw new Error(result.message || 'Erreur lors de la sauvegarde');
@@ -716,40 +658,38 @@
                     }
                 });
 
-                // Save draft
-                const saveDraftBtn = document.getElementById('saveDraft');
-                if (saveDraftBtn) {
-                    saveDraftBtn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        showNotification('Fonctionnalité de brouillon à implémenter', 'info');
-                    });
-                }
-
-                console.log('[INIT] ✅ Course form fully initialized');
-
                 // Initialize boundary map buttons
                 const addBoundaryBtn = document.getElementById('addBoundaryPoint');
                 const clearBoundaryBtn = document.getElementById('clearBoundaryPoints');
                 const loadTestBoundaryBtn = document.getElementById('loadTestBoundary');
 
                 if (addBoundaryBtn) {
-                    addBoundaryBtn.addEventListener('click', function() {
+                    addBoundaryBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
                         window.isAddingBoundaryPoint = !window.isAddingBoundaryPoint;
-                        window.updateAddButtonState();
+                        if (window.updateAddButtonState) {
+                            window.updateAddButtonState();
+                        }
                     });
                 }
 
                 if (clearBoundaryBtn) {
-                    clearBoundaryBtn.addEventListener('click', function() {
+                    clearBoundaryBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
                         if (confirm('Effacer tous les points de limite ?')) {
-                            window.clearBoundaryPoints();
+                            if (window.clearBoundaryPoints) {
+                                window.clearBoundaryPoints();
+                            }
                         }
                     });
                 }
 
                 if (loadTestBoundaryBtn) {
-                    loadTestBoundaryBtn.addEventListener('click', function() {
-                        window.loadTestBoundaryPoints();
+                    loadTestBoundaryBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (window.loadTestBoundaryPoints) {
+                            window.loadTestBoundaryPoints();
+                        }
                     });
                 }
             }
@@ -757,43 +697,32 @@
             // Track initialization per Turbo render
             let initialized = false;
 
-            console.log('[SCRIPT] Script block executing');
-            console.log('[SCRIPT] Document readyState:', document.readyState);
-
             // Clean up on page unload
             document.addEventListener('turbo:before-render', function() {
-                console.log('[TURBO] turbo:before-render event fired');
                 initialized = false;
-                console.log('[TURBO] Reset initialized flag to false');
             });
 
             // Initialize on Turbo load
             document.addEventListener('turbo:load', function() {
-                console.log('[TURBO] turbo:load event fired');
-                console.log('[TURBO] Initialized flag:', initialized);
                 if (!initialized) {
-                    console.log('[TURBO] Calling initializeCourseForm()...');
                     initialized = true;
                     initializeCourseForm();
-                } else {
-                    console.warn('[TURBO] Already initialized, skipping');
+                }
+            });
+
+            // Also initialize on DOMContentLoaded (fallback if Turbo doesn't fire)
+            document.addEventListener('DOMContentLoaded', function() {
+                if (!initialized) {
+                    initialized = true;
+                    initializeCourseForm();
                 }
             });
             
             // Also initialize immediately if DOM is ready (first page load without Turbo)
-            console.log('[SCRIPT] Checking immediate initialization...');
-            console.log('[SCRIPT] readyState:', document.readyState);
-            console.log('[SCRIPT] initialized:', initialized);
-            
             if (document.readyState !== 'loading' && !initialized) {
-                console.log('[SCRIPT] DOM ready, calling initializeCourseForm() immediately');
                 initialized = true;
                 initializeCourseForm();
-            } else {
-                console.log('[SCRIPT] Waiting for events (readyState:', document.readyState, 'initialized:', initialized, ')');
             }
-            
-            console.log('[SCRIPT] ✅ Script block complete');
             })();
         </script>
     {% endblock %}

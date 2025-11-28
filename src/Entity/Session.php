@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\SessionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SessionRepository::class)]
@@ -19,17 +18,17 @@ class Session
     #[ORM\Column(length: 255)]
     private ?string $sessionName = null;
 
-    #[ORM\Column(type: Types::BIGINT)]
-    private ?string $nbRunner = null;
+    #[ORM\Column]
+    private ?int $nbRunner = null;
 
     /**
      * @var Collection<int, Runner>
      */
-    #[ORM\OneToMany(targetEntity: Runner::class, mappedBy: 'idSession')]
+    #[ORM\OneToMany(targetEntity: Runner::class, mappedBy: 'session')]
     private Collection $runners;
 
     #[ORM\ManyToOne(inversedBy: 'sessions')]
-    private ?Course $idCourse = null;
+    private ?Course $course = null;
 
     public function __construct()
     {
@@ -53,12 +52,12 @@ class Session
         return $this;
     }
 
-    public function getNbRunner(): ?string
+    public function getNbRunner(): ?int
     {
         return $this->nbRunner;
     }
 
-    public function setNbRunner(string $nbRunner): static
+    public function setNbRunner(int $nbRunner): static
     {
         $this->nbRunner = $nbRunner;
 
@@ -77,7 +76,7 @@ class Session
     {
         if (!$this->runners->contains($runner)) {
             $this->runners->add($runner);
-            $runner->setIdSession($this);
+            $runner->setSession($this);
         }
 
         return $this;
@@ -87,22 +86,22 @@ class Session
     {
         if ($this->runners->removeElement($runner)) {
             // set the owning side to null (unless already changed)
-            if ($runner->getIdSession() === $this) {
-                $runner->setIdSession(null);
+            if ($runner->getSession() === $this) {
+                $runner->setSession(null);
             }
         }
 
         return $this;
     }
 
-    public function getIdCourse(): ?Course
+    public function getCourse(): ?Course
     {
-        return $this->idCourse;
+        return $this->course;
     }
 
-    public function setIdCourse(?Course $idCourse): static
+    public function setCourse(?Course $course): static
     {
-        $this->idCourse = $idCourse;
+        $this->course = $course;
 
         return $this;
     }

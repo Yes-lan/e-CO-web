@@ -18,32 +18,13 @@
         document.documentElement.lang = '{{ app.request.locale }}';
 
         function changeLanguage(locale) {
-            // Store locale in localStorage
+            // Store locale preference in localStorage
             localStorage.setItem('locale', locale);
-            // Update document lang
-            document.documentElement.lang = locale;
-            // Reload page with new locale in URL path
-            const currentPath = window.location.pathname;
-            const pathParts = currentPath.split('/').filter(p => p);
-
-            // Remove old locale if present
-            if (['fr', 'en', 'eu'].includes(pathParts[0])) {
-                pathParts.shift();
-            }
-
-            // Add new locale
-            const newPath = '/' + locale + (pathParts.length ? '/' + pathParts.join('/') : '');
-            window.location.href = newPath + window.location.search + window.location.hash;
+            // Reload page with locale query parameter (Symfony LocaleSubscriber will save to session)
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('_locale', locale);
+            window.location.href = currentUrl.toString();
         }
-
-        // Check for stored locale on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const storedLocale = localStorage.getItem('locale');
-            const currentLocale = '{{ app.request.locale }}';
-            if (storedLocale && storedLocale !== currentLocale && ['fr', 'en', 'eu'].includes(storedLocale)) {
-                changeLanguage(storedLocale);
-            }
-        });
     </script>
 </head>
 <body>
@@ -95,12 +76,6 @@
                     </svg>
                     {{ 'header.logout'|trans }}
                 </a>
-                <button class="btn-settings" title="{{ 'header.settings'|trans }}">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="3" stroke="#666" stroke-width="2"/>
-                        <path d="M12 1v3m0 16v3M3.93 3.93l2.12 2.12m12.02 12.02l2.12 2.12M1 12h3m16 0h3M3.93 20.07l2.12-2.12m12.02-12.02l2.12-2.12" stroke="#666" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </button>
             </div>
         </div>
     </header>

@@ -20,6 +20,14 @@ courses:
     loading: "Saioak kargatzen..."
     error_loading: "Errorea saioak kargatzean"
     
+    table:
+        name: "Saioaren Izena"
+        parcours: "Ibilbidearen Izena"
+        nb_participants: "Part. kop."
+        created_date: "Sortze data"
+        actions: "Ekintzak"
+        max_per_page: "Gehienez orrialdeko"
+    
     modal:
         create_title: "Sortu Saio Berria"
         name_label: "Saio izena"
@@ -83,6 +91,46 @@ login:
     password: "Pasahitza"
     sign_in: "Hasi saioa"
     forgot_password: "Pasahitza ahaztu duzu?"
+
+home:
+    title: "Hasiera - e-CO Web"
+    welcome: "Ongi etorri e-CO Web-era"
+    subtitle: "Orientazio Ibilbide Sortzailea Irakasleentzat"
+    description: "Sortu orientazio ibilbide erakargarriak zure ikasleentzat gure tresna errazarekin."
+    create_course: "Sortu Ibilbidea"
+    view_map: "Ikusi Ibilbideak"
+    manage_courses: "Kudeatu Ibilbideak"
+
+map:
+    title: "Ibilbide Ikustailea"
+    subtitle: "Ikusi eta aztertu zure ikasleen orientazio ibilbideak"
+    manage: "Kudeatu"
+    home: "Hasiera"
+    refresh: "Eguneratu"
+    hide_fill: "Ezkutatu betea"
+    show_fill: "Erakutsi betea"
+    no_course_selected: "Ez da ibilbiderik hautatu"
+    
+    guide:
+        title: "Ikustailaren erabilera gida:"
+        load_course: "Kargatu ibilbidea: Egin klik ibilbide batean zerrendan"
+        view_coords: "Ikusi koordenatuak: Egin klik mapan edozein tokitan lat/lng ikusteko"
+        point_details: "Puntu xehetasunak: Egin klik markatzaile batean informazioa ikusteko"
+        statistics: "Estatistikak: Distantzia osoa eta puntu kopurua eskuineko panelean"
+        click_coords: "Egin klik mapan koordenatuak ikusteko"
+        copy_coords: "Kopiatu koordenatuak"
+    
+    control_points:
+        title: "Kontrol Puntuak"
+        no_course: "Ez da ibilbiderik kargatu"
+        total_points: "Puntu Guztira"
+        distance: "Ibilbidearen Distantzia"
+        
+    available_courses:
+        title: "Ibilbide Eskuragarriak"
+        no_courses: "Ez dago ibilbiderik eskuragarri"
+        beacons: "balizak"
+        finished: "Amaituta"
     
 common:
     save: "Gorde"

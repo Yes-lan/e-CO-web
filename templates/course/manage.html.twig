@@ -162,8 +162,15 @@
                 const waypointCount = course.waypoints ? course.waypoints.length : 0;
                 const boundaries = course.boundaryPoints || course.boundary_points || [];
                 const hasBoundaries = boundaries.length >= 3;
-                const statusText = hasBoundaries ? 'En cours de création' : 'En cours de création';
-                const statusColor = hasBoundaries ? '#ff6b35' : '#ff6b35';
+                
+                let statusText, statusColor;
+                if (course.status === 'finished') {
+                    statusText = 'Terminé';
+                    statusColor = '#4caf50';
+                } else {
+                    statusText = 'En cours de création';
+                    statusColor = '#ff6b35';
+                }
                 
                 return `
                     <div class="parcours-card">
@@ -196,13 +203,6 @@
                         </div>
                         
                         <div class="parcours-actions">
-                            <button class="action-btn btn-view" onclick="editCourse(${index})">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" stroke="white" stroke-width="2"/>
-                                    <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/>
-                                </svg>
-                                Voir
-                            </button>
                             <button class="action-btn btn-qr" onclick="viewQRCodes(${index})">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <rect x="3" y="3" width="7" height="7" stroke="white" stroke-width="2" fill="none"/>
@@ -212,6 +212,7 @@
                                 </svg>
                                 Qr Codes
                             </button>
+                            ${course.status !== 'finished' ? `
                             <button class="action-btn btn-edit" onclick="editCourse(${index})">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="white" stroke-width="2" stroke-linecap="round"/>
@@ -219,11 +220,29 @@
                                 </svg>
                                 Modifier
                             </button>
+                            <button class="action-btn btn-finish" onclick="finishCourse(${index})" style="background: #4caf50;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Terminer
+                            </button>
                             <button class="action-btn btn-delete" onclick="deleteCourse(${index})">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="white" stroke-width="2" stroke-linecap="round"/>
                                 </svg>
                             </button>
+                            ` : `
+                            <button class="action-btn btn-edit" onclick="editCourse(${index})" style="background: #2196f3;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" stroke="white" stroke-width="2"/>
+                                    <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/>
+                                </svg>
+                                Voir
+                            </button>
+                            <span style="padding: 0.5rem 1rem; background: #4caf50; color: white; border-radius: 4px; font-weight: 500;">
+                                ✓ Terminé
+                            </span>
+                            `}
                         </div>
                     </div>
                 `;
@@ -231,7 +250,8 @@
         }
 
         function editCourse(index) {
-            window.currentEditingCourse = { ...window.manageCourses[index], index };
+            const course = window.manageCourses[index];
+            window.currentEditingCourse = { ...course, index };
             showEditModal();
         }
 
@@ -240,61 +260,110 @@
             const content = document.getElementById('editCourseContent');
             
             const course = window.currentEditingCourse;
+            const isFinished = course.status === 'finished';
             
-            content.innerHTML = `
-                <form id="editCourseForm" onsubmit="saveCourseChanges(event)">
+            console.log('Course status:', course.status, 'isFinished:', isFinished);
+            
+            if (isFinished) {
+                // Read-only view for finished courses
+                content.innerHTML = `
+                    <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #ffc107;">
+                        <strong>ℹ️ Parcours terminé</strong> - Ce parcours est terminé et ne peut plus être modifié.
+                    </div>
+                    
                     <!-- Basic Info -->
                     <div class="edit-section">
                         <h3>📋 Informations Générales</h3>
                         <div class="form-group">
                             <label>Nom du parcours:</label>
-                            <input type="text" id="editCourseName" value="${course.name || ''}" required>
+                            <input type="text" value="${course.name || ''}" disabled style="background: #f5f5f5; cursor: not-allowed;">
                         </div>
                         <div class="form-group">
                             <label>Description:</label>
-                            <textarea id="editCourseDescription">${course.description || ''}</textarea>
+                            <textarea disabled style="background: #f5f5f5; cursor: not-allowed;">${course.description || ''}</textarea>
                         </div>
                     </div>
 
                     <!-- Boundaries -->
                     <div class="edit-section">
                         <h3>🗺️ Limites du Parcours</h3>
-                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">
-                            Cliquez sur "Ajouter un point" puis sur la carte pour définir les limites.<br>
-                            <strong>Glissez</strong> les points pour les déplacer, <strong>clic droit</strong> pour supprimer.
-                        </p>
                         <p id="editBoundaryStatus" style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">
                             ${course.boundaryPoints && course.boundaryPoints.length >= 3 
                                 ? `✅ ${course.boundaryPoints.length} points de limite définis` 
                                 : '⚠️ Aucune limite définie'}
                         </p>
                         <div class="boundary-mini-map" id="editBoundaryMap"></div>
-                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                            <button type="button" class="btn btn-secondary btn-small" id="editAddBoundaryPoint" onclick="toggleEditAddPoint()">📍 Ajouter un point</button>
-                            <button type="button" class="btn btn-danger btn-small" onclick="clearEditBoundaryPoints()">🗑️ Effacer tout</button>
-                        </div>
                     </div>
 
                     <!-- Waypoints -->
                     <div class="edit-section">
                         <h3>🎯 Balises</h3>
                         <div id="editWaypointsList">
-                            ${renderWaypointsList(course)}
+                            ${renderWaypointsListReadOnly(course)}
                         </div>
-                        <button type="button" class="btn btn-secondary btn-small" onclick="addWaypoint()">➕ Ajouter une balise</button>
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Annuler</button>
-                        <button type="submit" class="btn btn-success">✅ Enregistrer les modifications</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Fermer</button>
                     </div>
-                </form>
-            `;
+                `;
+            } else {
+                // Editable view for non-finished courses
+                content.innerHTML = `
+                    <form id="editCourseForm" onsubmit="saveCourseChanges(event)">
+                        <!-- Basic Info -->
+                        <div class="edit-section">
+                            <h3>📋 Informations Générales</h3>
+                            <div class="form-group">
+                                <label>Nom du parcours:</label>
+                                <input type="text" id="editCourseName" value="${course.name || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Description:</label>
+                                <textarea id="editCourseDescription">${course.description || ''}</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Boundaries -->
+                        <div class="edit-section">
+                            <h3>🗺️ Limites du Parcours</h3>
+                            <p style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">
+                                Cliquez sur "Ajouter un point" puis sur la carte pour définir les limites.<br>
+                                <strong>Glissez</strong> les points pour les déplacer, <strong>clic droit</strong> pour supprimer.
+                            </p>
+                            <p id="editBoundaryStatus" style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">
+                                ${course.boundaryPoints && course.boundaryPoints.length >= 3 
+                                    ? `✅ ${course.boundaryPoints.length} points de limite définis` 
+                                    : '⚠️ Aucune limite définie'}
+                            </p>
+                            <div class="boundary-mini-map" id="editBoundaryMap"></div>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                <button type="button" class="btn btn-secondary btn-small" id="editAddBoundaryPoint" onclick="toggleEditAddPoint()">📍 Ajouter un point</button>
+                                <button type="button" class="btn btn-danger btn-small" onclick="clearEditBoundaryPoints()">🗑️ Effacer tout</button>
+                            </div>
+                        </div>
+
+                        <!-- Waypoints -->
+                        <div class="edit-section">
+                            <h3>🎯 Balises</h3>
+                            <div id="editWaypointsList">
+                                ${renderWaypointsList(course)}
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-small" onclick="addWaypoint()">➕ Ajouter une balise</button>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Annuler</button>
+                            <button type="submit" class="btn btn-success">✅ Enregistrer les modifications</button>
+                        </div>
+                    </form>
+                `;
+            }
             
             modal.style.display = 'block';
             
-            // Initialize boundary map after modal is shown
-            setTimeout(initEditBoundaryMap, 500);
+            // Initialize boundary map after modal is shown (read-only for finished courses)
+            setTimeout(() => initEditBoundaryMap(isFinished), 500);
         }
 
         function renderWaypointsList(course) {
@@ -317,7 +386,23 @@
             `).join('');
         }
 
-        async function initEditBoundaryMap() {
+        function renderWaypointsListReadOnly(course) {
+            if (!course.waypoints || course.waypoints.length === 0) {
+                return '<p style="color: #666;">Aucune balise</p>';
+            }
+            
+            return course.waypoints.map((wp, idx) => `
+                <div class="waypoint-list-item" style="background: #f5f5f5;">
+                    <div>
+                        <strong>Balise ${wp.id || idx + 1}:</strong> ${wp.name || 'Sans nom'}
+                        <br>
+                        <small style="color: #666;">${wp.lat != null ? `📍 ${wp.lat.toFixed(6)}, ${wp.lng.toFixed(6)}` : '⚠️ Pas de coordonnées'}</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function initEditBoundaryMap(readOnly = false) {
             const mapElement = document.getElementById('editBoundaryMap');
             if (!mapElement || window.editBoundaryMap) return;
 
@@ -341,6 +426,7 @@
                 mapTypeId: 'hybrid',
                 tilt: 0,
                 rotateControl: false,
+                gestureHandling: readOnly ? 'cooperative' : 'auto',
                 styles: [
                     { featureType: "poi", stylers: [{ visibility: "off" }] }
                 ]
@@ -352,37 +438,75 @@
             window.editBoundaryMarkers = [];
             window.editBoundaryPolygon = null;
             window.isEditAddingPoint = false;
+            window.isReadOnlyMap = readOnly;
             console.log('Initialized editBoundaryPoints with', window.editBoundaryPoints.length, 'points');
 
-            // Add click listener for adding points
-            window.editBoundaryMap.addListener('click', function(event) {
-                if (window.isEditAddingPoint) {
-                    addEditBoundaryPoint(event.latLng.lat(), event.latLng.lng());
-                    window.isEditAddingPoint = false;
-                    updateEditAddButtonState();
-                }
-            });
+            // Add click listener for adding points (only if not read-only)
+            if (!readOnly) {
+                window.editBoundaryMap.addListener('click', function(event) {
+                    if (window.isEditAddingPoint) {
+                        addEditBoundaryPoint(event.latLng.lat(), event.latLng.lng());
+                        window.isEditAddingPoint = false;
+                        updateEditAddButtonState();
+                    }
+                });
+            }
 
             // Load existing boundaries
+            const bounds = new google.maps.LatLngBounds();
             if (window.editBoundaryPoints.length > 0) {
                 window.editBoundaryPoints.forEach((point, idx) => {
                     addEditBoundaryMarker(point.lat, point.lng, idx);
+                    bounds.extend({ lat: point.lat, lng: point.lng });
                 });
                 updateEditBoundaryPolygon();
-                
-                // Fit bounds
-                const bounds = new google.maps.LatLngBounds();
-                window.editBoundaryPoints.forEach(p => bounds.extend({ lat: p.lat, lng: p.lng }));
+            }
+
+            // Load existing beacons/waypoints
+            if (course.waypoints && course.waypoints.length > 0) {
+                course.waypoints.forEach((waypoint, idx) => {
+                    if (waypoint.lat && waypoint.lng) {
+                        const beaconMarker = new google.maps.Marker({
+                            position: { 
+                                lat: parseFloat(waypoint.lat), 
+                                lng: parseFloat(waypoint.lng) 
+                            },
+                            map: window.editBoundaryMap,
+                            title: waypoint.name || `Balise ${idx + 1}`,
+                            icon: {
+                                path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                                fillColor: '#2196F3',
+                                fillOpacity: 1,
+                                strokeColor: '#ffffff',
+                                strokeWeight: 2,
+                                scale: 1,
+                                anchor: new google.maps.Point(0, 0)
+                            },
+                            label: {
+                                text: waypoint.name || `${idx + 1}`,
+                                color: 'white',
+                                fontSize: '10px',
+                                fontWeight: 'bold'
+                            }
+                        });
+                        bounds.extend({ lat: parseFloat(waypoint.lat), lng: parseFloat(waypoint.lng) });
+                    }
+                });
+            }
+
+            // Fit map to show all markers
+            if (!bounds.isEmpty()) {
                 window.editBoundaryMap.fitBounds(bounds);
             }
         }
 
         function addEditBoundaryMarker(lat, lng, index) {
+            const isReadOnly = window.isReadOnlyMap || false;
             const marker = new google.maps.Marker({
                 position: { lat: lat, lng: lng },
                 map: window.editBoundaryMap,
-                title: `Limite ${index + 1} - Glisser pour déplacer, clic droit pour supprimer`,
-                draggable: true,
+                title: isReadOnly ? `Limite ${index + 1}` : `Limite ${index + 1} - Glisser pour déplacer, clic droit pour supprimer`,
+                draggable: !isReadOnly,
                 label: {
                     text: `${index + 1}`,
                     color: 'white',
@@ -392,7 +516,7 @@
                 icon: {
                     path: google.maps.SymbolPath.CIRCLE,
                     scale: 8,
-                    fillColor: '#FF6B35',
+                    fillColor: isReadOnly ? '#9E9E9E' : '#FF6B35',
                     fillOpacity: 1,
                     strokeColor: '#ffffff',
                     strokeWeight: 2
@@ -401,24 +525,26 @@
 
             marker.boundaryPointIndex = index;
 
-            // Drag event
-            marker.addListener('dragend', function(event) {
-                const newLat = event.latLng.lat();
-                const newLng = event.latLng.lng();
-                window.editBoundaryPoints[marker.boundaryPointIndex].lat = newLat;
-                window.editBoundaryPoints[marker.boundaryPointIndex].lng = newLng;
-                updateEditBoundaryPolygon();
-                // Update course object (both property names for compatibility)
-                window.currentEditingCourse.boundaryPoints = [...window.editBoundaryPoints];
-                window.currentEditingCourse.boundary_points = [...window.editBoundaryPoints];
-            });
+            // Drag event (only if not read-only)
+            if (!isReadOnly) {
+                marker.addListener('dragend', function(event) {
+                    const newLat = event.latLng.lat();
+                    const newLng = event.latLng.lng();
+                    window.editBoundaryPoints[marker.boundaryPointIndex].lat = newLat;
+                    window.editBoundaryPoints[marker.boundaryPointIndex].lng = newLng;
+                    updateEditBoundaryPolygon();
+                    // Update course object (both property names for compatibility)
+                    window.currentEditingCourse.boundaryPoints = [...window.editBoundaryPoints];
+                    window.currentEditingCourse.boundary_points = [...window.editBoundaryPoints];
+                });
 
-            // Right-click to remove
-            marker.addListener('rightclick', function() {
-                if (confirm(`Supprimer le point de limite ${index + 1} ?`)) {
-                    removeEditBoundaryPoint(marker.boundaryPointIndex);
-                }
-            });
+                // Right-click to remove
+                marker.addListener('rightclick', function() {
+                    if (confirm(`Supprimer le point de limite ${index + 1} ?`)) {
+                        removeEditBoundaryPoint(marker.boundaryPointIndex);
+                    }
+                });
+            }
 
             window.editBoundaryMarkers[index] = marker;
         }
@@ -841,6 +967,31 @@
 
         function closeQRModal() {
             document.getElementById('qrCodesModal').style.display = 'none';
+        }
+
+        async function finishCourse(index) {
+            const course = window.manageCourses[index];
+            if (!confirm(`Marquer le parcours "${course.name}" comme terminé ?\n\nUne fois terminé, le parcours ne pourra plus être modifié.\n\nContinuer ?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/parcours/${course.id}/finish`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    alert('✅ Parcours marqué comme terminé !');
+                    await loadCourses();
+                } else {
+                    throw new Error(result.error || 'Erreur lors de la finalisation');
+                }
+            } catch (error) {
+                console.error('Error finishing course:', error);
+                alert('❌ Erreur : ' + error.message);
+            }
         }
 
         async function deleteCourse(index) {

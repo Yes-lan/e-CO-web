@@ -104,7 +104,7 @@ class ParcoursController extends AbstractController
                 $boundary->setLatitude($point['lat']);
                 $boundary->setLongitude($point['lng']);
                 $this->entityManager->persist($boundary);
-                $parcours->addBoundariesCours($boundary);
+                $parcours->addBoundariesCourse($boundary);
             }
         }
 
@@ -122,9 +122,10 @@ class ParcoursController extends AbstractController
                 $beacon->setLatitude((string)$waypoint['latitude']);
                 $beacon->setLongitude((string)$waypoint['longitude']);
                 $beacon->setType($waypoint['type'] ?? 'control');
+                $beacon->setIsPlaced(false);
                 $beacon->setQr($waypoint['qr'] ?? '');
                 $beacon->setCreatedAt(new \DateTime());
-                $beacon->setPlacedAt(new \DateTime());
+                $beacon->setPlacedAt(null);
                 
                 $this->entityManager->persist($beacon);
                 $parcours->addBeacon($beacon);
@@ -144,6 +145,11 @@ class ParcoursController extends AbstractController
         
         if (!$parcours) {
             return new JsonResponse(['error' => 'Parcours not found'], 404);
+        }
+
+        // Prevent editing finished courses
+        if ($parcours->getStatus() === 'finished') {
+            return new JsonResponse(['error' => 'Cannot edit a finished course'], 403);
         }
 
         $data = json_decode($request->getContent(), true);
@@ -198,9 +204,10 @@ class ParcoursController extends AbstractController
                 $beacon->setLatitude((string)$waypoint['latitude']);
                 $beacon->setLongitude((string)$waypoint['longitude']);
                 $beacon->setType($waypoint['type'] ?? 'control');
+                $beacon->setIsPlaced(false);
                 $beacon->setQr($waypoint['qr'] ?? '');
                 $beacon->setCreatedAt(new \DateTime());
-                $beacon->setPlacedAt(new \DateTime());
+                $beacon->setPlacedAt(null);
                 
                 $this->entityManager->persist($beacon);
                 $parcours->addBeacon($beacon);
@@ -210,6 +217,22 @@ class ParcoursController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse(['success' => true, 'id' => $parcours->getId()]);
+    }
+
+    #[Route('/api/parcours/{id}/finish', name: 'api_parcours_finish', methods: ['POST'])]
+    public function finishParcours(int $id): JsonResponse
+    {
+        $parcours = $this->courseRepository->find($id);
+        
+        if (!$parcours) {
+            return new JsonResponse(['error' => 'Parcours not found'], 404);
+        }
+
+        $parcours->setStatus('finished');
+        $parcours->setUpdateAt(new \DateTime());
+        $this->entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'status' => 'finished']);
     }
 
     #[Route('/api/parcours/{id}', name: 'api_parcours_delete', methods: ['DELETE'])]
