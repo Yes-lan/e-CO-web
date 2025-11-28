@@ -2,6 +2,7 @@
 nav:
     courses: "Saioak"
     parcours: "Ikastaroak"
+    map: "Mapa"
     
 header:
     logout: "Irten"

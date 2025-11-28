@@ -2,6 +2,7 @@
 nav:
     courses: "Sessions"
     parcours: "Course"
+    map: "Carte"
     
 header:
     logout: "Déconnexion"

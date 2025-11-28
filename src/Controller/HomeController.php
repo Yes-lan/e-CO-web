@@ -25,11 +25,11 @@ class HomeController extends AbstractController
     {
         // Redirect to login if not authenticated
         if (!$this->getUser()) {
-            return $this->redirectToRoute('app_login', ['_locale' => 'fr']);
+            return $this->redirectToRoute('app_login');
         }
         
         // Redirect to parcours list (no homepage)
-        return $this->redirectToRoute('app_parcours_list', ['_locale' => 'fr']);
+        return $this->redirectToRoute('app_parcours_list');
     }
 
     #[Route('/map', name: 'app_map')]

@@ -48,9 +48,8 @@ class AuthenticatorECOAuthenticator extends AbstractLoginFormAuthenticator
             return new RedirectResponse($targetPath);
         }
 
-        // For example:
-        // return new RedirectResponse($this->urlGenerator->generate('some_route'));
-        throw new \Exception('/login'.__FILE__);
+        // Redirect to courses orienteering list page after successful login
+        return new RedirectResponse($this->urlGenerator->generate('app_parcours_list'));
     }
 
     protected function getLoginUrl(Request $request): string

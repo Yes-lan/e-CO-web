@@ -13,31 +13,31 @@ class RedirectController extends AbstractController
 {
     public function redirectRoot(): RedirectResponse
     {
-        return $this->redirectToRoute('app_parcours_list', ['_locale' => 'fr']);
+        return $this->redirectToRoute('app_home');
     }
 
     public function redirectCourses(): RedirectResponse
     {
-        return $this->redirectToRoute('app_courses_list', ['_locale' => 'fr']);
+        return $this->redirectToRoute('app_courses_list');
     }
 
     public function redirectParcours(): RedirectResponse
     {
-        return $this->redirectToRoute('app_parcours_list', ['_locale' => 'fr']);
+        return $this->redirectToRoute('app_parcours_list');
     }
 
     public function redirectCourseManage(): RedirectResponse
     {
-        return $this->redirectToRoute('app_parcours_list', ['_locale' => 'fr']);
+        return $this->redirectToRoute('app_parcours_list');
     }
 
     public function redirectCourseCreate(): RedirectResponse
     {
-        return $this->redirectToRoute('app_parcours_create', ['_locale' => 'fr']);
+        return $this->redirectToRoute('app_parcours_create');
     }
 
     public function redirectLogin(): RedirectResponse
     {
-        return $this->redirectToRoute('app_login', ['_locale' => 'fr']);
+        return $this->redirectToRoute('app_login');
     }
 }
