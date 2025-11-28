@@ -1,0 +1,18 @@
+- the waypoints are objects possessing a QR code each wich have to be scanned be students in a course.
+- if there are multiple courses in the same place, the students shouldn't be able to scan the QR codes of a course they aren't part of.
+
+
+ON PC :
+- when creating the orienteering course, the user(teacher) will choose the number of waypoints he wants in this particular orienteering course, starting/ending waypoint excluded.
+- the teacher will be able to add/remove/edit the waypoints as long as the orienteering course ins't finished. once done, the course will be uneditable.
+- the starting waypoint can also be the ending waypoint if the option is selected when creating the course or editing it.
+- the waypoints will be composed of an id, a name, a position (longitude, latitude), a QR code and a description.
+- the QR codes will be created with a button, and each waypoint will have a unique QR code. except the starting waypoint wich will have a QR code to start the course and another to end the course if the starting and ending waypoints are the same.
+- the teacher will have to download the QR codes to print them and installing them on the course manually.
+- once all the QR codes are placed and validated in the database, the teacher can continue to edit the course (except the position of the waypoints) or/then validate the course to finish it.
+
+
+ON PHONE :
+- the teacher will have to scan the QR codes with his credentials (different from the students) so his GPS coordinates will be used to pinpoint and register the waypoints position in the database.
+- the students will have to scan the starting QR code to start the course and scan the ending QR code to end the course even if they didn't scan all the other waypoints QR codes, ending their course prematurely then.
+

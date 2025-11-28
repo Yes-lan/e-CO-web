@@ -1,0 +1,9 @@
+- the student are a team but only the phone of one will be used to see its GPS position
+- each point of GPS position will be saved in the database and used in the course display to make the path they took.
+
+
+
+ON PHONE:
+- the group will be able to choose a pseudo
+- the position of the groups will be checked are regular interval
+- they will use their phone app to scan the QR codes and so validate the waypoints scanned

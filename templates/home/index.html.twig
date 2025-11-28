@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - e-CO Web{% endblock %}
+
+{% block body %}
+<div class="container">
+    <header class="header">
+        <h1>🧭 e-CO Web</h1>
+        <p>Créateur de Parcours d'Orientation pour Enseignants</p>
+    </header>
+    
+    <div class="homepage">
+        <section class="hero">
+            <h2>Bienvenue sur e-CO Web</h2>
+            <p>Créez des parcours d'orientation engageants pour vos élèves avec notre outil de création intuitif.</p>
+            <div class="cta-section">
+                <a href="{{ path('app_course_create') }}" class="btn btn-primary btn-large">
+                    ➕ Créer un Parcours
+                </a>
+                <a href="{{ path('app_map') }}" class="btn btn-secondary btn-large">
+                    🗺️ Visualiser les Parcours
+                </a>
+                <a href="{{ path('app_course_manage') }}" class="btn btn-info btn-large">
+                    🗂️ Gérer les Parcours
+                </a>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

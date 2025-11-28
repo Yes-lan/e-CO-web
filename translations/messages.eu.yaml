@@ -1,0 +1,93 @@
+# Basque translations (Euskara)
+nav:
+    courses: "Saioak"
+    parcours: "Ikastaroak"
+    
+header:
+    logout: "Irten"
+    settings: "Ezarpenak"
+    
+courses:
+    title: "Saioak"
+    new_course: "Saio berria"
+    search_placeholder: "Bilatu..."
+    no_courses: "Ez dago saiorik eskuragarri."
+    create_course: "Sortu saio bat"
+    view: "Ikusi"
+    edit: "Aldatu"
+    delete: "Ezabatu"
+    loading: "Saioak kargatzen..."
+    error_loading: "Errorea saioak kargatzean"
+    
+    modal:
+        create_title: "Sortu Saio Berria"
+        name_label: "Saio izena"
+        parcours_label: "Lotutako ikastaroa"
+        parcours_select: "Hautatu ikastaro bat..."
+        nb_runners_label: "Korrikalarien kopurua"
+        cancel: "Utzi"
+        create: "Sortu"
+        
+    status:
+        active: "Aktiboa"
+        
+    info:
+        runners: "korrikalari"
+        no_parcours: "Ikastarorik ez lotuta"
+        
+    messages:
+        created: "Saioa ondo sortu da!"
+        deleted: "Saioa ondo ezabatu da!"
+        confirm_delete: "\"%name%\" saioa ezabatu nahi duzu?"
+        error_create: "Errorea sortzerakoan"
+        error_delete: "Errorea ezabatzerakoan"
+
+parcours:
+    title: "Ikastaroak"
+    new_parcours: "Ikastaro berria"
+    search_placeholder: "Bilatu..."
+    no_parcours: "Ez dago ikastarorik eskuragarri."
+    create_parcours: "Sortu ikastaro bat"
+    view: "Ikusi"
+    edit: "Aldatu"
+    delete: "Ezabatu"
+    qr_codes: "QR Kodeak"
+    loading: "Ikastaroak kargatzen..."
+    error_loading: "Errorea ikastaroak kargatzean"
+    
+    status:
+        in_creation: "Sortzen"
+        completed: "Osatuta"
+        
+    info:
+        beacons: "baliza"
+        boundaries: "Mugak definituta"
+        no_boundaries: "Mugarik ez"
+        
+    description:
+        default: "Hasi hego sarreran mahaian"
+        
+    messages:
+        created: "Ikastaroa ondo sortu da!"
+        updated: "Aldaketak ondo gorde dira!"
+        deleted: "Ikastaroa ondo ezabatu da!"
+        confirm_delete: "\"%name%\" ikastaroa ezabatu nahi duzu?"
+        error_create: "Errorea sortzerakoan"
+        error_update: "Errorea gordetzerakoan"
+        error_delete: "Errorea ezabatzerakoan"
+
+login:
+    title: "Saioa hasi"
+    email: "Emaila"
+    password: "Pasahitza"
+    sign_in: "Hasi saioa"
+    forgot_password: "Pasahitza ahaztu duzu?"
+    
+common:
+    save: "Gorde"
+    cancel: "Ezeztatu"
+    close: "Itxi"
+    confirm: "Baieztatu"
+    back: "Atzera"
+    home: "Hasiera"
+    no_name: "Izenik gabe"

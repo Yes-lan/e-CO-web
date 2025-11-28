@@ -1,0 +1,16 @@
+{
+  "description": "Configuration de la carte - Position par défaut et paramètres",
+  "defaultLocation": {
+    "lat": 45.827760,
+    "lng": 1.257157,
+    "description": " "
+  },
+  "defaultZoom": 17,
+  "defaultMapType": "hybrid",
+  "boundarySettings": {
+    "defaultPaddingKm": 0.1,
+    "defaultMode": "soft",
+    "minZoom": 100,
+    "maxZoom": 200
+  }
+}

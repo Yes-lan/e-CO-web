@@ -1,0 +1,7 @@
+- the courses have 2 versions: the course itself and the sessions. a course can be created and used again multiple times through multiple sessions.
+- the students wil have to be choosen eahc session, only the course stay the same.
+- a session can't be added to a course as long the course isn't finished.
+- once a course is finished, it can't be modified anymore.
+- on the map display, once a course is selected, its possible to select a session of said course to see the path of the different student groups
+- it is possible to select easily 1 student group in a session and go back to see all of them
+- the courses can't be deleted but can be archived. as such the names can't be unique else when a course is archived it will still block the name for new courses

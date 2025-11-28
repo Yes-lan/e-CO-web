@@ -1,0 +1,24 @@
+# Routes without locale prefix for redirecting legacy URLs
+redirect_root:
+    path: /
+    controller: App\Controller\RedirectController::redirectRoot
+
+redirect_courses:
+    path: /courses
+    controller: App\Controller\RedirectController::redirectCourses
+
+redirect_parcours:
+    path: /parcours
+    controller: App\Controller\RedirectController::redirectParcours
+
+redirect_course_manage:
+    path: /course/manage
+    controller: App\Controller\RedirectController::redirectCourseManage
+
+redirect_course_create:
+    path: /course/create
+    controller: App\Controller\RedirectController::redirectCourseCreate
+
+redirect_login:
+    path: /login
+    controller: App\Controller\RedirectController::redirectLogin

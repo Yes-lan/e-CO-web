@@ -1,0 +1,273 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Courses - e-CO{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="parcours-page">
+    <div class="parcours-header">
+        <h1>{{ 'courses.title'|trans }}</h1>
+        <div class="parcours-header-actions">
+            <div class="search-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="11" cy="11" r="8" stroke="#666" stroke-width="2"/>
+                    <path d="M21 21l-4.35-4.35" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <input type="text" placeholder="{{ 'courses.search_placeholder'|trans }}" id="searchInput">
+            </div>
+            <button class="btn btn-primary" onclick="showCreateCourseModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/>
+                    <path d="M12 8v8M8 12h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                {{ 'courses.new_course'|trans }}
+            </button>
+        </div>
+    </div>
+
+    <div class="course-grid" id="courseList">
+        <p style="text-align: center; color: #666; grid-column: 1 / -1;">{{ 'courses.loading'|trans }}</p>
+    </div>
+</div>
+
+<!-- Create Course Modal -->
+<div id="createCourseModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeCreateCourseModal()">&times;</span>
+        <h2>{{ 'courses.modal.create_title'|trans }}</h2>
+        
+        <form id="createCourseForm" onsubmit="submitCreateCourse(event)">
+            <div class="form-group">
+                <label for="courseName">{{ 'courses.modal.name_label'|trans }}</label>
+                <input type="text" id="courseName" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="courseParcoursId">{{ 'courses.modal.parcours_label'|trans }}</label>
+                <select id="courseParcoursId" required>
+                    <option value="">{{ 'courses.modal.parcours_select'|trans }}</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="courseNbRunners">{{ 'courses.modal.nb_runners_label'|trans }}</label>
+                <input type="number" id="courseNbRunners" min="0" value="0">
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeCreateCourseModal()">{{ 'courses.modal.cancel'|trans }}</button>
+                <button type="submit" class="btn btn-primary">{{ 'courses.modal.create'|trans }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block javascripts %}
+    {{ parent() }}
+    
+    <script>
+        if (!window.coursesPageInitialized) {
+            window.coursesPageInitialized = true;
+            window.coursesList = [];
+            window.parcoursList = [];
+        }
+
+        async function loadCourses() {
+            try {
+                const response = await fetch('{{ path('api_courses_list', {'_locale': app.request.locale}) }}');
+                const data = await response.json();
+                window.coursesList = data.courses || [];
+                console.log('SESSIONS PAGE: Loaded', window.coursesList.length, 'sessions:', window.coursesList);
+                displayCourses();
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                document.getElementById('courseList').innerHTML = '<p style="color: #d32f2f; text-align: center;">{{ 'courses.error_loading'|trans }}</p>';
+            }
+        }
+
+        async function loadParcours() {
+            try {
+                const response = await fetch('{{ path('api_parcours_list', {'_locale': app.request.locale}) }}');
+                const data = await response.json();
+                window.parcoursList = data.courses || [];
+                updateParcoursSelect();
+            } catch (error) {
+                console.error('Error loading parcours:', error);
+            }
+        }
+
+        function updateParcoursSelect() {
+            const select = document.getElementById('courseParcoursId');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">{{ 'courses.modal.parcours_select'|trans }}</option>';
+            window.parcoursList.forEach(parcours => {
+                const option = document.createElement('option');
+                option.value = parcours.id;
+                option.textContent = parcours.name;
+                select.appendChild(option);
+            });
+        }
+
+        function displayCourses() {
+            const container = document.getElementById('courseList');
+            
+            if (window.coursesList.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1 / -1;">{{ 'courses.no_courses'|trans }} <a href="javascript:showCreateCourseModal()">{{ 'courses.create_course'|trans }}</a></p>';
+                return;
+            }
+
+            container.innerHTML = window.coursesList.map((course, index) => {
+                const parcoursName = course.parcours ? course.parcours.name : '{{ 'courses.info.no_parcours'|trans }}';
+                const runnerCount = course.runners ? course.runners.length : 0;
+                
+                return `
+                    <div class="parcours-card">
+                        <div class="parcours-card-header">
+                            <div class="parcours-icon">S</div>
+                            <div class="parcours-title">
+                                <h3>${course.name || '{{ 'common.no_name'|trans }}'}</h3>
+                                <span class="status-text" style="color: #4caf50;">{{ 'courses.status.active'|trans }}</span>
+                            </div>
+                        </div>
+                        
+                        <p class="parcours-description">${course.parcours?.description || 'Parcours: ' + parcoursName}</p>
+                        
+                        <div class="parcours-meta">
+                            <span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="8" r="4" stroke="#1976d2" stroke-width="2"/>
+                                    <path d="M5 20c0-4 3-7 7-7s7 3 7 7" stroke="#1976d2" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                ${runnerCount} {{ 'courses.info.runners'|trans }}
+                            </span>
+                            <span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" stroke="#1976d2" stroke-width="2" fill="none"/>
+                                </svg>
+                                ${parcoursName}
+                            </span>
+                        </div>
+                        
+                        <div class="parcours-actions">
+                            <button class="action-btn btn-view" onclick="viewCourse(${index})">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" stroke="white" stroke-width="2"/>
+                                    <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/>
+                                </svg>
+                                {{ 'courses.view'|trans }}
+                            </button>
+                            <button class="action-btn btn-edit" onclick="editCourse(${index})">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                {{ 'courses.edit'|trans }}
+                            </button>
+                            <button class="action-btn btn-delete" onclick="deleteCourse(${index})">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showCreateCourseModal() {
+            document.getElementById('createCourseModal').style.display = 'block';
+            loadParcours();
+        }
+
+        function closeCreateCourseModal() {
+            document.getElementById('createCourseModal').style.display = 'none';
+            document.getElementById('createCourseForm').reset();
+        }
+
+        async function submitCreateCourse(event) {
+            event.preventDefault();
+            
+            const courseData = {
+                sessionName: document.getElementById('courseName').value,
+                parcoursId: parseInt(document.getElementById('courseParcoursId').value),
+                nbRunners: parseInt(document.getElementById('courseNbRunners').value)
+            };
+
+            try {
+                const response = await fetch('{{ path('api_courses_save', {'_locale': app.request.locale}) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(courseData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    alert('✅ {{ 'courses.messages.created'|trans }}');
+                    closeCreateCourseModal();
+                    await loadCourses();
+                } else {
+                    throw new Error(result.error || '{{ 'courses.messages.error_create'|trans }}');
+                }
+            } catch (error) {
+                console.error('Error creating course:', error);
+                alert('❌ {{ 'courses.messages.error_create'|trans }} : ' + error.message);
+            }
+        }
+
+        function viewCourse(index) {
+            const course = window.coursesList[index];
+            alert('Voir la course: ' + course.name);
+        }
+
+        function editCourse(index) {
+            const course = window.coursesList[index];
+            alert('Modifier la course: ' + course.name);
+        }
+
+        async function deleteCourse(index) {
+            const course = window.coursesList[index];
+            
+            const message = `{{ 'courses.messages.confirm_delete'|trans }}`.replace('%name%', course.name);
+            if (!confirm(message)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`{{ path('api_courses_delete', {'_locale': app.request.locale, id: '__ID__'}) }}`.replace('__ID__', course.id), {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    alert('✅ {{ 'courses.messages.deleted'|trans }}');
+                    await loadCourses();
+                } else {
+                    throw new Error(result.error || '{{ 'courses.messages.error_delete'|trans }}');
+                }
+            } catch (error) {
+                console.error('Error deleting course:', error);
+                alert('❌ {{ 'courses.messages.error_delete'|trans }} : ' + error.message);
+            }
+        }
+
+        // Load courses on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCourses();
+        });
+
+        // Handle Turbo navigation
+        document.addEventListener('turbo:load', function() {
+            loadCourses();
+        });
+    </script>
+{% endblock %}
+{% endblock %}

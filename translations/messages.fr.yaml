@@ -1,0 +1,93 @@
+# French translations
+nav:
+    courses: "Sessions"
+    parcours: "Course"
+    
+header:
+    logout: "Déconnexion"
+    settings: "Paramètres"
+    
+courses:
+    title: "Sessions"
+    new_course: "Nouvelle Session"
+    search_placeholder: "Rechercher..."
+    no_courses: "Aucune session disponible."
+    create_course: "Créer une session"
+    view: "Voir"
+    edit: "Modifier"
+    delete: "Supprimer"
+    loading: "Chargement des sessions..."
+    error_loading: "Erreur de chargement des sessions"
+    
+    modal:
+        create_title: "Créer une Nouvelle Session"
+        name_label: "Nom de la session"
+        parcours_label: "Course associée"
+        parcours_select: "Sélectionner une course..."
+        nb_runners_label: "Nombre de coureurs"
+        cancel: "Annuler"
+        create: "Créer"
+        
+    status:
+        active: "Active"
+        
+    info:
+        runners: "coureur(s)"
+        no_parcours: "Aucune course associée"
+        
+    messages:
+        created: "Session créée avec succès !"
+        deleted: "Session supprimée avec succès !"
+        confirm_delete: "Êtes-vous sûr de vouloir supprimer la session \"%name%\" ?"
+        error_create: "Erreur lors de la création"
+        error_delete: "Erreur lors de la suppression"
+
+parcours:
+    title: "Courses"
+    new_parcours: "Nouvelle Course"
+    search_placeholder: "Rechercher..."
+    no_parcours: "Aucune course disponible."
+    create_parcours: "Créer une course"
+    view: "Voir"
+    edit: "Modifier"
+    delete: "Supprimer"
+    qr_codes: "Qr Codes"
+    loading: "Chargement des courses..."
+    error_loading: "Erreur de chargement des courses"
+    
+    status:
+        in_creation: "En cours de création"
+        completed: "Complété"
+        
+    info:
+        beacons: "balise(s)"
+        boundaries: "Limites définies"
+        no_boundaries: "Pas de limites"
+        
+    description:
+        default: "Départ à l'entrée sud sur la table"
+        
+    messages:
+        created: "Course créée avec succès !"
+        updated: "Modifications enregistrées avec succès !"
+        deleted: "Course supprimée avec succès !"
+        confirm_delete: "Êtes-vous sûr de vouloir supprimer la course \"%name%\" ?"
+        error_create: "Erreur lors de la création"
+        error_update: "Erreur lors de la sauvegarde"
+        error_delete: "Erreur lors de la suppression"
+
+login:
+    title: "Connexion"
+    email: "Email"
+    password: "Password"
+    sign_in: "Sign In"
+    forgot_password: "Forgot password?"
+    
+common:
+    save: "Enregistrer"
+    cancel: "Annuler"
+    close: "Fermer"
+    confirm: "Confirmer"
+    back: "Retour"
+    home: "Accueil"
+    no_name: "Sans nom"

@@ -1,0 +1,276 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Visualiseur de Parcours - e-CO Web{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- OrienteeringApp class - MUST load before map initialization -->
+    <script src="{{ asset('assets/js/app.js') }}"></script>
+    
+    <!-- Google Maps API with async loading -->
+    <script>
+        // Global variables to track state
+        window.mapPageReady = false;
+        
+        // Clean up previous map instance before Turbo navigation
+        document.addEventListener('turbo:before-visit', function() {
+            console.log('Turbo: before-visit - cleaning up map');
+            if (window.app && window.app.map) {
+                // Clean up the map
+                window.app.map = null;
+                window.app.mapsLoaded = false;
+                window.app.initialized = false;
+            }
+            window.mapPageReady = false;
+        });
+        
+        // Handle Turbo navigation - this script runs on each page visit
+        document.addEventListener('turbo:load', function() {
+            console.log('Turbo:load event fired');
+            // Small delay to ensure DOM is fully ready
+            setTimeout(function() {
+                // Only initialize if we're on the map page
+                if (document.getElementById('map')) {
+                    console.log('Turbo:load - initializing map page');
+                    // Force reload courses list when returning to map page
+                    if (window.app && window.app.loadSavedCourses) {
+                        console.log('Reloading courses list...');
+                        window.app.loadSavedCourses();
+                    }
+                    initializeMapPage();
+                }
+            }, 100);
+        });
+        
+        // Handle frame load for better compatibility
+        document.addEventListener('turbo:frame-load', function() {
+            if (document.getElementById('map')) {
+                console.log('Turbo:frame-load - initializing map page');
+                setTimeout(initializeMapPage, 100);
+            }
+        });
+        
+        async function initializeMapPage() {
+            console.log('initializeMapPage called');
+            
+            // Prevent multiple initializations
+            if (window.mapPageReady) {
+                console.log('Map page already ready, skipping');
+                return;
+            }
+            
+            // Ensure the map container exists and is visible
+            const mapContainer = document.getElementById('map');
+            if (!mapContainer) {
+                console.error('Map container not found');
+                return;
+            }
+            
+            console.log('Map container found, initializing...');
+            window.mapPageReady = true;
+            
+            // Check if OrienteeringApp class is loaded
+            if (typeof OrienteeringApp === 'undefined') {
+                console.error('OrienteeringApp class not loaded! Check if assets/js/app.js is loaded.');
+                return;
+            }
+            
+            // Initialize the orienteering app first (async) and WAIT for completion
+            if (window.initializeOrienteeringApp) {
+                console.log('Initializing orienteering app...');
+                await window.initializeOrienteeringApp();
+                console.log('App initialization complete');
+            } else {
+                console.error('initializeOrienteeringApp function not found!');
+                return;
+            }
+            
+            // Ensure app and config are ready before proceeding
+            if (!window.app) {
+                console.error('App instance not created! Check app.js loading.');
+                return;
+            }
+            
+            if (!window.app.config) {
+                console.error('Configuration not loaded! Check map-config.json file and network.');
+                console.error('App state:', {
+                    initialized: window.app.initialized,
+                    config: window.app.config
+                });
+                return;
+            }
+            
+            console.log('App ready with config:', window.app.config.defaultLocation);
+            
+            // Check if Google Maps is already loaded
+            if (window.google && window.google.maps) {
+                console.log('Google Maps already loaded, initializing map now');
+                initMapApp();
+            } else {
+                console.log('Loading Google Maps API');
+                loadGoogleMaps();
+            }
+        }
+        
+        // Load Google Maps API asynchronously
+        function loadGoogleMaps() {
+            // Prevent multiple script loading
+            if (window.googleMapsLoading) {
+                console.log('Google Maps already loading...');
+                return;
+            }
+            window.googleMapsLoading = true;
+            
+            const script = document.createElement('script');
+            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBi8sXKGGafzB837kvxraWuqohlZ-JJRu8&libraries=geometry,places,marker&loading=async&callback=initMap';
+            script.async = true;
+            script.defer = true;
+            script.onerror = function() {
+                console.error('Failed to load Google Maps API');
+                window.googleMapsLoading = false;
+            };
+            document.head.appendChild(script);
+        }
+        
+        // Callback function for when Google Maps API is loaded
+        function initMap() {
+            console.log('Google Maps API loaded successfully via callback');
+            window.googleMapsLoading = false;
+            
+            // Double-check that config is loaded before initializing map
+            if (!window.app || !window.app.config) {
+                console.warn('Config not loaded yet, waiting...');
+                setTimeout(initMap, 100);
+                return;
+            }
+            
+            initMapApp();
+        }
+        
+        function initMapApp() {
+            console.log('initMapApp called');
+            
+            // Ensure app is ready AND config is loaded
+            if (window.app && window.app.config && window.app.initializeMap) {
+                if (!window.app.mapsLoaded) {
+                    console.log('Initializing map with config:', window.app.config.defaultLocation);
+                    window.app.initializeMap();
+                } else {
+                    console.log('Map already loaded in app');
+                }
+            } else {
+                console.log('App or config not ready, retrying in 200ms...');
+                setTimeout(initMapApp, 200);
+            }
+        }
+        
+        // Make initMap globally available
+        window.initMap = initMap;
+    </script>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <header class="header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>🧭 Visualiseur de Parcours d'Orientation</h1>
+                <p>Consultez et analysez les parcours d'orientation de vos étudiants</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="{{ path('app_course_manage') }}" class="btn btn-info">🗂️ Gérer</a>
+                <a href="{{ path('app_home') }}" class="btn btn-secondary">🏠 Accueil</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="toolbar">
+        <div class="toolbar-section">
+            <button id="loadCourseBtn" class="btn btn-info">📁 Charger un parcours</button>
+            <button id="refreshBtn" class="btn btn-secondary">🔄 Actualiser</button>
+            <button id="showOptimalPathBtn" class="btn btn-success" style="display: none;">🎯 Afficher chemin optimal</button>
+        </div>
+        <div class="toolbar-section">
+            <button id="toggleBoundaryFillBtn" class="btn btn-warning" style="display: none;">&#x1F3A8; Masquer remplissage</button>
+        </div>
+        <div class="toolbar-section">
+            <span id="courseNameDisplay" class="course-name-display">Aucun parcours sélectionné</span>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="map-container">
+            <div id="map"></div>
+            <div class="map-info">
+                <p><strong>📖 Guide d'utilisation du visualiseur :</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem; font-size: 0.85rem; line-height: 1.6;">
+                    <li><strong>Charger un parcours :</strong> Cliquez sur "📁 Charger un parcours" dans la barre d'outils</li>
+                    <li><strong>Voir les coordonnées :</strong> Cliquez n'importe où sur la carte pour afficher lat/lng</li>
+                    <li><strong>Détails d'un point :</strong> Cliquez sur un marqueur pour voir les informations</li>
+                    <li><strong>Chemin optimal :</strong> Une fois le parcours chargé, cliquez "🎯 Afficher chemin optimal" pour voir le trajet le plus court</li>
+                    <li><strong>Statistiques :</strong> Distance totale et nombre de points affichés dans le panneau de droite</li>
+                </ul>
+                <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #ddd;">
+                    <p id="coordinatesDisplay" style="margin: 0; flex: 1; font-size: 0.85rem;">Cliquez sur la carte pour voir les coordonnées</p>
+                    <button id="copyCoordinatesBtn" class="btn btn-info" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; display: none;" title="Copier les coordonnées">📋</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="control-points-panel">
+                <h3>Points de Contrôle</h3>
+                <div id="pointsList" class="points-list">
+                    <p class="no-points">Aucun parcours chargé</p>
+                </div>
+                <div class="course-stats">
+                    <p>Total Points: <span id="totalPoints">0</span></p>
+                    <p>Distance Parcours: <span id="courseDistance">0 km</span></p>
+                </div>
+            </div>
+
+            <div class="saved-courses-panel">
+                <h3>Parcours Disponibles</h3>
+                <div id="savedCoursesList" class="saved-courses-list">
+                    <p class="no-courses">Aucun parcours disponible</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="pointModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Control Point Details</h3>
+        <form id="pointForm">
+            <div class="form-group">
+                <label for="pointName">Point Name:</label>
+                <input type="text" id="pointName" placeholder="e.g., Start, Control 1, Finish" required>
+            </div>
+            <div class="form-group">
+                <label for="pointDescription">Description:</label>
+                <textarea id="pointDescription" placeholder="Description of the control point location"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="pointType">Point Type:</label>
+                <select id="pointType">
+                    <option value="start">Start</option>
+                    <option value="control">Control Point</option>
+                    <option value="finish">Finish</option>
+                </select>
+            </div>
+            <div class="coordinates-info">
+                <p>Latitude: <span id="pointLat"></span></p>
+                <p>Longitude: <span id="pointLng"></span></p>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Point</button>
+                <button type="button" class="btn btn-secondary" id="cancelPoint">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ asset('assets/js/app.js') }}"></script>
+{% endblock %}
