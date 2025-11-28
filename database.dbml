@@ -1,0 +1,138 @@
+Table "doctrine_migration_versions" {
+  "version" varchar(191) [pk, not null]
+  "executed_at" timestamp [default: `NULL::timestamp without time zone`]
+  "execution_time" int4
+}
+
+Table "messenger_messages" {
+  "id" int8 [pk, not null, increment]
+  "body" text [not null]
+  "headers" text [not null]
+  "queue_name" varchar(190) [not null]
+  "created_at" timestamp [not null, note: '(DC2Type:datetime_immutable)']
+  "available_at" timestamp [not null, note: '(DC2Type:datetime_immutable)']
+  "delivered_at" timestamp [default: `NULL::timestamp without time zone`, note: '(DC2Type:datetime_immutable)']
+
+  Indexes {
+    delivered_at [type: btree, name: "idx_75ea56e016ba31db"]
+    available_at [type: btree, name: "idx_75ea56e0e3bd61ce"]
+    queue_name [type: btree, name: "idx_75ea56e0fb7336f0"]
+  }
+}
+
+Table "beacon" {
+  "id" int4 [pk, not null, increment]
+  "name" varchar(255) [not null]
+  "longitude" int8 [not null]
+  "latitude" int8 [not null]
+  "type" varchar(255) [not null]
+  "is_placed" bool [not null]
+  "placed_at" time [default: `NULL::time without time zone`]
+  "created_at" time [default: `NULL::time without time zone`]
+  "qr" varchar(255) [not null]
+}
+
+Table "course" {
+  "id" int4 [pk, not null, increment]
+  "name" varchar(255) [not null]
+  "description" varchar(255) [not null]
+  "status" varchar(255) [not null]
+  "create_at" time [not null]
+  "placement_completed_at" time [not null]
+  "update_at" time [not null]
+}
+
+Table "runner" {
+  "id" int4 [pk, not null, increment]
+  "name" varchar(255) [not null]
+  "departure" time [not null]
+  "arrival" time [not null]
+  "id_session_id" int4
+
+  Indexes {
+    id_session_id [type: btree, name: "idx_f92b8b3ec4b56c08"]
+  }
+}
+
+Table "session" {
+  "id" int4 [pk, not null, increment]
+  "session_name" varchar(255) [not null]
+  "nb_runner" int8 [not null]
+  "id_course_id" int4
+
+  Indexes {
+    id_course_id [type: btree, name: "idx_d044d5d4d92975b5"]
+  }
+}
+
+Table "boundaries_course" {
+  "id" int4 [pk, not null, increment]
+  "longitude" int8 [not null]
+  "latitude" int8 [not null]
+}
+
+Table "log_session" {
+  "id" int4 [pk, not null, increment]
+  "type" varchar(255) [not null]
+  "time" time [not null]
+  "position" int8 [not null]
+  "latitude" int8
+  "longitude" int8
+  "additional_data" int8
+}
+
+Table "reset_password_request" {
+  "id" int4 [pk, not null, increment]
+  "user_id" int4 [not null]
+  "selector" varchar(20) [not null]
+  "hashed_token" varchar(100) [not null]
+  "requested_at" timestamp [not null, note: '(DC2Type:datetime_immutable)']
+  "expires_at" timestamp [not null, note: '(DC2Type:datetime_immutable)']
+
+  Indexes {
+    user_id [type: btree, name: "idx_7ce748aa76ed395"]
+  }
+}
+
+Table "user" {
+  "id" int4 [pk, not null, increment]
+  "email" varchar(180) [unique, not null]
+  "roles" json [not null]
+  "password" varchar(255) [not null]
+}
+
+Table "beacon_course" {
+  "beacon_id" int4 [not null]
+  "course_id" int4 [not null]
+
+  Indexes {
+    (beacon_id, course_id) [type: btree, name: "beacon_course_pkey"]
+    course_id [type: btree, name: "idx_4eda6fbc591cc992"]
+    beacon_id [type: btree, name: "idx_4eda6fbcf6ad5578"]
+  }
+}
+
+Table "boundaries_course_course" {
+  "boundaries_course_id" int4 [not null]
+  "course_id" int4 [not null]
+
+  Indexes {
+    (boundaries_course_id, course_id) [type: btree, name: "boundaries_course_course_pkey"]
+    course_id [type: btree, name: "idx_528afebd591cc992"]
+    boundaries_course_id [type: btree, name: "idx_528afebd69b69c9f"]
+  }
+}
+
+Ref "fk_4eda6fbc591cc992":"course"."id" < "beacon_course"."course_id" [delete: cascade]
+
+Ref "fk_4eda6fbcf6ad5578":"beacon"."id" < "beacon_course"."beacon_id" [delete: cascade]
+
+Ref "fk_528afebd591cc992":"course"."id" < "boundaries_course_course"."course_id" [delete: cascade]
+
+Ref "fk_528afebd69b69c9f":"boundaries_course"."id" < "boundaries_course_course"."boundaries_course_id" [delete: cascade]
+
+Ref "fk_7ce748aa76ed395":"user"."id" < "reset_password_request"."user_id"
+
+Ref "fk_f92b8b3ec4b56c08":"session"."id" < "runner"."id_session_id"
+
+Ref "fk_d044d5d4d92975b5":"course"."id" < "session"."id_course_id"
