@@ -1,12 +1,15 @@
-# see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
     secret: '%env(APP_SECRET)%'
 
-    # Note that the session will be started ONLY if you read or write from it.
+    # Sessions
     session: true
 
-    #esi: true
-    #fragments: true
+    trusted_proxies: '172.16.0.0/12'
+    trusted_headers:
+        - x-forwarded-for
+        - x-forwarded-proto
+        - x-forwarded-port
+        - x-forwarded-host
 
 when@test:
     framework:
