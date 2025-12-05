@@ -44,8 +44,27 @@ class AuthenticatorECOAuthenticator extends AbstractLoginFormAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        return new RedirectResponse('/course');
+        // Vérifie si la session contient une URL cible (ex: redirection après login)
+        if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
+            return new RedirectResponse($targetPath);
+        }
+
+        // Récupère les rôles de l'utilisateur connecté
+        $roles = $token->getRoleNames(); // retourne un tableau de strings comme ['ROLE_USER']
+
+        // Redirection selon le rôle
+        if (in_array('ROLE_ADMIN', $roles, true)) {
+            return new RedirectResponse($this->urlGenerator->generate('admin'));
+        }
+
+        if (in_array('ROLE_USER', $roles, true)) {
+            return new RedirectResponse($this->urlGenerator->generate('course'));
+        }
+
+        // Redirection par défaut si aucun rôle reconnu
+        return new RedirectResponse($this->urlGenerator->generate(self::LOGIN_ROUTE));
     }
+
 
     protected function getLoginUrl(Request $request): string
     {
