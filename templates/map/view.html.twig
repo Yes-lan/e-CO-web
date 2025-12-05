@@ -55,6 +55,8 @@
     let markers = [];
     let labels = [];
     let runnerPaths = [];
+    let runnerPathLine = null;
+    let scanMarkers = [];
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
@@ -123,7 +125,7 @@
         }
         
         try {
-            const response = await fetch(`/api/courses/${sessionId}`);
+            const response = await fetch(`/api/sessions/${sessionId}`);
             currentSession = await response.json();
             
             if (currentSession.course) {
@@ -158,7 +160,8 @@
         }
         
         tbody.innerHTML = currentSession.runners.map(runner => {
-            const beaconsValidated = 0; // TODO: Calculate from log_session data
+            // Calculate beacons validated from beacon_scan logs
+            const beaconsValidated = calculateBeaconsValidated(runner);
             const completionTime = calculateCompletionTime(runner);
             
             return `
@@ -169,6 +172,33 @@
                 </tr>
             `;
         }).join('');
+    }
+    
+    // Calculate number of beacons validated from beacon_scan logs
+    function calculateBeaconsValidated(runner) {
+        if (!runner.logSessions || !currentCourse || !currentCourse.waypoints) return 0;
+        
+        // Count unique valid beacon scans (within 20m)
+        const beaconScans = runner.logSessions.filter(log => log.type === 'beacon_scan');
+        const validBeacons = new Set();
+        
+        beaconScans.forEach(scan => {
+            const beaconId = scan.additionalData;
+            const beacon = currentCourse.waypoints.find(b => b.id == beaconId);
+            
+            if (beacon && scan.latitude && scan.longitude) {
+                const distance = calculateDistance(
+                    scan.latitude, scan.longitude,
+                    beacon.latitude, beacon.longitude
+                );
+                
+                if (distance <= 20) { // Only count valid scans
+                    validBeacons.add(beaconId);
+                }
+            }
+        });
+        
+        return validBeacons.size;
     }
 
     // Calculate completion time
@@ -213,19 +243,215 @@
     // Load runner's GPS path
     async function loadRunnerPath(runnerId) {
         try {
-            // Clear existing paths
+            // Clear existing paths and markers
             runnerPaths.forEach(path => path.setMap(null));
             runnerPaths = [];
+            scanMarkers.forEach(marker => marker.setMap(null));
+            scanMarkers = [];
             
-            // TODO: Fetch GPS log data for runner
-            // const response = await fetch(`/api/runners/${runnerId}/gps`);
-            // const gpsData = await response.json();
+            const runner = currentSession.runners.find(r => r.id === runnerId);
+            if (!runner || !runner.logSessions) return;
             
-            // For now, just show a placeholder
-            console.log('Loading GPS path for runner:', runnerId);
+            // Get GPS logs and beacon scans, sorted by time
+            const gpsLogs = runner.logSessions
+                .filter(log => log.type === 'gps' && log.latitude && log.longitude)
+                .sort((a, b) => new Date(a.time) - new Date(b.time));
+            
+            const beaconScans = runner.logSessions
+                .filter(log => log.type === 'beacon_scan' && log.latitude && log.longitude)
+                .sort((a, b) => new Date(a.time) - new Date(b.time));
+            
+            // Merge GPS logs and beacon scans, sorted by time
+            const allLogs = [...gpsLogs, ...beaconScans].sort((a, b) => new Date(a.time) - new Date(b.time));
+            
+            // Draw path segments (don't connect GPS logs if beacon scan is between them)
+            if (allLogs.length > 0) {
+                let pathSegment = [];
+                
+                for (let i = 0; i < allLogs.length; i++) {
+                    const log = allLogs[i];
+                    pathSegment.push({ lat: log.latitude, lng: log.longitude });
+                    
+                    // If this is a beacon scan or last log, complete the segment
+                    if (log.type === 'beacon_scan' || i === allLogs.length - 1) {
+                        if (pathSegment.length >= 2) {
+                            const polyline = new google.maps.Polyline({
+                                path: pathSegment,
+                                geodesic: true,
+                                strokeColor: '#9C27B0',
+                                strokeOpacity: 0.9,
+                                strokeWeight: 3,
+                                map: map,
+                                icons: [{
+                                    icon: {
+                                        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                                        scale: 4,
+                                        strokeColor: '#FFFFFF',
+                                        strokeWeight: 1.5,
+                                        fillColor: '#9C27B0',
+                                        fillOpacity: 1
+                                    },
+                                    offset: '50%'
+                                }]
+                            });
+                            runnerPaths.push(polyline);
+                        }
+                        // Start new segment with current point
+                        pathSegment = log.type === 'beacon_scan' ? [{ lat: log.latitude, lng: log.longitude }] : [];
+                    }
+                }
+            }
+            
+            // Add small markers for GPS log points
+            gpsLogs.forEach(log => {
+                const logTime = new Date(log.time);
+                const sessionStartTime = currentSession.sessionStart ? new Date(currentSession.sessionStart) : null;
+                const elapsedSeconds = sessionStartTime ? Math.floor((logTime - sessionStartTime) / 1000) : null;
+                const elapsedFormatted = elapsedSeconds !== null ? formatElapsedTime(elapsedSeconds) : '-';
+                
+                const gpsMarker = new google.maps.Marker({
+                    position: { lat: log.latitude, lng: log.longitude },
+                    map: map,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 3,
+                        fillColor: '#9C27B0',
+                        fillOpacity: 1,
+                        strokeColor: '#FFFFFF',
+                        strokeWeight: 1
+                    },
+                    title: `GPS: ${logTime.toLocaleTimeString('fr-FR')}`,
+                    zIndex: 500
+                });
+                
+                const gpsInfoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div style="padding: 8px;">
+                            <strong>GPS Log</strong><br>
+                            Time: ${logTime.toLocaleTimeString('fr-FR')}<br>
+                            Elapsed: ${elapsedFormatted}
+                        </div>
+                    `
+                });
+                
+                gpsMarker.addListener('click', () => {
+                    gpsInfoWindow.open(map, gpsMarker);
+                });
+                
+                scanMarkers.push(gpsMarker);
+            });
+            
+            // Display beacon scan markers
+            beaconScans.forEach(scan => {
+                const beaconId = parseInt(scan.additionalData);
+                const beacon = currentCourse.waypoints.find(b => b.id === beaconId);
+                
+                if (beacon) {
+                    // Calculate distance between scan location and actual beacon location
+                    const distance = calculateDistance(
+                        scan.latitude, scan.longitude,
+                        beacon.latitude, beacon.longitude
+                    );
+                    
+                    // Determine if scan is valid (within 20 meters)
+                    const isValid = distance <= 20;
+                    const markerColor = isValid ? '#4CAF50' : '#F44336'; // Green or Red
+                    
+                    const scanTime = new Date(scan.time);
+                    const sessionStartTime = currentSession.sessionStart ? new Date(currentSession.sessionStart) : null;
+                    const elapsedSeconds = sessionStartTime ? Math.floor((scanTime - sessionStartTime) / 1000) : null;
+                    const elapsedFormatted = elapsedSeconds !== null ? formatElapsedTime(elapsedSeconds) : '-';
+                    
+                    // Create custom marker for scan location
+                    const scanMarker = new google.maps.Marker({
+                        position: { lat: scan.latitude, lng: scan.longitude },
+                        map: map,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 8,
+                            fillColor: markerColor,
+                            fillOpacity: 0.9,
+                            strokeColor: '#FFFFFF',
+                            strokeWeight: 2
+                        },
+                        title: `Scan ${beacon.name} - ${isValid ? 'Valid' : 'Invalid'} (${distance.toFixed(1)}m)`,
+                        zIndex: 1000
+                    });
+                    
+                    // Add info window
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `
+                            <div style="padding: 8px;">
+                                <strong>${beacon.name}</strong><br>
+                                Distance: ${distance.toFixed(1)}m<br>
+                                Status: <span style="color: ${markerColor}; font-weight: bold;">
+                                    ${isValid ? '✓ Valid' : '✗ Invalid'}
+                                </span><br>
+                                Time: ${scanTime.toLocaleTimeString('fr-FR')}<br>
+                                Elapsed: ${elapsedFormatted}
+                            </div>
+                        `
+                    });
+                    
+                    scanMarker.addListener('click', () => {
+                        infoWindow.open(map, scanMarker);
+                    });
+                    
+                    scanMarkers.push(scanMarker);
+                }
+            });
+            
+            // Adjust map bounds to fit all runner's points
+            if (allLogs.length > 0) {
+                const bounds = new google.maps.LatLngBounds();
+                
+                // Include all GPS logs and beacon scans
+                allLogs.forEach(log => {
+                    bounds.extend({ lat: log.latitude, lng: log.longitude });
+                });
+                
+                // Also include course beacons for context
+                if (currentCourse && currentCourse.waypoints) {
+                    currentCourse.waypoints.forEach(beacon => {
+                        if (beacon.lat && beacon.lng) {
+                            bounds.extend({ lat: beacon.lat, lng: beacon.lng });
+                        }
+                    });
+                }
+                
+                map.fitBounds(bounds);
+                
+                // Add padding to bounds
+                const padding = { top: 50, right: 50, bottom: 50, left: 50 };
+                map.fitBounds(bounds, padding);
+            }
+            
         } catch (error) {
             console.error('Error loading runner path:', error);
         }
+    }
+    
+    // Calculate distance between two GPS coordinates (Haversine formula)
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3; // Earth's radius in meters
+        const φ1 = lat1 * Math.PI / 180;
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lon2 - lon1) * Math.PI / 180;
+        
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        
+        return R * c; // Distance in meters
+    }
+    
+    // Format elapsed time in seconds to MM:SS format
+    function formatElapsedTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
     // Display beacon validation table
@@ -236,6 +462,33 @@
         }
         
         const runner = currentSession.runners.find(r => r.id === runnerId);
+        if (!runner) return;
+        
+        // Get beacon scans for this runner
+        const beaconScans = runner.logSessions ? runner.logSessions.filter(log => log.type === 'beacon_scan') : [];
+        
+        // Create a map of beacon ID to scan data with validation
+        const scanMap = {};
+        beaconScans.forEach(scan => {
+            const beaconId = scan.additionalData;
+            const beacon = currentCourse.waypoints.find(b => b.id == beaconId);
+            
+            if (beacon && scan.latitude && scan.longitude) {
+                const distance = calculateDistance(
+                    scan.latitude, scan.longitude,
+                    beacon.latitude, beacon.longitude
+                );
+                const isValid = distance <= 20; // 20 meters threshold
+                
+                if (!scanMap[beaconId]) {
+                    scanMap[beaconId] = {
+                        scan: scan,
+                        distance: distance,
+                        isValid: isValid
+                    };
+                }
+            }
+        });
         
         const tableHTML = `
             <table class="beacon-validation-table">
@@ -248,15 +501,37 @@
                 <tbody>
                     <tr>
                         <td><strong>{{ 'map.validation'|trans }}</strong></td>
-                        ${currentCourse.waypoints.map(() => '<td class="status-pending">-</td>').join('')}
+                        ${currentCourse.waypoints.map(beacon => {
+                            const scanData = scanMap[beacon.id];
+                            if (scanData && scanData.isValid) {
+                                return '<td class="status-validated">✓</td>';
+                            } else if (scanData && !scanData.isValid) {
+                                return '<td class="status-invalid">✗</td>';
+                            }
+                            return '<td class="status-pending">-</td>';
+                        }).join('')}
                     </tr>
                     <tr>
                         <td><strong>{{ 'map.scan_time'|trans }}</strong></td>
-                        ${currentCourse.waypoints.map(() => '<td>-</td>').join('')}
+                        ${currentCourse.waypoints.map(beacon => {
+                            const scanData = scanMap[beacon.id];
+                            if (scanData && scanData.scan.time) {
+                                const time = new Date(scanData.scan.time);
+                                return `<td>${time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit', second: '2-digit'})}</td>`;
+                            }
+                            return '<td>-</td>';
+                        }).join('')}
                     </tr>
                     <tr>
-                        <td><strong>{{ 'map.invalid'|trans }}</strong></td>
-                        ${currentCourse.waypoints.map(() => '<td class="status-invalid">-</td>').join('')}
+                        <td><strong>{{ 'map.distance'|trans }}</strong></td>
+                        ${currentCourse.waypoints.map(beacon => {
+                            const scanData = scanMap[beacon.id];
+                            if (scanData) {
+                                const distClass = scanData.isValid ? 'status-validated' : 'status-invalid';
+                                return `<td class="${distClass}">${scanData.distance.toFixed(1)}m</td>`;
+                            }
+                            return '<td>-</td>';
+                        }).join('')}
                     </tr>
                 </tbody>
             </table>
@@ -360,7 +635,7 @@
         map = new google.maps.Map(document.getElementById('map'), {
             center: { lat: 43.3, lng: -1.5 },
             zoom: 13,
-            mapTypeId: 'hybrid',
+            mapTypeId: 'roadmap',
             streetViewControl: false,
             rotateControl: false,
             tilt: 0,

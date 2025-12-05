@@ -108,7 +108,7 @@
 
         async function loadCourses() {
             try {
-                const response = await fetch('{{ path('api_courses_list') }}');
+                const response = await fetch('{{ path('api_sessions_list') }}');
                 const data = await response.json();
                 window.coursesList = data.courses || [];
                 console.log('SESSIONS PAGE: Loaded', window.coursesList.length, 'sessions:', window.coursesList);
@@ -261,7 +261,7 @@
             };
 
             try {
-                const response = await fetch('{{ path('api_courses_save') }}', {
+                const response = await fetch('{{ path('api_sessions_save') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -310,7 +310,7 @@
             }
 
             try {
-                const response = await fetch(`{{ path('api_courses_delete', {id: '__ID__'}) }}`.replace('__ID__', course.id), {
+                const response = await fetch(`{{ path('api_sessions_delete', {id: '__ID__'}) }}`.replace('__ID__', course.id), {
                     method: 'DELETE'
                 });
 

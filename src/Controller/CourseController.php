@@ -37,7 +37,7 @@ class CourseController extends AbstractController
         return $this->render('sessions/create.html.twig');
     }
 
-    #[Route('/api/courses', name: 'api_courses_list', methods: ['GET'])]
+    #[Route('/api/sessions', name: 'api_sessions_list', methods: ['GET'])]
     public function apiListCourses(): JsonResponse
     {
         $sessions = $this->sessionRepository->findAll();
@@ -58,7 +58,17 @@ class CourseController extends AbstractController
                         'id' => $runner->getId(),
                         'name' => $runner->getName(),
                         'departure' => $runner->getDeparture()?->format('Y-m-d H:i:s'),
-                        'arrival' => $runner->getArrival()?->format('Y-m-d H:i:s')
+                        'arrival' => $runner->getArrival()?->format('Y-m-d H:i:s'),
+                        'logSessions' => array_map(function($log) {
+                            return [
+                                'id' => $log->getId(),
+                                'type' => $log->getType(),
+                                'time' => $log->getTime()?->format('Y-m-d H:i:s'),
+                                'latitude' => $log->getLatitude(),
+                                'longitude' => $log->getLongitude(),
+                                'additionalData' => $log->getAdditionalData()
+                            ];
+                        }, $runner->getLogSessions()->toArray())
                     ];
                 }, $session->getRunners()->toArray())
             ];
@@ -67,7 +77,7 @@ class CourseController extends AbstractController
         return new JsonResponse(['courses' => $coursesData]);
     }
 
-    #[Route('/api/courses/{id}', name: 'api_courses_get', methods: ['GET'])]
+    #[Route('/api/sessions/{id}', name: 'api_sessions_get', methods: ['GET'])]
     public function getCourse(int $id): JsonResponse
     {
         $session = $this->sessionRepository->find($id);
@@ -82,6 +92,8 @@ class CourseController extends AbstractController
             'id' => $session->getId(),
             'name' => $session->getSessionName(),
             'nbRunners' => $session->getNbRunner(),
+            'sessionStart' => $session->getSessionStart()?->format('Y-m-d H:i:s'),
+            'sessionEnd' => $session->getSessionEnd()?->format('Y-m-d H:i:s'),
             'course' => $parcours ? [
                 'id' => $parcours->getId(),
                 'name' => $parcours->getName(),
@@ -92,7 +104,17 @@ class CourseController extends AbstractController
                     'id' => $runner->getId(),
                     'name' => $runner->getName(),
                     'departure' => $runner->getDeparture()?->format('Y-m-d H:i:s'),
-                    'arrival' => $runner->getArrival()?->format('Y-m-d H:i:s')
+                    'arrival' => $runner->getArrival()?->format('Y-m-d H:i:s'),
+                    'logSessions' => array_map(function($log) {
+                        return [
+                            'id' => $log->getId(),
+                            'type' => $log->getType(),
+                            'time' => $log->getTime()?->format('Y-m-d H:i:s'),
+                            'latitude' => $log->getLatitude(),
+                            'longitude' => $log->getLongitude(),
+                            'additionalData' => $log->getAdditionalData()
+                        ];
+                    }, $runner->getLogSessions()->toArray())
                 ];
             }, $session->getRunners()->toArray())
         ];
@@ -100,7 +122,7 @@ class CourseController extends AbstractController
         return new JsonResponse($sessionData);
     }
 
-    #[Route('/api/courses/save', name: 'api_courses_save', methods: ['POST'])]
+    #[Route('/api/sessions/save', name: 'api_sessions_save', methods: ['POST'])]
     public function saveCourse(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -127,7 +149,7 @@ class CourseController extends AbstractController
         return new JsonResponse(['success' => true, 'id' => $session->getId()]);
     }
 
-    #[Route('/api/courses/{id}', name: 'api_courses_update', methods: ['PUT'])]
+    #[Route('/api/sessions/{id}', name: 'api_sessions_update', methods: ['PUT'])]
     public function updateCourse(int $id, Request $request): JsonResponse
     {
         $session = $this->sessionRepository->find($id);
@@ -166,7 +188,7 @@ class CourseController extends AbstractController
         return new JsonResponse(['success' => true, 'id' => $session->getId()]);
     }
 
-    #[Route('/api/courses/{id}', name: 'api_courses_delete', methods: ['DELETE'])]
+    #[Route('/api/sessions/{id}', name: 'api_sessions_delete', methods: ['DELETE'])]
     public function deleteCourse(int $id): JsonResponse
     {
         $session = $this->sessionRepository->find($id);

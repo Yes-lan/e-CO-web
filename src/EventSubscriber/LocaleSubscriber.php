@@ -19,6 +19,12 @@ class LocaleSubscriber implements EventSubscriberInterface
     {
         $request = $event->getRequest();
 
+        // Skip API routes - they are stateless
+        if (str_starts_with($request->getPathInfo(), '/api')) {
+            $request->setLocale($this->defaultLocale);
+            return;
+        }
+
         // Try to see if the locale has been set as a _locale routing parameter
         if ($locale = $request->query->get('_locale')) {
             $request->setLocale($locale);

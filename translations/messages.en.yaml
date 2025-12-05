@@ -25,6 +25,7 @@ map:
     validation: "Validated"
     scan_time: "Scan Time"
     invalid: "Invalid"
+    distance: "Distance"
     
 courses:
     title: "Courses"

@@ -140,7 +140,7 @@
 
         async function loadCourses() {
             try {
-                const response = await fetch(`/api/courses?t=${Date.now()}`);
+                const response = await fetch(`/api/sessions?t=${Date.now()}`);
                 const data = await response.json();
                 window.manageCourses = data.courses || [];
                 displayCourses();

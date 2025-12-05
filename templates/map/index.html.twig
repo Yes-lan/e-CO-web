@@ -420,7 +420,7 @@
                     console.log('[Map Page] Loading session:', sessionId);
                     
                     // Fetch session details from API
-                    const response = await fetch(`/api/courses/${sessionId}`);
+                    const response = await fetch(`/api/sessions/${sessionId}`);
                     if (!response.ok) {
                         throw new Error(`Failed to load session: ${response.status}`);
                     }

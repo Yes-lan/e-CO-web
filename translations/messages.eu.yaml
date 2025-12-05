@@ -25,6 +25,7 @@ map:
     validation: "Baliozkoa"
     scan_time: "Eskaneatze ordua"
     invalid: "Baliogabea"
+    distance: "Distantzia"
     
 courses:
     title: "Lasterketak"

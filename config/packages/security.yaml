@@ -10,6 +10,10 @@ security:
                 class: App\Entity\User
                 property: email
     firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+            
         login:
             pattern: ^/api/login
             stateless: true
@@ -21,11 +25,8 @@ security:
         api:
             pattern:   ^/api
             stateless: true
-            jwt: ~
-
-        dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+
         main:
             lazy: true
             provider: app_user_provider
@@ -55,6 +56,8 @@ security:
         - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/sessions, roles: PUBLIC_ACCESS }
+        - { path: ^/api/parcours, roles: PUBLIC_ACCESS }
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
 
 
