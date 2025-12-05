@@ -1,138 +1,155 @@
-Table "doctrine_migration_versions" {
-  "version" varchar(191) [pk, not null]
-  "executed_at" timestamp [default: `NULL::timestamp without time zone`]
-  "execution_time" int4
-}
-
-Table "messenger_messages" {
-  "id" int8 [pk, not null, increment]
-  "body" text [not null]
-  "headers" text [not null]
-  "queue_name" varchar(190) [not null]
-  "created_at" timestamp [not null, note: '(DC2Type:datetime_immutable)']
-  "available_at" timestamp [not null, note: '(DC2Type:datetime_immutable)']
-  "delivered_at" timestamp [default: `NULL::timestamp without time zone`, note: '(DC2Type:datetime_immutable)']
-
-  Indexes {
-    delivered_at [type: btree, name: "idx_75ea56e016ba31db"]
-    available_at [type: btree, name: "idx_75ea56e0e3bd61ce"]
-    queue_name [type: btree, name: "idx_75ea56e0fb7336f0"]
-  }
-}
-
 Table "beacon" {
-  "id" int4 [pk, not null, increment]
+  "id" int [pk, not null, increment]
   "name" varchar(255) [not null]
-  "longitude" int8 [not null]
-  "latitude" int8 [not null]
+  "longitude" double [not null]
+  "latitude" double [not null]
   "type" varchar(255) [not null]
-  "is_placed" bool [not null]
-  "placed_at" time [default: `NULL::time without time zone`]
-  "created_at" time [default: `NULL::time without time zone`]
+  "is_placed" tinyint(1) [not null]
+  "placed_at" datetime
+  "created_at" datetime
   "qr" varchar(255) [not null]
 }
 
-Table "course" {
-  "id" int4 [pk, not null, increment]
-  "name" varchar(255) [not null]
-  "description" varchar(255) [not null]
-  "status" varchar(255) [not null]
-  "create_at" time [not null]
-  "placement_completed_at" time [not null]
-  "update_at" time [not null]
-}
-
-Table "runner" {
-  "id" int4 [pk, not null, increment]
-  "name" varchar(255) [not null]
-  "departure" time [not null]
-  "arrival" time [not null]
-  "id_session_id" int4
+Table "beacon_course" {
+  "beacon_id" int [not null]
+  "course_id" int [not null]
 
   Indexes {
-    id_session_id [type: btree, name: "idx_f92b8b3ec4b56c08"]
-  }
-}
-
-Table "session" {
-  "id" int4 [pk, not null, increment]
-  "session_name" varchar(255) [not null]
-  "nb_runner" int8 [not null]
-  "id_course_id" int4
-
-  Indexes {
-    id_course_id [type: btree, name: "idx_d044d5d4d92975b5"]
+    course_id [type: btree, name: "IDX_4EDA6FBC591CC992"]
+    beacon_id [type: btree, name: "IDX_4EDA6FBCF6AD5578"]
+    (beacon_id, course_id) [pk, name: "PRIMARY"]
   }
 }
 
 Table "boundaries_course" {
-  "id" int4 [pk, not null, increment]
-  "longitude" int8 [not null]
-  "latitude" int8 [not null]
+  "id" int [pk, not null, increment]
+  "longitude" double [not null]
+  "latitude" double [not null]
+  "course_id" int
+
+  Indexes {
+    course_id [type: btree, name: "IDX_1BEB33BC591CC992"]
+  }
+}
+
+Table "course" {
+  "id" int [pk, not null, increment]
+  "name" varchar(255) [not null]
+  "description" varchar(255) [not null]
+  "status" varchar(255) [not null]
+  "create_at" datetime [not null]
+  "placement_completed_at" datetime [not null]
+  "update_at" datetime [not null]
+  "user_id" int
+
+  Indexes {
+    user_id [type: btree, name: "IDX_169E6FB9A76ED395"]
+  }
+}
+
+Table "doctrine_migration_versions" {
+  "version" varchar(191) [pk, not null]
+  "executed_at" datetime
+  "execution_time" int
+}
+
+Table "establishment" {
+  "id" int [pk, not null, increment]
+  "name" varchar(255) [not null]
 }
 
 Table "log_session" {
-  "id" int4 [pk, not null, increment]
+  "id" int [pk, not null, increment]
   "type" varchar(255) [not null]
-  "time" time [not null]
-  "position" int8 [not null]
-  "latitude" int8
-  "longitude" int8
-  "additional_data" int8
+  "time" datetime [not null]
+  "latitude" double
+  "longitude" double
+  "additional_data" longtext
+  "runner_id" int
+
+  Indexes {
+    runner_id [type: btree, name: "IDX_E889ED433C7FB593"]
+  }
+}
+
+Table "messenger_messages" {
+  "id" bigint [pk, not null, increment]
+  "body" longtext [not null]
+  "headers" longtext [not null]
+  "queue_name" varchar(190) [not null]
+  "created_at" datetime [not null, note: '(DC2Type:datetime_immutable)']
+  "available_at" datetime [not null, note: '(DC2Type:datetime_immutable)']
+  "delivered_at" datetime [note: '(DC2Type:datetime_immutable)']
+
+  Indexes {
+    delivered_at [type: btree, name: "IDX_75EA56E016BA31DB"]
+    available_at [type: btree, name: "IDX_75EA56E0E3BD61CE"]
+    queue_name [type: btree, name: "IDX_75EA56E0FB7336F0"]
+  }
 }
 
 Table "reset_password_request" {
-  "id" int4 [pk, not null, increment]
-  "user_id" int4 [not null]
+  "id" int [pk, not null, increment]
+  "user_id" int [not null]
   "selector" varchar(20) [not null]
   "hashed_token" varchar(100) [not null]
-  "requested_at" timestamp [not null, note: '(DC2Type:datetime_immutable)']
-  "expires_at" timestamp [not null, note: '(DC2Type:datetime_immutable)']
+  "requested_at" datetime [not null, note: '(DC2Type:datetime_immutable)']
+  "expires_at" datetime [not null, note: '(DC2Type:datetime_immutable)']
 
   Indexes {
-    user_id [type: btree, name: "idx_7ce748aa76ed395"]
+    user_id [type: btree, name: "IDX_7CE748AA76ED395"]
+  }
+}
+
+Table "runner" {
+  "id" int [pk, not null, increment]
+  "name" varchar(255) [not null]
+  "departure" datetime [not null]
+  "arrival" datetime [not null]
+  "session_id" int
+
+  Indexes {
+    session_id [type: btree, name: "IDX_F92B8B3E613FECDF"]
+  }
+}
+
+Table "session" {
+  "id" int [pk, not null, increment]
+  "session_name" varchar(255) [not null]
+  "nb_runner" int [not null]
+  "course_id" int
+
+  Indexes {
+    course_id [type: btree, name: "IDX_D044D5D4591CC992"]
   }
 }
 
 Table "user" {
-  "id" int4 [pk, not null, increment]
+  "id" int [pk, not null, increment]
   "email" varchar(180) [unique, not null]
   "roles" json [not null]
   "password" varchar(255) [not null]
-}
-
-Table "beacon_course" {
-  "beacon_id" int4 [not null]
-  "course_id" int4 [not null]
+  "establishment_id" int
 
   Indexes {
-    (beacon_id, course_id) [type: btree, name: "beacon_course_pkey"]
-    course_id [type: btree, name: "idx_4eda6fbc591cc992"]
-    beacon_id [type: btree, name: "idx_4eda6fbcf6ad5578"]
+    establishment_id [type: btree, name: "IDX_8D93D6498565851"]
   }
 }
 
-Table "boundaries_course_course" {
-  "boundaries_course_id" int4 [not null]
-  "course_id" int4 [not null]
+Ref "FK_4EDA6FBC591CC992":"course"."id" < "beacon_course"."course_id" [delete: cascade]
 
-  Indexes {
-    (boundaries_course_id, course_id) [type: btree, name: "boundaries_course_course_pkey"]
-    course_id [type: btree, name: "idx_528afebd591cc992"]
-    boundaries_course_id [type: btree, name: "idx_528afebd69b69c9f"]
-  }
-}
+Ref "FK_4EDA6FBCF6AD5578":"beacon"."id" < "beacon_course"."beacon_id" [delete: cascade]
 
-Ref "fk_4eda6fbc591cc992":"course"."id" < "beacon_course"."course_id" [delete: cascade]
+Ref "FK_1BEB33BC591CC992":"course"."id" < "boundaries_course"."course_id"
 
-Ref "fk_4eda6fbcf6ad5578":"beacon"."id" < "beacon_course"."beacon_id" [delete: cascade]
+Ref "FK_169E6FB9A76ED395":"user"."id" < "course"."user_id"
 
-Ref "fk_528afebd591cc992":"course"."id" < "boundaries_course_course"."course_id" [delete: cascade]
+Ref "FK_E889ED433C7FB593":"runner"."id" < "log_session"."runner_id"
 
-Ref "fk_528afebd69b69c9f":"boundaries_course"."id" < "boundaries_course_course"."boundaries_course_id" [delete: cascade]
+Ref "FK_7CE748AA76ED395":"user"."id" < "reset_password_request"."user_id"
 
-Ref "fk_7ce748aa76ed395":"user"."id" < "reset_password_request"."user_id"
+Ref "FK_F92B8B3E613FECDF":"session"."id" < "runner"."session_id"
 
-Ref "fk_f92b8b3ec4b56c08":"session"."id" < "runner"."id_session_id"
+Ref "FK_D044D5D4591CC992":"course"."id" < "session"."course_id"
 
-Ref "fk_d044d5d4d92975b5":"course"."id" < "session"."id_course_id"
+Ref "FK_8D93D6498565851":"establishment"."id" < "user"."establishment_id"

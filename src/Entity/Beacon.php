@@ -47,7 +47,7 @@ class Beacon
     private Collection $course;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $beacon = null;
+    private ?string $description = null;
 
     public function __construct()
     {
@@ -179,14 +179,14 @@ class Beacon
         return $this;
     }
 
-    public function getBeacon(): ?string
+    public function getDescription(): ?string
     {
-        return $this->beacon;
+        return $this->description;
     }
 
-    public function setBeacon(?string $beacon): static
+    public function setDescription(?string $description): static
     {
-        $this->beacon = $beacon;
+        $this->description = $description;
 
         return $this;
     }

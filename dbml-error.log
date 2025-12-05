@@ -1,0 +1,20 @@
+2025-11-21T15:37:09.546Z
+Error: PostgreSQL connection error: Error: connect ECONNREFUSED 192.168.80.3:5432
+    at getValidatedClient (/usr/lib/node_modules/@dbml/cli/node_modules/@dbml/connector/dist/connectors/postgresConnector.js:20:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async fetchSchemaJson (/usr/lib/node_modules/@dbml/cli/node_modules/@dbml/connector/dist/connectors/postgresConnector.js:487:20)
+    at async connectionHandler (/usr/lib/node_modules/@dbml/cli/lib/cli/connector.js:24:24)
+
+2025-11-21T15:37:39.998Z
+Error: connect ECONNREFUSED 192.168.80.3:5432
+    at createConnectionPromise (/usr/lib/node_modules/@dbml/cli/node_modules/mysql2/promise.js:19:31)
+    at connectMySQL (/usr/lib/node_modules/@dbml/cli/node_modules/@dbml/connector/dist/connectors/mysqlConnector.js:8:57)
+    at fetchSchemaJson (/usr/lib/node_modules/@dbml/cli/node_modules/@dbml/connector/dist/connectors/mysqlConnector.js:413:26)
+    at Object.fetchSchemaJson (/usr/lib/node_modules/@dbml/cli/node_modules/@dbml/connector/dist/connectors/connector.js:16:57)
+    at connectionHandler (/usr/lib/node_modules/@dbml/cli/lib/cli/connector.js:24:51)
+    at Object.db2dbml (/usr/lib/node_modules/@dbml/cli/lib/cli/index.js:74:26)
+    at Object.<anonymous> (/usr/lib/node_modules/@dbml/cli/bin/db2dbml.js:3:19)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+

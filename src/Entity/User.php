@@ -45,6 +45,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToOne(inversedBy: 'user')]
     private ?Establishment $establishment = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $FirstName = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $LastName = null;
+
     public function __construct()
     {
         $this->course = new ArrayCollection();
@@ -169,6 +175,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEstablishment(?Establishment $establishment): static
     {
         $this->establishment = $establishment;
+
+        return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->FirstName;
+    }
+
+    public function setFirstName(string $FirstName): static
+    {
+        $this->FirstName = $FirstName;
+
+        return $this;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->LastName;
+    }
+
+    public function setLastName(string $LastName): static
+    {
+        $this->LastName = $LastName;
 
         return $this;
     }
