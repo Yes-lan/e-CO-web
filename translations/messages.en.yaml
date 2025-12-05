@@ -72,6 +72,8 @@ courses:
         error_delete: "Error deleting"
 
 parcours:
+    page_title: "Manage Courses - e-CO"
+    create_page_title: "Create a Course - e-CO"
     title: "Courses"
     new_parcours: "New Course"
     search_placeholder: "Search..."
@@ -106,11 +108,35 @@ parcours:
         error_delete: "Error deleting"
 
 login:
+    page_title: "Login - e-CO"
     title: "Login"
     email: "Email"
     password: "Password"
     sign_in: "Sign In"
     forgot_password: "Forgot password?"
+    please_sign_in: "Please sign in"
+    remember_me: "Remember me"
+
+sessions:
+    page_title: "Courses - e-CO"
+    
+register:
+    page_title: "Register - e-CO"
+    title: "Register"
+    email: "Email"
+    password: "Password"
+    agree_terms: "Agree to terms"
+    submit: "Register"
+    
+reset_password:
+    page_title: "Reset Your Password - e-CO"
+    email_sent_title: "Password Reset Email Sent - e-CO"
+    title: "Reset Your Password"
+    request_title: "Password Reset Request"
+    email_sent: "An email has been sent"
+    
+testemail:
+    page_title: "Test Email - e-CO"
 
 home:
     title: "Home - e-CO Web"

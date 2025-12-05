@@ -1558,21 +1558,14 @@ body {
 }
 
 .btn-view {
+    background: white;
     color: #1976d2;
     border-color: #1976d2;
 }
 
 .btn-view:hover {
     background: #e3f2fd;
-}
-
-.btn-edit {
-    color: #2196f3;
-    border-color: #2196f3;
-}
-
-.btn-edit:hover {
-    background: #e3f2fd;
+    color: #0d47a1;
 }
 
 .btn-delete {

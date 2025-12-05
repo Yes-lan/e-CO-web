@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Gérer les Parcours - e-CO{% endblock %}
+{% block title %}{{ 'parcours.page_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -17,20 +17,20 @@
                     <circle cx="11" cy="11" r="8" stroke="#666" stroke-width="2"/>
                     <path d="M21 21l-4.35-4.35" stroke="#666" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <input type="text" placeholder="Rechercher..." id="searchInput">
+                <input type="text" id="searchInput">
             </div>
-            <button class="btn btn-primary" onclick="window.location.href='{{ path('app_parcours_create') }}'"
+            <button class="btn btn-primary" id="newParcoursBtn" onclick="window.location.href='{{ path('app_parcours_create') }}'"
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/>
                     <path d="M12 8v8M8 12h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                Nouveau Parcours
+                <span id="newParcoursBtnText"></span>
             </button>
         </div>
     </div>
 
     <div class="course-grid" id="courseList">
-        <p style="text-align: center; color: #666; grid-column: 1 / -1;">Chargement des parcours...</p>
+        <p id="loadingMessage" style="text-align: center; color: #666; grid-column: 1 / -1;"></p>
     </div>
 </div>
 
@@ -63,7 +63,7 @@
         </div>
         
         <div style="text-align: right; margin-bottom: 1rem;">
-            <button class="btn btn-primary" onclick="downloadAllQRCodes()">📥 Télécharger tout (PDF)</button>
+            <button class="btn btn-primary" id="downloadAllQRBtn" onclick="downloadAllQRCodes()"></button>
         </div>
         <div id="qrCodesContent" class="qr-codes-grid">
             <!-- QR codes loaded dynamically -->
@@ -74,6 +74,9 @@
 {% block javascripts %}
     {{ parent() }}
     
+    <!-- Load translations -->
+    <script src="{{ asset('assets/js/translations.js') }}"></script>
+    
     <script>
         // Use window object to prevent redeclaration errors with Turbo
         if (!window.manageCoursePageInitialized) {
@@ -83,6 +86,27 @@
             window.editBoundaryMap = null;
             window.qrCodeLibraryLoaded = false;
             window.jspdfLibraryLoaded = false;
+        }
+
+        // Initialize translated UI elements
+        function initializeTranslatedElements() {
+            const searchInput = document.getElementById('searchInput');
+            const newParcoursBtnText = document.getElementById('newParcoursBtnText');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const downloadAllQRBtn = document.getElementById('downloadAllQRBtn');
+            
+            if (searchInput) {
+                searchInput.placeholder = trans('parcours.search_placeholder');
+            }
+            if (newParcoursBtnText) {
+                newParcoursBtnText.textContent = trans('parcours.new_parcours');
+            }
+            if (loadingMessage) {
+                loadingMessage.textContent = trans('parcours.loading');
+            }
+            if (downloadAllQRBtn) {
+                downloadAllQRBtn.innerHTML = '📥 ' + trans('parcours.download_all_qr');
+            }
         }
 
         // Load Google Maps dynamically (same pattern as create.html.twig)
@@ -131,6 +155,7 @@
 
         // Load courses immediately
         async function initManagePage() {
+            initializeTranslatedElements();
             await loadCourses();
         }
 
@@ -146,7 +171,7 @@
                 displayCourses();
             } catch (error) {
                 console.error('Error loading parcours:', error);
-                document.getElementById('courseList').innerHTML = '<p style="color: #d32f2f; text-align: center;">Erreur de chargement des parcours</p>';
+                document.getElementById('courseList').innerHTML = `<p style="color: #d32f2f; text-align: center;">${trans('parcours.error_loading')}</p>`;
             }
         }
 
@@ -154,7 +179,7 @@
             const container = document.getElementById('courseList');
             
             if (window.manageCourses.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666;">Aucun parcours disponible. <a href="{{ path('app_parcours_create') }}">Créer un parcours</a></p>';
+                container.innerHTML = `<p style="text-align: center; color: #666;">${trans('parcours.no_parcours')} <a href="{{ path('app_parcours_create') }}">${trans('parcours.create_parcours')}</a></p>`;
                 return;
             }
 
@@ -165,10 +190,10 @@
                 
                 let statusText, statusColor;
                 if (course.status === 'finished') {
-                    statusText = 'Terminé';
+                    statusText = trans('parcours.status.completed');
                     statusColor = '#4caf50';
                 } else {
-                    statusText = 'En cours de création';
+                    statusText = trans('parcours.status.in_creation');
                     statusColor = '#ff6b35';
                 }
                 
@@ -182,14 +207,14 @@
                             </div>
                         </div>
                         
-                        <p class="parcours-description">${course.description || 'Départ à l\'entrée sud sur la table'}</p>
+                        <p class="parcours-description">${course.description || trans('parcours.description.default')}</p>
                         
                         <div class="parcours-meta">
                             <span>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" stroke="#1976d2" stroke-width="2" fill="none"/>
                                 </svg>
-                                ${waypointCount} balises
+                                ${waypointCount} ${trans('parcours.info.beacons_count')}
                             </span>
                             <span>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -210,7 +235,7 @@
                                     <rect x="3" y="14" width="7" height="7" stroke="white" stroke-width="2" fill="none"/>
                                     <rect x="14" y="14" width="7" height="7" stroke="white" stroke-width="2" fill="none"/>
                                 </svg>
-                                Qr Codes
+                                ${trans('parcours.qr_codes')}
                             </button>
                             ${course.status !== 'finished' ? `
                             <button class="action-btn btn-edit" onclick="editCourse(${index})">
@@ -218,13 +243,13 @@
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="white" stroke-width="2" stroke-linecap="round"/>
                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
-                                Modifier
+                                ${trans('parcours.edit')}
                             </button>
                             <button class="action-btn btn-finish" onclick="finishCourse(${index})" style="background: #4caf50;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
-                                Terminer
+                                ${trans('parcours.finish')}
                             </button>
                             <button class="action-btn btn-delete" onclick="deleteCourse(${index})">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -237,10 +262,10 @@
                                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" stroke="white" stroke-width="2"/>
                                     <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/>
                                 </svg>
-                                Voir
+                                ${trans('parcours.view')}
                             </button>
                             <span style="padding: 0.5rem 1rem; background: #4caf50; color: white; border-radius: 4px; font-weight: 500;">
-                                ✓ Terminé
+                                ✓ ${trans('parcours.finished')}
                             </span>
                             `}
                         </div>
@@ -1075,4 +1100,5 @@
     <script src="{{ asset('assets/js/qrcode.min.js') }}" onload="window.qrCodeLibraryLoaded = true; console.log('QRCode library loaded from local assets');"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" data-turbo-track="reload" async onload="window.jspdfLibraryLoaded = true; console.log('jsPDF library loaded');"></script>
 {% endblock %}
+
 {% endblock %}

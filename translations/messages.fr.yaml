@@ -72,6 +72,8 @@ courses:
         error_delete: "Erreur lors de la suppression"
 
 parcours:
+    page_title: "Gérer les Parcours - e-CO"
+    create_page_title: "Créer un Parcours - e-CO"
     title: "Parcours"
     new_parcours: "Nouveau Parcours"
     search_placeholder: "Rechercher..."
@@ -106,11 +108,14 @@ parcours:
         error_delete: "Erreur lors de la suppression"
 
 login:
+    page_title: "Connexion - e-CO"
     title: "Connexion"
     email: "Email"
-    password: "Password"
-    sign_in: "Sign In"
-    forgot_password: "Forgot password?"
+    password: "Mot de passe"
+    sign_in: "Se connecter"
+    forgot_password: "Mot de passe oublié ?"
+    please_sign_in: "Veuillez vous connecter"
+    remember_me: "Se souvenir de moi"
 
 home:
     title: "Accueil - e-CO Web"
@@ -129,3 +134,24 @@ common:
     back: "Retour"
     home: "Accueil"
     no_name: "Sans nom"
+
+sessions:
+    page_title: "Courses - e-CO"
+    
+register:
+    page_title: "Inscription - e-CO"
+    title: "Inscription"
+    email: "Email"
+    password: "Mot de passe"
+    agree_terms: "Accepter les conditions"
+    submit: "S'inscrire"
+    
+reset_password:
+    page_title: "Réinitialiser votre mot de passe - e-CO"
+    email_sent_title: "Email de réinitialisation envoyé - e-CO"
+    title: "Réinitialiser votre mot de passe"
+    request_title: "Demande de réinitialisation"
+    email_sent: "Un email a été envoyé"
+    
+testemail:
+    page_title: "Test Email - e-CO"

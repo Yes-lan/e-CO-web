@@ -47,6 +47,7 @@
     </div>
 </div>
 
+<script src="{{ asset('assets/js/translations.js') }}"></script>
 <script>
     let currentSession = null;
     let currentCourse = null;
@@ -326,10 +327,9 @@
                 
                 const gpsInfoWindow = new google.maps.InfoWindow({
                     content: `
-                        <div style="padding: 8px;">
-                            <strong>GPS Log</strong><br>
-                            Time: ${logTime.toLocaleTimeString('fr-FR')}<br>
-                            Elapsed: ${elapsedFormatted}
+                        <div style="padding: 4px; font-size: 12px; min-width: 120px;">
+                            ${trans('map.time')}: ${logTime.toLocaleTimeString('fr-FR')}<br>
+                            ${trans('map.elapsed')}: ${elapsedFormatted}
                         </div>
                     `
                 });
@@ -381,14 +381,14 @@
                     // Add info window
                     const infoWindow = new google.maps.InfoWindow({
                         content: `
-                            <div style="padding: 8px;">
+                            <div style="padding: 4px; font-size: 12px; min-width: 140px;">
                                 <strong>${beacon.name}</strong><br>
-                                Distance: ${distance.toFixed(1)}m<br>
-                                Status: <span style="color: ${markerColor}; font-weight: bold;">
-                                    ${isValid ? '✓ Valid' : '✗ Invalid'}
+                                ${trans('map.distance')}: ${distance.toFixed(1)}m<br>
+                                ${trans('map.status')}: <span style="color: ${markerColor}; font-weight: bold;">
+                                    ${isValid ? '✓ ' + trans('map.valid') : '✗ ' + trans('map.invalid')}
                                 </span><br>
-                                Time: ${scanTime.toLocaleTimeString('fr-FR')}<br>
-                                Elapsed: ${elapsedFormatted}
+                                ${trans('map.time')}: ${scanTime.toLocaleTimeString('fr-FR')}<br>
+                                ${trans('map.elapsed')}: ${elapsedFormatted}
                             </div>
                         `
                     });

@@ -72,6 +72,8 @@ courses:
         error_delete: "Errorea ezabatzean"
 
 parcours:
+    page_title: "Kudeatu Ibilbideak - e-CO"
+    create_page_title: "Sortu Ibilbidea - e-CO"
     title: "Ikastaroak"
     new_parcours: "Ikastaro berria"
     search_placeholder: "Bilatu..."
@@ -106,11 +108,35 @@ parcours:
         error_delete: "Errorea ezabatzerakoan"
 
 login:
+    page_title: "Saioa hasi - e-CO"
     title: "Saioa hasi"
     email: "Emaila"
     password: "Pasahitza"
     sign_in: "Hasi saioa"
     forgot_password: "Pasahitza ahaztu duzu?"
+    please_sign_in: "Mesedez hasi saioa"
+    remember_me: "Gogoratu ni"
+
+sessions:
+    page_title: "Lasterketak - e-CO"
+    
+register:
+    page_title: "Erregistratu - e-CO"
+    title: "Erregistratu"
+    email: "Emaila"
+    password: "Pasahitza"
+    agree_terms: "Baldintza onartu"
+    submit: "Erregistratu"
+    
+reset_password:
+    page_title: "Zure pasahitza berrezarri - e-CO"
+    email_sent_title: "Berrezarpen emaila bidali da - e-CO"
+    title: "Zure pasahitza berrezarri"
+    request_title: "Pasahitza berrezartzeko eskaera"
+    email_sent: "Email bat bidali da"
+    
+testemail:
+    page_title: "Proba Emaila - e-CO"
 
 home:
     title: "Hasiera - e-CO Web"
