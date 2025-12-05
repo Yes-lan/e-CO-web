@@ -1,0 +1,409 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'map.title'|trans }} - e-CO{% endblock %}
+
+{% block body %}
+<div class="map-view-container">
+    <!-- Main Content: Session Selector + Runners Table + Map -->
+    <div class="map-content">
+        <!-- Left Column: Runners Table -->
+        <div class="left-column">
+            <!-- Runners Table -->
+            <div class="runners-panel">
+                <h2>👥 {{ 'map.runners'|trans }}</h2>
+                <div class="runners-table-container">
+                    <table class="runners-table">
+                        <thead>
+                            <tr>
+                                <th>{{ 'map.runner_name'|trans }}</th>
+                                <th>{{ 'map.beacons_validated'|trans }}</th>
+                                <th>{{ 'map.completion_time'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="runnersTableBody">
+                            <tr>
+                                <td colspan="3" class="no-data">{{ 'map.select_session_first'|trans }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right: Google Map -->
+        <div class="map-panel" id="mapPanel">
+            <div id="map"></div>
+        </div>
+    </div>
+    
+    <!-- Bottom: Beacon Validation Table -->
+    <div class="beacon-validation-panel">
+        <div id="runnerNameBadge" class="runner-name-badge" style="display: none;"></div>
+        <div class="beacon-table-container">
+            <div id="beaconValidationContent" class="no-data">
+                {{ 'map.select_runner_to_view'|trans }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentSession = null;
+    let currentCourse = null;
+    let selectedRunnerId = null;
+    let map = null;
+    let markers = [];
+    let labels = [];
+    let runnerPaths = [];
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Don't call initMap() here - it will be called by Google Maps API callback
+        loadSessionData();
+    });
+    
+    // Load session data based on URL parameters
+    function loadSessionData() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('sessionId');
+        const courseId = urlParams.get('courseId');
+        
+        if (courseId) {
+            // Came from course/parcours page - load sessions for this course
+            loadSessionsForCourse(courseId, sessionId);
+        } else if (sessionId) {
+            // Direct session link - load all sessions and select the one
+            loadSessions(sessionId);
+        } else {
+            // No parameters - just load all sessions
+            loadSessions();
+        }
+    }
+
+
+
+    // Load all sessions grouped by course
+    async function loadSessions(autoSelectSessionId = null) {
+        try {
+            // Auto-load session if specified
+            if (autoSelectSessionId) {
+                await loadSession(autoSelectSessionId);
+            }
+        } catch (error) {
+            console.error('Error loading sessions:', error);
+        }
+    }
+    
+    // Load sessions for a specific course
+    async function loadSessionsForCourse(courseId, autoSelectSessionId = null) {
+        try {
+            const courseRes = await fetch(`/api/parcours/${courseId}`);
+            const courseData = await courseRes.json();
+            
+            const course = courseData.parcours || courseData;
+            
+            // Load course data immediately
+            currentCourse = course;
+            updateMap();
+            
+            // Auto-load session if specified
+            if (autoSelectSessionId) {
+                await loadSession(autoSelectSessionId);
+            }
+        } catch (error) {
+            console.error('Error loading sessions for course:', error);
+        }
+    }
+
+    // Load selected session
+    async function loadSession(sessionId) {
+        if (!sessionId) {
+            clearData();
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/courses/${sessionId}`);
+            currentSession = await response.json();
+            
+            if (currentSession.course) {
+                await loadCourseData(currentSession.course.id);
+            }
+            
+            displayRunners();
+            updateMap();
+        } catch (error) {
+            console.error('Error loading session:', error);
+        }
+    }
+
+    // Load course (parcours) data with beacons
+    async function loadCourseData(courseId) {
+        try {
+            const response = await fetch(`/api/parcours/${courseId}`);
+            const data = await response.json();
+            currentCourse = data.parcours || data;
+        } catch (error) {
+            console.error('Error loading course:', error);
+        }
+    }
+
+    // Display runners in table
+    function displayRunners() {
+        const tbody = document.getElementById('runnersTableBody');
+        
+        if (!currentSession || !currentSession.runners || currentSession.runners.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="no-data">{{ 'map.no_runners'|trans }}</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = currentSession.runners.map(runner => {
+            const beaconsValidated = 0; // TODO: Calculate from log_session data
+            const completionTime = calculateCompletionTime(runner);
+            
+            return `
+                <tr onclick="selectRunner(${runner.id})" id="runner-${runner.id}">
+                    <td>${runner.name}</td>
+                    <td>${beaconsValidated} / ${currentCourse ? currentCourse.waypoints.length : 0}</td>
+                    <td>${completionTime}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // Calculate completion time
+    function calculateCompletionTime(runner) {
+        if (!runner.departure || !runner.arrival) return '-';
+        
+        const departure = new Date(runner.departure);
+        const arrival = new Date(runner.arrival);
+        const diff = arrival - departure;
+        
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Select a runner
+    function selectRunner(runnerId) {
+        selectedRunnerId = runnerId;
+        
+        // Update row highlighting
+        document.querySelectorAll('.runners-table tbody tr').forEach(tr => {
+            tr.classList.remove('selected');
+        });
+        document.getElementById(`runner-${runnerId}`)?.classList.add('selected');
+        
+        // Update runner name badge
+        const runner = currentSession.runners.find(r => r.id === runnerId);
+        const badge = document.getElementById('runnerNameBadge');
+        if (runner) {
+            badge.textContent = runner.name;
+            badge.style.display = 'block';
+        }
+        
+        // Load runner's GPS path
+        loadRunnerPath(runnerId);
+        
+        // Display beacon validation table
+        displayBeaconValidation(runnerId);
+    }
+
+    // Load runner's GPS path
+    async function loadRunnerPath(runnerId) {
+        try {
+            // Clear existing paths
+            runnerPaths.forEach(path => path.setMap(null));
+            runnerPaths = [];
+            
+            // TODO: Fetch GPS log data for runner
+            // const response = await fetch(`/api/runners/${runnerId}/gps`);
+            // const gpsData = await response.json();
+            
+            // For now, just show a placeholder
+            console.log('Loading GPS path for runner:', runnerId);
+        } catch (error) {
+            console.error('Error loading runner path:', error);
+        }
+    }
+
+    // Display beacon validation table
+    function displayBeaconValidation(runnerId) {
+        if (!currentCourse || !currentCourse.waypoints) {
+            document.getElementById('beaconValidationContent').innerHTML = '<div class="no-data">{{ 'map.no_course_data'|trans }}</div>';
+            return;
+        }
+        
+        const runner = currentSession.runners.find(r => r.id === runnerId);
+        
+        const tableHTML = `
+            <table class="beacon-validation-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'map.status'|trans }}</th>
+                        ${currentCourse.waypoints.map((beacon, idx) => `<th>${beacon.name || 'Balise ' + (idx + 1)}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>{{ 'map.validation'|trans }}</strong></td>
+                        ${currentCourse.waypoints.map(() => '<td class="status-pending">-</td>').join('')}
+                    </tr>
+                    <tr>
+                        <td><strong>{{ 'map.scan_time'|trans }}</strong></td>
+                        ${currentCourse.waypoints.map(() => '<td>-</td>').join('')}
+                    </tr>
+                    <tr>
+                        <td><strong>{{ 'map.invalid'|trans }}</strong></td>
+                        ${currentCourse.waypoints.map(() => '<td class="status-invalid">-</td>').join('')}
+                    </tr>
+                </tbody>
+            </table>
+        `;
+        
+        document.getElementById('beaconValidationContent').innerHTML = tableHTML;
+    }
+
+    // Update map with course beacons
+    function updateMap() {
+        if (!map || !currentCourse || !currentCourse.waypoints) return;
+        
+        // Clear existing markers and labels
+        markers.forEach(m => m.setMap(null));
+        labels.forEach(l => l.setMap(null));
+        markers = [];
+        labels = [];
+        
+        const bounds = new google.maps.LatLngBounds();
+        
+        // Add beacon markers
+        currentCourse.waypoints.forEach((beacon, idx) => {
+            if (!beacon.lat || !beacon.lng) return;
+            
+            const lat = parseFloat(beacon.lat);
+            const lng = parseFloat(beacon.lng);
+            
+            // Create marker
+            const marker = new google.maps.Marker({
+                position: { lat, lng },
+                map: map,
+                title: beacon.name || `Balise ${idx + 1}`,
+                icon: {
+                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                    fillColor: '#2196F3',
+                    fillOpacity: 1,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 2,
+                    scale: 1,
+                    anchor: new google.maps.Point(0, 0)
+                }
+            });
+            
+            // Create label with outline
+            const labelDiv = document.createElement('div');
+            labelDiv.style.position = 'absolute';
+            labelDiv.style.fontSize = '14px';
+            labelDiv.style.fontWeight = 'bold';
+            labelDiv.style.color = '#2196F3';
+            labelDiv.style.textShadow = `-2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, -2px 0 0 #fff, 2px 0 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff`;
+            labelDiv.style.whiteSpace = 'nowrap';
+            labelDiv.style.transform = 'translate(-50%, -45px)';
+            labelDiv.style.pointerEvents = 'none';
+            labelDiv.style.userSelect = 'none';
+            labelDiv.style.zIndex = '1000';
+            labelDiv.textContent = beacon.name || `Balise ${idx + 1}`;
+            
+            class LabelOverlay extends google.maps.OverlayView {
+                constructor(position, labelElement) {
+                    super();
+                    this.position = position;
+                    this.labelElement = labelElement;
+                }
+                
+                onAdd() {
+                    this.getPanes().overlayMouseTarget.appendChild(this.labelElement);
+                }
+                
+                draw() {
+                    const projection = this.getProjection();
+                    const point = projection.fromLatLngToDivPixel(this.position);
+                    if (point) {
+                        this.labelElement.style.left = point.x + 'px';
+                        this.labelElement.style.top = point.y + 'px';
+                    }
+                }
+                
+                onRemove() {
+                    if (this.labelElement.parentElement) {
+                        this.labelElement.parentElement.removeChild(this.labelElement);
+                    }
+                }
+            }
+            
+            const labelOverlay = new LabelOverlay(new google.maps.LatLng(lat, lng), labelDiv);
+            labelOverlay.setMap(map);
+            
+            markers.push(marker);
+            labels.push(labelOverlay);
+            bounds.extend({ lat, lng });
+        });
+        
+        // Fit map to show all markers
+        if (!bounds.isEmpty()) {
+            map.fitBounds(bounds);
+        }
+    }
+
+    // Initialize Google Maps (called by API callback)
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: 43.3, lng: -1.5 },
+            zoom: 13,
+            mapTypeId: 'hybrid',
+            streetViewControl: false,
+            rotateControl: false,
+            tilt: 0,
+            styles: [
+                {
+                    featureType: 'poi',
+                    elementType: 'labels',
+                    stylers: [{ visibility: 'off' }]
+                },
+                {
+                    featureType: 'transit',
+                    elementType: 'labels',
+                    stylers: [{ visibility: 'off' }]
+                }
+            ]
+        });
+        
+        // Load session data after map is initialized
+        loadSessionData();
+    }
+
+    // Clear all data
+    function clearData() {
+        currentSession = null;
+        currentCourse = null;
+        selectedRunnerId = null;
+        
+        document.getElementById('runnersTableBody').innerHTML = '<tr><td colspan="3" class="no-data">{{ 'map.select_session_first'|trans }}</td></tr>';
+        document.getElementById('beaconValidationContent').innerHTML = '<div class="no-data">{{ 'map.select_runner_to_view'|trans }}</div>';
+        document.getElementById('runnerNameBadge').style.display = 'none';
+        
+        markers.forEach(m => m.setMap(null));
+        labels.forEach(l => l.setMap(null));
+        runnerPaths.forEach(p => p.setMap(null));
+        markers = [];
+        labels = [];
+        runnerPaths = [];
+    }
+
+    // Load Google Maps API
+    window.initMap = initMap;
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBi8sXKGGafzB837kvxraWuqohlZ-JJRu8&libraries=geometry,places&callback=initMap" async defer></script>
+
+{% endblock %}

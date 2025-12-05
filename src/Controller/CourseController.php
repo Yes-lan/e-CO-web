@@ -43,7 +43,7 @@ class CourseController extends AbstractController
         $sessions = $this->sessionRepository->findAll();
         
         $coursesData = array_map(function($session) {
-            $parcours = $session->getIdCourse();
+            $parcours = $session->getCourse();
             return [
                 'id' => $session->getId(),
                 'name' => $session->getSessionName(),
@@ -67,6 +67,39 @@ class CourseController extends AbstractController
         return new JsonResponse(['courses' => $coursesData]);
     }
 
+    #[Route('/api/courses/{id}', name: 'api_courses_get', methods: ['GET'])]
+    public function getCourse(int $id): JsonResponse
+    {
+        $session = $this->sessionRepository->find($id);
+        
+        if (!$session) {
+            return new JsonResponse(['error' => 'Session not found'], 404);
+        }
+
+        $parcours = $session->getCourse();
+        
+        $sessionData = [
+            'id' => $session->getId(),
+            'name' => $session->getSessionName(),
+            'nbRunners' => $session->getNbRunner(),
+            'course' => $parcours ? [
+                'id' => $parcours->getId(),
+                'name' => $parcours->getName(),
+                'description' => $parcours->getDescription()
+            ] : null,
+            'runners' => array_map(function($runner) {
+                return [
+                    'id' => $runner->getId(),
+                    'name' => $runner->getName(),
+                    'departure' => $runner->getDeparture()?->format('Y-m-d H:i:s'),
+                    'arrival' => $runner->getArrival()?->format('Y-m-d H:i:s')
+                ];
+            }, $session->getRunners()->toArray())
+        ];
+
+        return new JsonResponse($sessionData);
+    }
+
     #[Route('/api/courses/save', name: 'api_courses_save', methods: ['POST'])]
     public function saveCourse(Request $request): JsonResponse
     {
@@ -84,7 +117,7 @@ class CourseController extends AbstractController
         if (!empty($data['parcoursId'])) {
             $parcours = $this->courseRepository->find($data['parcoursId']);
             if ($parcours) {
-                $session->setIdCourse($parcours);
+                $session->setCourse($parcours);
             }
         }
 
@@ -121,10 +154,10 @@ class CourseController extends AbstractController
             if ($data['parcoursId']) {
                 $parcours = $this->courseRepository->find($data['parcoursId']);
                 if ($parcours) {
-                    $session->setIdCourse($parcours);
+                    $session->setCourse($parcours);
                 }
             } else {
-                $session->setIdCourse(null);
+                $session->setCourse(null);
             }
         }
 

@@ -52,7 +52,6 @@
             <nav class="header-nav">
                 <a href="{{ path('app_courses_list') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_courses' %}active{% endif %}">{{ 'nav.courses'|trans }}</a>
                 <a href="{{ path('app_parcours_list') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_parcours' %}active{% endif %}">{{ 'nav.parcours'|trans }}</a>
-                <a href="{{ path('app_map') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_map' %}active{% endif %}">{{ 'nav.map'|trans }}</a>
             </nav>
 
             <div class="header-actions">

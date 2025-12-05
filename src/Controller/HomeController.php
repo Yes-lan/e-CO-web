@@ -35,7 +35,7 @@ class HomeController extends AbstractController
     #[Route('/map', name: 'app_map')]
     public function map(): Response
     {
-        return $this->render('map/index.html.twig');
+        return $this->render('map/view.html.twig');
     }
 
     // DEPRECATED: This legacy endpoint has been replaced by CourseController::apiListCourses

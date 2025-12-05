@@ -1,38 +1,57 @@
 # Basque translations (Euskara)
 nav:
-    courses: "Saioak"
-    parcours: "Ikastaroak"
-    map: "Mapa"
+    courses: "Lasterketak"
+    parcours: "Orientazio-ibilbideak"
     
 header:
     logout: "Irten"
     settings: "Ezarpenak"
     
+map:
+    title: "Lasterketen Ikuspegia"
+    select_session: "Hautatu lasterketa bat"
+    select_session_prompt: "-- Aukeratu lasterketa bat --"
+    select_session_first: "Hautatu lasterketa bat korrikalariak ikusteko"
+    select_runner_to_view: "Hautatu korrikalari bat baliozkotzeak ikusteko"
+    runners: "Korrikalariak"
+    runner_name: "Izena"
+    beacons_validated: "Balizak"
+    completion_time: "Denbora"
+    course_map: "Ibilbidearen Mapa"
+    beacon_validation: "Balizen Balioztatze"
+    no_runners: "Ez dago korrikalarik lasterketa honetan"
+    no_course_data: "Ez dago ibilbide daturik eskuragarri"
+    status: "Egoera"
+    validation: "Baliozkoa"
+    scan_time: "Eskaneatze ordua"
+    invalid: "Baliogabea"
+    
 courses:
-    title: "Saioak"
-    new_course: "Saio berria"
+    title: "Lasterketak"
+    new_course: "Lasterketa berria"
     search_placeholder: "Bilatu..."
-    no_courses: "Ez dago saiorik eskuragarri."
-    create_course: "Sortu saio bat"
+    no_courses: "Ez dago lasterketarik eskuragarri."
+    create_course: "Sortu lasterketa bat"
     view: "Ikusi"
+    view_on_map: "Ikusi mapan"
     edit: "Aldatu"
     delete: "Ezabatu"
-    loading: "Saioak kargatzen..."
-    error_loading: "Errorea saioak kargatzean"
+    loading: "Lasterketak kargatzen..."
+    error_loading: "Errorea lasterketak kargatzean"
     
     table:
-        name: "Saioaren Izena"
-        parcours: "Ibilbidearen Izena"
+        name: "Lasterketaren Izena"
+        parcours: "Orientazio-ibilbidea"
         nb_participants: "Part. kop."
         created_date: "Sortze data"
         actions: "Ekintzak"
         max_per_page: "Gehienez orrialdeko"
     
     modal:
-        create_title: "Sortu Saio Berria"
-        name_label: "Saio izena"
-        parcours_label: "Lotutako ikastaroa"
-        parcours_select: "Hautatu ikastaro bat..."
+        create_title: "Sortu Lasterketa Berria"
+        name_label: "Lasterketaren izena"
+        parcours_label: "Lotutako orientazio-ibilbidea"
+        parcours_select: "Hautatu orientazio-ibilbide bat..."
         nb_runners_label: "Korrikalarien kopurua"
         cancel: "Utzi"
         create: "Sortu"
@@ -42,14 +61,14 @@ courses:
         
     info:
         runners: "korrikalari"
-        no_parcours: "Ikastarorik ez lotuta"
+        no_parcours: "Orientazio-ibilbiderik ez lotuta"
         
     messages:
-        created: "Saioa ondo sortu da!"
-        deleted: "Saioa ondo ezabatu da!"
-        confirm_delete: "\"%name%\" saioa ezabatu nahi duzu?"
-        error_create: "Errorea sortzerakoan"
-        error_delete: "Errorea ezabatzerakoan"
+        created: "Lasterketa ondo sortu da!"
+        deleted: "Lasterketa ondo ezabatu da!"
+        confirm_delete: "\"%name%\" lasterketa ezabatu nahi duzu?"
+        error_create: "Errorea sortzean"
+        error_delete: "Errorea ezabatzean"
 
 parcours:
     title: "Ikastaroak"
@@ -100,37 +119,6 @@ home:
     create_course: "Sortu Ibilbidea"
     view_map: "Ikusi Ibilbideak"
     manage_courses: "Kudeatu Ibilbideak"
-
-map:
-    title: "Ibilbide Ikustailea"
-    subtitle: "Ikusi eta aztertu zure ikasleen orientazio ibilbideak"
-    manage: "Kudeatu"
-    home: "Hasiera"
-    refresh: "Eguneratu"
-    hide_fill: "Ezkutatu betea"
-    show_fill: "Erakutsi betea"
-    no_course_selected: "Ez da ibilbiderik hautatu"
-    
-    guide:
-        title: "Ikustailaren erabilera gida:"
-        load_course: "Kargatu ibilbidea: Egin klik ibilbide batean zerrendan"
-        view_coords: "Ikusi koordenatuak: Egin klik mapan edozein tokitan lat/lng ikusteko"
-        point_details: "Puntu xehetasunak: Egin klik markatzaile batean informazioa ikusteko"
-        statistics: "Estatistikak: Distantzia osoa eta puntu kopurua eskuineko panelean"
-        click_coords: "Egin klik mapan koordenatuak ikusteko"
-        copy_coords: "Kopiatu koordenatuak"
-    
-    control_points:
-        title: "Kontrol Puntuak"
-        no_course: "Ez da ibilbiderik kargatu"
-        total_points: "Puntu Guztira"
-        distance: "Ibilbidearen Distantzia"
-        
-    available_courses:
-        title: "Ibilbide Eskuragarriak"
-        no_courses: "Ez dago ibilbiderik eskuragarri"
-        beacons: "balizak"
-        finished: "Amaituta"
     
 common:
     save: "Gorde"

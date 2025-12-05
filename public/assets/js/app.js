@@ -200,9 +200,6 @@ if (typeof OrienteeringApp === 'undefined') {
         
         // Geolocation disabled - user position not needed for viewing-only app
         // this.handleGeolocation();
-        
-        // Add a demo button for testing boundaries (remove this in production)
-        this.addDemoBoundaryButton();
     }
 
     /**

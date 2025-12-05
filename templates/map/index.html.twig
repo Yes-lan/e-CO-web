@@ -173,6 +173,8 @@
                     if (window.google && window.google.maps) {
                         console.log('[Map Page] Google Maps already loaded');
                         window.app.initializeMap();
+                        // Check for sessionId URL parameter
+                        checkAndLoadSession();
                     } else {
                         console.log('[Map Page] Loading Google Maps API...');
                         loadGoogleMapsAPI();
@@ -228,46 +230,43 @@
                 
                 // Clear existing markers
                 if (window.app && window.app.map) {
-                    // Clear old markers/polygons if they exist
+                    // Clear old markers/polygons/labels if they exist
                     if (window.courseMarkers) {
                         window.courseMarkers.forEach(m => m.setMap(null));
+                    }
+                    if (window.courseLabels) {
+                        window.courseLabels.forEach(l => l.setMap(null));
                     }
                     if (window.coursePolygon) {
                         window.coursePolygon.setMap(null);
                     }
                     
                     window.courseMarkers = [];
+                    window.courseLabels = [];
                     const bounds = new google.maps.LatLngBounds();
                     
-                    // Display boundaries
-                    if (course.boundaryPoints && course.boundaryPoints.length >= 3) {
-                        const boundaryPath = course.boundaryPoints.map(p => ({
-                            lat: parseFloat(p.lat),
-                            lng: parseFloat(p.lng)
-                        }));
-                        
-                        window.coursePolygon = new google.maps.Polygon({
-                            paths: boundaryPath,
-                            strokeColor: '#FF6B35',
-                            strokeOpacity: 0.8,
-                            strokeWeight: 2,
-                            fillColor: '#FF6B35',
-                            fillOpacity: 0.2,
-                            map: window.app.map
-                        });
-                        
-                        boundaryPath.forEach(p => bounds.extend(p));
-                    }
+                    // Calculate automatic boundary from farthest beacons
+                    // Will be drawn after all beacons are processed
                     
                     // Display beacons
                     if (course.waypoints && course.waypoints.length > 0) {
+                        // Find extreme points for boundary calculation
+                        let northmost = null, southmost = null, eastmost = null, westmost = null;
+                        
                         course.waypoints.forEach((waypoint, idx) => {
                             if (waypoint.lat && waypoint.lng) {
+                                const lat = parseFloat(waypoint.lat);
+                                const lng = parseFloat(waypoint.lng);
+                                
+                                // Track extreme points
+                                if (!northmost || lat > northmost.lat) northmost = {lat, lng};
+                                if (!southmost || lat < southmost.lat) southmost = {lat, lng};
+                                if (!eastmost || lng > eastmost.lng) eastmost = {lat, lng};
+                                if (!westmost || lng < westmost.lng) westmost = {lat, lng};
+                                
+                                // Create marker without label
                                 const marker = new google.maps.Marker({
-                                    position: {
-                                        lat: parseFloat(waypoint.lat),
-                                        lng: parseFloat(waypoint.lng)
-                                    },
+                                    position: { lat, lng },
                                     map: window.app.map,
                                     title: waypoint.name || `Balise ${idx + 1}`,
                                     icon: {
@@ -278,19 +277,76 @@
                                         strokeWeight: 2,
                                         scale: 1,
                                         anchor: new google.maps.Point(0, 0)
-                                    },
-                                    label: {
-                                        text: waypoint.name || `${idx + 1}`,
-                                        color: 'white',
-                                        fontSize: '10px',
-                                        fontWeight: 'bold'
                                     }
                                 });
                                 
+                                // Create custom label overlay with stroke/outline
+                                const labelText = waypoint.name || `Balise ${idx + 1}`;
+                                const labelDiv = document.createElement('div');
+                                labelDiv.style.position = 'absolute';
+                                labelDiv.style.fontSize = '14px';
+                                labelDiv.style.fontWeight = 'bold';
+                                labelDiv.style.color = '#2196F3';
+                                labelDiv.style.textShadow = `
+                                    -2px -2px 0 #fff,  
+                                    2px -2px 0 #fff,
+                                    -2px 2px 0 #fff,
+                                    2px 2px 0 #fff,
+                                    -2px 0 0 #fff,
+                                    2px 0 0 #fff,
+                                    0 -2px 0 #fff,
+                                    0 2px 0 #fff
+                                `;
+                                labelDiv.style.whiteSpace = 'nowrap';
+                                labelDiv.style.transform = 'translate(-50%, -45px)';
+                                labelDiv.style.pointerEvents = 'none';
+                                labelDiv.style.userSelect = 'none';
+                                labelDiv.style.zIndex = '1000';
+                                labelDiv.textContent = labelText;
+                                
+                                // Custom overlay class for label
+                                class LabelOverlay extends google.maps.OverlayView {
+                                    constructor(position, labelElement) {
+                                        super();
+                                        this.position = position;
+                                        this.labelElement = labelElement;
+                                    }
+                                    
+                                    onAdd() {
+                                        const panes = this.getPanes();
+                                        panes.overlayMouseTarget.appendChild(this.labelElement);
+                                    }
+                                    
+                                    draw() {
+                                        const projection = this.getProjection();
+                                        const point = projection.fromLatLngToDivPixel(this.position);
+                                        if (point) {
+                                            this.labelElement.style.left = point.x + 'px';
+                                            this.labelElement.style.top = point.y + 'px';
+                                        }
+                                    }
+                                    
+                                    onRemove() {
+                                        if (this.labelElement.parentElement) {
+                                            this.labelElement.parentElement.removeChild(this.labelElement);
+                                        }
+                                    }
+                                }
+                                
+                                const labelOverlay = new LabelOverlay(
+                                    new google.maps.LatLng(lat, lng),
+                                    labelDiv
+                                );
+                                labelOverlay.setMap(window.app.map);
+                                
                                 window.courseMarkers.push(marker);
-                                bounds.extend({ lat: parseFloat(waypoint.lat), lng: parseFloat(waypoint.lng) });
+                                window.courseLabels.push(labelOverlay);
+                                bounds.extend({ lat, lng });
                             }
                         });
+                        
+                        // Boundaries are no longer displayed
+                        // Extreme points are still tracked for potential future use
                     }
                     
                     // Fit map to show all markers
@@ -326,6 +382,8 @@
                     if (window.app.initializeMap) {
                         console.log('[Map Page] Initializing map now');
                         window.app.initializeMap();
+                        // Check for sessionId URL parameter after map initialization
+                        checkAndLoadSession();
                     } else {
                         console.error('[Map Page] initializeMap method not found!');
                     }
@@ -340,6 +398,66 @@
                     window.googleMapsLoading = false;
                 };
                 document.head.appendChild(script);
+            }
+            
+            // Function to check URL parameters and load session if present
+            async function checkAndLoadSession() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const sessionId = urlParams.get('sessionId');
+                
+                if (sessionId) {
+                    console.log('[Map Page] SessionId detected in URL:', sessionId);
+                    // Wait a bit for the map to be fully initialized
+                    setTimeout(() => loadSessionOnMap(sessionId), 500);
+                } else {
+                    console.log('[Map Page] No sessionId in URL');
+                }
+            }
+            
+            // Function to load a session on the map by ID
+            async function loadSessionOnMap(sessionId) {
+                try {
+                    console.log('[Map Page] Loading session:', sessionId);
+                    
+                    // Fetch session details from API
+                    const response = await fetch(`/api/courses/${sessionId}`);
+                    if (!response.ok) {
+                        throw new Error(`Failed to load session: ${response.status}`);
+                    }
+                    
+                    const session = await response.json();
+                    console.log('[Map Page] Session loaded:', session);
+                    
+                    if (!session || !session.course) {
+                        console.error('[Map Page] Session has no associated course (parcours)');
+                        alert('Cette course n\'a pas de parcours associé.');
+                        return;
+                    }
+                    
+                    // Get the associated course (parcours)
+                    const courseId = session.course.id || session.course;
+                    console.log('[Map Page] Loading parcours:', courseId);
+                    
+                    // Load the parcours on the map using existing function
+                    if (window.loadCourseOnMap) {
+                        // Make sure availableCourses is loaded
+                        if (!window.availableCourses || window.availableCourses.length === 0) {
+                            await loadAvailableCourses();
+                        }
+                        window.loadCourseOnMap(courseId);
+                        
+                        // Update course name display to show session name
+                        const courseNameDisplay = document.getElementById('courseNameDisplay');
+                        if (courseNameDisplay) {
+                            courseNameDisplay.textContent = `📍 Session: ${session.name}`;
+                        }
+                    } else {
+                        console.error('[Map Page] loadCourseOnMap function not found');
+                    }
+                } catch (error) {
+                    console.error('[Map Page] Error loading session:', error);
+                    alert('Erreur lors du chargement de la session: ' + error.message);
+                }
             }
             
             start();

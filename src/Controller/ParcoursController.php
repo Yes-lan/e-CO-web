@@ -80,6 +80,51 @@ class ParcoursController extends AbstractController
         return new JsonResponse(['courses' => $parcoursData]);
     }
 
+    #[Route('/api/parcours/{id}', name: 'api_parcours_get', methods: ['GET'])]
+    public function getParcours(int $id): JsonResponse
+    {
+        $parcours = $this->courseRepository->find($id);
+        
+        if (!$parcours) {
+            return new JsonResponse(['error' => 'Course not found'], 404);
+        }
+        
+        $parcoursData = [
+            'id' => $parcours->getId(),
+            'name' => $parcours->getName(),
+            'description' => $parcours->getDescription(),
+            'status' => $parcours->getStatus(),
+            'createdAt' => $parcours->getCreateAt()?->format('Y-m-d H:i:s'),
+            'updatedAt' => $parcours->getUpdateAt()?->format('Y-m-d H:i:s'),
+            'waypoints' => array_map(function($beacon) {
+                return [
+                    'id' => $beacon->getId(),
+                    'name' => $beacon->getName(),
+                    'latitude' => $beacon->getLatitude(),
+                    'longitude' => $beacon->getLongitude(),
+                    'lat' => $beacon->getLatitude(),
+                    'lng' => $beacon->getLongitude(),
+                    'type' => $beacon->getType(),
+                    'qr' => $beacon->getQr()
+                ];
+            }, $parcours->getBeacons()->toArray()),
+            'boundaryPoints' => array_map(function($boundary) {
+                return [
+                    'lat' => $boundary->getLatitude(),
+                    'lng' => $boundary->getLongitude()
+                ];
+            }, $parcours->getBoundariesCourses()->toArray()),
+            'boundary_points' => array_map(function($boundary) {
+                return [
+                    'lat' => $boundary->getLatitude(),
+                    'lng' => $boundary->getLongitude()
+                ];
+            }, $parcours->getBoundariesCourses()->toArray())
+        ];
+        
+        return new JsonResponse(['parcours' => $parcoursData]);
+    }
+
     #[Route('/api/parcours/save', name: 'api_parcours_save', methods: ['POST'])]
     public function saveParcours(Request $request): JsonResponse
     {

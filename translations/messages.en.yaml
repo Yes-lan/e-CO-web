@@ -1,38 +1,57 @@
 # English translations
 nav:
-    courses: "Sessions"
-    parcours: "Courses"
-    map: "Map"
+    courses: "Courses"
+    parcours: "Orienteering Courses"
     
 header:
     logout: "Logout"
     settings: "Settings"
     
+map:
+    title: "Course Viewing"
+    select_session: "Select a course"
+    select_session_prompt: "-- Choose a course --"
+    select_session_first: "Select a course to view runners"
+    select_runner_to_view: "Select a runner to view validations"
+    runners: "Runners"
+    runner_name: "Name"
+    beacons_validated: "Beacons"
+    completion_time: "Time"
+    course_map: "Course Map"
+    beacon_validation: "Beacon Validation"
+    no_runners: "No runners for this course"
+    no_course_data: "No course data available"
+    status: "Status"
+    validation: "Validated"
+    scan_time: "Scan Time"
+    invalid: "Invalid"
+    
 courses:
-    title: "Sessions"
-    new_course: "New Session"
+    title: "Courses"
+    new_course: "New Course"
     search_placeholder: "Search..."
-    no_courses: "No sessions available."
-    create_course: "Create a session"
+    no_courses: "No courses available."
+    create_course: "Create a course"
     view: "View"
+    view_on_map: "View on map"
     edit: "Edit"
     delete: "Delete"
-    loading: "Loading sessions..."
-    error_loading: "Error loading sessions"
+    loading: "Loading courses..."
+    error_loading: "Error loading courses"
     
     table:
-        name: "Session Name"
-        parcours: "Course Name"
+        name: "Course Name"
+        parcours: "Orienteering Course"
         nb_participants: "Nb. part."
         created_date: "Created"
         actions: "Actions"
         max_per_page: "Max per page"
     
     modal:
-        create_title: "Create a New Session"
-        name_label: "Session name"
-        parcours_label: "Associated course"
-        parcours_select: "Select a course..."
+        create_title: "Create a New Course"
+        name_label: "Course name"
+        parcours_label: "Associated orienteering course"
+        parcours_select: "Select an orienteering course..."
         nb_runners_label: "Number of runners"
         cancel: "Cancel"
         create: "Create"
@@ -42,14 +61,14 @@ courses:
         
     info:
         runners: "runner(s)"
-        no_parcours: "No course associated"
+        no_parcours: "No orienteering course associated"
         
     messages:
-        created: "Session created successfully!"
-        deleted: "Session deleted successfully!"
-        confirm_delete: "Are you sure you want to delete the session \"%name%\"?"
-        error_create: "Error creating session"
-        error_delete: "Error deleting session"
+        created: "Course created successfully!"
+        deleted: "Course deleted successfully!"
+        confirm_delete: "Are you sure you want to delete the course \"%name%\"?"
+        error_create: "Error creating"
+        error_delete: "Error deleting"
 
 parcours:
     title: "Courses"
@@ -100,37 +119,6 @@ home:
     create_course: "Create a Course"
     view_map: "View Courses"
     manage_courses: "Manage Courses"
-
-map:
-    title: "Course Viewer"
-    subtitle: "View and analyze your students' orienteering courses"
-    manage: "Manage"
-    home: "Home"
-    refresh: "Refresh"
-    hide_fill: "Hide fill"
-    show_fill: "Show fill"
-    no_course_selected: "No course selected"
-    
-    guide:
-        title: "Viewer usage guide:"
-        load_course: "Load a course: Click on a course in the list"
-        view_coords: "View coordinates: Click anywhere on the map to display lat/lng"
-        point_details: "Point details: Click on a marker to see information"
-        statistics: "Statistics: Total distance and number of points displayed in the right panel"
-        click_coords: "Click on the map to see coordinates"
-        copy_coords: "Copy coordinates"
-    
-    control_points:
-        title: "Control Points"
-        no_course: "No course loaded"
-        total_points: "Total Points"
-        distance: "Course Distance"
-        
-    available_courses:
-        title: "Available Courses"
-        no_courses: "No courses available"
-        beacons: "beacons"
-        finished: "Finished"
     
 common:
     save: "Save"

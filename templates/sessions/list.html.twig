@@ -178,6 +178,12 @@
                         <td>${runnerCount}</td>
                         <td>${createdDate}</td>
                         <td class="table-actions">
+                            <button class="action-icon-btn btn-view" onclick="viewCourse(${globalIndex})" title="{{ 'courses.view_on_map'|trans }}">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                    <path d="M8 2v16M16 6v16" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </button>
                             <button class="action-icon-btn btn-edit" onclick="editCourse(${globalIndex})" title="{{ 'courses.edit'|trans }}">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2"/>
@@ -280,7 +286,14 @@
 
         function viewCourse(index) {
             const course = window.coursesList[index];
-            alert('Voir la course: ' + course.name);
+            if (course && course.id) {
+                // Pass both sessionId and courseId (from parcours)
+                const courseId = course.parcours ? course.parcours.id : '';
+                const url = `/map?sessionId=${course.id}${courseId ? '&courseId=' + courseId : ''}`;
+                window.location.href = url;
+            } else {
+                console.error('Course not found or missing ID');
+            }
         }
 
         function editCourse(index) {

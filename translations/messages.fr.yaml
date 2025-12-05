@@ -1,38 +1,57 @@
 # French translations
 nav:
-    courses: "Sessions"
-    parcours: "Course"
-    map: "Carte"
+    courses: "Courses"
+    parcours: "Parcours"
     
 header:
     logout: "Déconnexion"
     settings: "Paramètres"
     
+map:
+    title: "Visualisation des Courses"
+    select_session: "Sélectionner une course"
+    select_session_prompt: "-- Choisir une course --"
+    select_session_first: "Sélectionnez une course pour voir les coureurs"
+    select_runner_to_view: "Sélectionnez un coureur pour voir ses validations"
+    runners: "Coureurs"
+    runner_name: "Nom"
+    beacons_validated: "Balises"
+    completion_time: "Temps"
+    course_map: "Carte du Parcours"
+    beacon_validation: "Validation des Balises"
+    no_runners: "Aucun coureur pour cette course"
+    no_course_data: "Aucune donnée de parcours disponible"
+    status: "Statut"
+    validation: "Validé"
+    scan_time: "Heure de scan"
+    invalid: "Invalide"
+    
 courses:
-    title: "Sessions"
-    new_course: "Nouvelle Session"
+    title: "Courses"
+    new_course: "Nouvelle Course"
     search_placeholder: "Rechercher..."
-    no_courses: "Aucune session disponible."
-    create_course: "Créer une session"
+    no_courses: "Aucune course disponible."
+    create_course: "Créer une course"
     view: "Voir"
+    view_on_map: "Voir sur la carte"
     edit: "Modifier"
     delete: "Supprimer"
-    loading: "Chargement des sessions..."
-    error_loading: "Erreur de chargement des sessions"
+    loading: "Chargement des courses..."
+    error_loading: "Erreur de chargement des courses"
     
     table:
-        name: "Nom Course"
-        parcours: "Nom Parcours"
+        name: "Nom de la Course"
+        parcours: "Parcours Associé"
         nb_participants: "Nb. part."
         created_date: "Créé le"
         actions: "Actions"
         max_per_page: "Max par page"
     
     modal:
-        create_title: "Créer une Nouvelle Session"
-        name_label: "Nom de la session"
-        parcours_label: "Course associée"
-        parcours_select: "Sélectionner une course..."
+        create_title: "Créer une Nouvelle Course"
+        name_label: "Nom de la course"
+        parcours_label: "Parcours associé"
+        parcours_select: "Sélectionner un parcours..."
         nb_runners_label: "Nombre de coureurs"
         cancel: "Annuler"
         create: "Créer"
@@ -42,12 +61,12 @@ courses:
         
     info:
         runners: "coureur(s)"
-        no_parcours: "Aucune course associée"
+        no_parcours: "Aucun parcours associé"
         
     messages:
-        created: "Session créée avec succès !"
-        deleted: "Session supprimée avec succès !"
-        confirm_delete: "Êtes-vous sûr de vouloir supprimer la session \"%name%\" ?"
+        created: "Course créée avec succès !"
+        deleted: "Course supprimée avec succès !"
+        confirm_delete: "Êtes-vous sûr de vouloir supprimer la course \"%name%\" ?"
         error_create: "Erreur lors de la création"
         error_delete: "Erreur lors de la suppression"
 
@@ -100,37 +119,6 @@ home:
     create_course: "Créer un Parcours"
     view_map: "Visualiser les Parcours"
     manage_courses: "Gérer les Parcours"
-
-map:
-    title: "Visualiseur de Parcours"
-    subtitle: "Consultez et analysez les parcours d'orientation de vos étudiants"
-    manage: "Gérer"
-    home: "Accueil"
-    refresh: "Actualiser"
-    hide_fill: "Masquer remplissage"
-    show_fill: "Afficher remplissage"
-    no_course_selected: "Aucun parcours sélectionné"
-    
-    guide:
-        title: "Guide d'utilisation du visualiseur :"
-        load_course: "Charger un parcours : Cliquez sur un parcours dans la liste"
-        view_coords: "Voir les coordonnées : Cliquez n'importe où sur la carte pour afficher lat/lng"
-        point_details: "Détails d'un point : Cliquez sur un marqueur pour voir les informations"
-        statistics: "Statistiques : Distance totale et nombre de points affichés dans le panneau de droite"
-        click_coords: "Cliquez sur la carte pour voir les coordonnées"
-        copy_coords: "Copier les coordonnées"
-    
-    control_points:
-        title: "Points de Contrôle"
-        no_course: "Aucun parcours chargé"
-        total_points: "Total Points"
-        distance: "Distance Parcours"
-        
-    available_courses:
-        title: "Parcours Disponibles"
-        no_courses: "Aucun parcours disponible"
-        beacons: "balises"
-        finished: "Terminé"
     
 common:
     save: "Enregistrer"
