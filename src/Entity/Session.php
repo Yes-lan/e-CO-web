@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\SessionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
 
@@ -31,6 +32,12 @@ class Session
 
     #[ORM\ManyToOne(inversedBy: 'sessions')]
     private ?Course $course = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $sessionStart = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $sessionEnd = null;
 
     public function __construct()
     {
@@ -104,6 +111,30 @@ class Session
     public function setCourse(?Course $course): static
     {
         $this->course = $course;
+
+        return $this;
+    }
+
+    public function getSessionStart(): ?\DateTimeImmutable
+    {
+        return $this->sessionStart;
+    }
+
+    public function setSessionStart(?\DateTimeImmutable $sessionStart): static
+    {
+        $this->sessionStart = $sessionStart;
+
+        return $this;
+    }
+
+    public function getSessionEnd(): ?\DateTimeImmutable
+    {
+        return $this->sessionEnd;
+    }
+
+    public function setSessionEnd(?\DateTimeImmutable $sessionEnd): static
+    {
+        $this->sessionEnd = $sessionEnd;
 
         return $this;
     }
