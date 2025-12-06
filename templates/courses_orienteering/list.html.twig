@@ -719,17 +719,15 @@
         function addWaypoint() {
             const course = window.currentEditingCourse;
             
-            // Generate unique ID for new waypoint (find highest ID + 1)
-            let maxId = 0;
-            if (course.waypoints && course.waypoints.length > 0) {
-                maxId = Math.max(...course.waypoints.map(wp => wp.id || 0));
-            }
-            const newId = maxId + 1;
+            // Create new waypoint WITHOUT an ID (backend will assign one)
+            // Use a temporary negative ID for frontend display purposes only
+            let tempId = Date.now(); // Unique temporary ID
             
-            // Create new waypoint with unique ID
+            // Create new waypoint - NO ID property for new beacons
             const newWaypoint = {
-                id: newId,  // PERMANENT unique ID - never changes!
-                name: `Nouvelle balise ${newId}`,
+                // NO id property - backend will create it
+                tempId: tempId, // Temporary ID for frontend tracking only
+                name: `Nouvelle balise`,
                 description: '',
                 lat: null,
                 lng: null,
@@ -747,10 +745,10 @@
             
             // Show important warning
             alert('⚠️ IMPORTANT: Nouvelle balise ajoutée!\n\n' +
-                  'Cette balise a un nouveau QR code qui n\'existait pas avant.\n' +
-                  'Vous devez:\n' +
+                  'Cette balise a un nouveau QR code qui sera créé.\n' +
+                  'Après avoir sauvegardé, vous devez:\n' +
                   '1. Consulter les QR codes mis à jour\n' +
-                  '2. Imprimer UNIQUEMENT le nouveau QR code (Balise ' + newId + ')\n' +
+                  '2. Imprimer le nouveau QR code\n' +
                   '3. Placer ce nouveau QR code sur le terrain\n\n' +
                   'Les autres QR codes restent inchangés!');
         }
@@ -795,13 +793,23 @@
                 name: course.name,
                 description: course.description,
                 boundaryPoints: boundaryData,
-                waypoints: (course.waypoints || []).map(wp => ({
-                    name: wp.name,
-                    latitude: wp.latitude || wp.lat || 0,
-                    longitude: wp.longitude || wp.lng || 0,
-                    type: wp.type || 'control',
-                    qr: wp.qr || ''
-                })).filter(wp => wp.latitude !== 0 && wp.longitude !== 0) // Only include waypoints with valid coordinates
+                waypoints: (course.waypoints || []).map(wp => {
+                    const waypoint = {
+                        name: wp.name,
+                        latitude: wp.latitude || wp.lat || 0,
+                        longitude: wp.longitude || wp.lng || 0,
+                        type: wp.type || 'control',
+                        qr: wp.qr || ''
+                    };
+                    
+                    // Only include ID if waypoint has one (existing beacon)
+                    // New beacons won't have an ID, so backend will create them
+                    if (wp.id !== undefined && wp.id !== null) {
+                        waypoint.id = wp.id;
+                    }
+                    
+                    return waypoint;
+                })
             };
             
             try {

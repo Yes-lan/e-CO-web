@@ -183,32 +183,59 @@ class ParcoursController extends AbstractController
             }
         }
 
+        $this->entityManager->persist($parcours);
+        $this->entityManager->flush(); // Flush first to get the course ID
+        
         // Save waypoints/beacons
+        $createdBeacons = []; // Keep track of created beacons
         if (!empty($data['waypoints'])) {
-            foreach ($data['waypoints'] as $waypoint) {
-                // Skip waypoints with null or invalid coordinates
-                if (empty($waypoint['latitude']) || empty($waypoint['longitude']) || 
-                    $waypoint['latitude'] === null || $waypoint['longitude'] === null) {
-                    continue;
+            foreach ($data['waypoints'] as $index => $waypoint) {
+                $beacon = new Beacon();
+                $beacon->setName($waypoint['name'] ?? 'Balise');
+                
+                // Set coordinates if provided, otherwise leave as 0 (to be filled via QR scan)
+                if (isset($waypoint['latitude']) && $waypoint['latitude'] !== null) {
+                    $beacon->setLatitude((float)$waypoint['latitude']);
+                } else {
+                    $beacon->setLatitude(0.0); // Default value since column is NOT NULL
                 }
                 
-                $beacon = new Beacon();
-                $beacon->setName($waypoint['name']);
-                $beacon->setLatitude((string)$waypoint['latitude']);
-                $beacon->setLongitude((string)$waypoint['longitude']);
+                if (isset($waypoint['longitude']) && $waypoint['longitude'] !== null) {
+                    $beacon->setLongitude((float)$waypoint['longitude']);
+                } else {
+                    $beacon->setLongitude(0.0); // Default value since column is NOT NULL
+                }
+                
                 $beacon->setType($waypoint['type'] ?? 'control');
                 $beacon->setIsPlaced(false);
-                $beacon->setQr($waypoint['qr'] ?? '');
                 $beacon->setCreatedAt(new \DateTime());
                 $beacon->setPlacedAt(null);
+                $beacon->setQr(''); // Temporary empty string, will be updated after flush
                 
                 $this->entityManager->persist($beacon);
-                $parcours->addBeacon($beacon);
+                $beacon->addCourse($parcours);
+                $createdBeacons[] = $beacon; // Track this beacon
             }
+            
+            // Flush to get beacon IDs
+            $this->entityManager->flush();
+            
+            // Generate QR codes for all created beacons now that we have their IDs
+            foreach ($createdBeacons as $beacon) {
+                $qrData = json_encode([
+                    'type' => 'WAYPOINT',
+                    'courseId' => $parcours->getId(),
+                    'courseName' => $parcours->getName(),
+                    'waypointId' => $beacon->getId(),
+                    'waypointName' => $beacon->getName(),
+                    'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+                ]);
+                $beacon->setQr($qrData);
+            }
+            
+            // Flush again to save the QR codes
+            $this->entityManager->flush();
         }
-
-        $this->entityManager->persist($parcours);
-        $this->entityManager->flush();
 
         return new JsonResponse(['success' => true, 'id' => $parcours->getId()]);
     }
@@ -271,35 +298,99 @@ class ParcoursController extends AbstractController
 
         // Update waypoints/beacons
         if (isset($data['waypoints'])) {
-            // Remove old beacons
-            foreach ($parcours->getBeacons() as $beacon) {
-                $this->entityManager->remove($beacon);
+            $existingBeacons = $parcours->getBeacons()->toArray();
+            $incomingBeaconIds = [];
+            $newBeacons = []; // Track newly created beacons for QR code generation
+            
+            // Process incoming waypoints
+            foreach ($data['waypoints'] as $waypoint) {
+                if (isset($waypoint['id']) && $waypoint['id']) {
+                    // Existing beacon - update it
+                    $incomingBeaconIds[] = $waypoint['id'];
+                    
+                    $beacon = null;
+                    foreach ($existingBeacons as $existingBeacon) {
+                        if ($existingBeacon->getId() === $waypoint['id']) {
+                            $beacon = $existingBeacon;
+                            break;
+                        }
+                    }
+                    
+                    if ($beacon) {
+                        $beacon->setName($waypoint['name'] ?? $beacon->getName());
+                        
+                        // Update coordinates if provided
+                        if (isset($waypoint['latitude']) && $waypoint['latitude'] !== null) {
+                            $beacon->setLatitude((float)$waypoint['latitude']);
+                        }
+                        if (isset($waypoint['longitude']) && $waypoint['longitude'] !== null) {
+                            $beacon->setLongitude((float)$waypoint['longitude']);
+                        }
+                        
+                        if (isset($waypoint['type'])) {
+                            $beacon->setType($waypoint['type']);
+                        }
+                    }
+                } else {
+                    // New beacon - create it
+                    $beacon = new Beacon();
+                    $beacon->setName($waypoint['name'] ?? 'Balise');
+                    
+                    // Set coordinates if provided, otherwise use 0
+                    if (isset($waypoint['latitude']) && $waypoint['latitude'] !== null) {
+                        $beacon->setLatitude((float)$waypoint['latitude']);
+                    } else {
+                        $beacon->setLatitude(0.0);
+                    }
+                    
+                    if (isset($waypoint['longitude']) && $waypoint['longitude'] !== null) {
+                        $beacon->setLongitude((float)$waypoint['longitude']);
+                    } else {
+                        $beacon->setLongitude(0.0);
+                    }
+                    
+                    $beacon->setType($waypoint['type'] ?? 'control');
+                    $beacon->setIsPlaced(false);
+                    $beacon->setQr(''); // Will be updated after flush
+                    $beacon->setCreatedAt(new \DateTime());
+                    $beacon->setPlacedAt(null);
+                    
+                    $this->entityManager->persist($beacon);
+                    $beacon->addCourse($parcours);
+                    $newBeacons[] = $beacon;
+                }
             }
             
-            // Add new beacons
-            foreach ($data['waypoints'] as $waypoint) {
-                // Skip waypoints with null or empty coordinates
-                if (empty($waypoint['latitude']) || empty($waypoint['longitude']) || 
-                    $waypoint['latitude'] === null || $waypoint['longitude'] === null) {
-                    continue;
+            // Delete beacons that are no longer in the waypoints list
+            foreach ($existingBeacons as $existingBeacon) {
+                if (!in_array($existingBeacon->getId(), $incomingBeaconIds)) {
+                    $this->entityManager->remove($existingBeacon);
+                }
+            }
+            
+            // Flush to save changes and get IDs for new beacons
+            $this->entityManager->flush();
+            
+            // Generate QR codes for new beacons
+            if (!empty($newBeacons)) {
+                foreach ($newBeacons as $beacon) {
+                    $qrData = json_encode([
+                        'type' => 'WAYPOINT',
+                        'courseId' => $parcours->getId(),
+                        'courseName' => $parcours->getName(),
+                        'waypointId' => $beacon->getId(),
+                        'waypointName' => $beacon->getName(),
+                        'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+                    ]);
+                    $beacon->setQr($qrData);
                 }
                 
-                $beacon = new Beacon();
-                $beacon->setName($waypoint['name'] ?? '');
-                $beacon->setLatitude((string)$waypoint['latitude']);
-                $beacon->setLongitude((string)$waypoint['longitude']);
-                $beacon->setType($waypoint['type'] ?? 'control');
-                $beacon->setIsPlaced(false);
-                $beacon->setQr($waypoint['qr'] ?? '');
-                $beacon->setCreatedAt(new \DateTime());
-                $beacon->setPlacedAt(null);
-                
-                $this->entityManager->persist($beacon);
-                $parcours->addBeacon($beacon);
+                // Flush again to save QR codes
+                $this->entityManager->flush();
             }
+        } else {
+            $this->entityManager->flush();
         }
-
-        $this->entityManager->flush();
 
         return new JsonResponse(['success' => true, 'id' => $parcours->getId()]);
     }
