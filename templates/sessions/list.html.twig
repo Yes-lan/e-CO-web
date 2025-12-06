@@ -36,13 +36,14 @@
                     <th>{{ 'courses.table.name'|trans }}</th>
                     <th>{{ 'courses.table.parcours'|trans }}</th>
                     <th>{{ 'courses.table.nb_participants'|trans }}</th>
-                    <th>{{ 'courses.table.created_date'|trans }}</th>
+                    <th>{{ 'courses.table.start_date'|trans }}</th>
+                    <th>{{ 'courses.table.end_date'|trans }}</th>
                     <th>{{ 'courses.table.actions'|trans }}</th>
                 </tr>
             </thead>
             <tbody id="courseList">
                 <tr>
-                    <td colspan="5" style="text-align: center; padding: 2rem; color: #666;">{{ 'courses.loading'|trans }}</td>
+                    <td colspan="6" style="text-align: center; padding: 2rem; color: #666;">{{ 'courses.loading'|trans }}</td>
                 </tr>
             </tbody>
         </table>
@@ -108,10 +109,11 @@
 
         async function loadCourses() {
             try {
-                const response = await fetch('{{ path('api_sessions_list') }}');
+                const response = await AuthManager.fetch('{{ path('api_sessions_list') }}');
                 const data = await response.json();
-                window.coursesList = data.courses || [];
-                console.log('SESSIONS PAGE: Loaded', window.coursesList.length, 'sessions:', window.coursesList);
+                // Filter to only show sessions with non-null end dates
+                window.coursesList = (data.courses || []).filter(course => course.endDate != null);
+                console.log('SESSIONS PAGE: Loaded', window.coursesList.length, 'completed sessions:', window.coursesList);
                 displayCourses();
             } catch (error) {
                 console.error('Error loading courses:', error);
@@ -121,7 +123,7 @@
 
         async function loadParcours() {
             try {
-                const response = await fetch('{{ path('api_parcours_list') }}');
+                const response = await AuthManager.fetch('{{ path('api_parcours_list') }}');
                 const data = await response.json();
                 window.parcoursList = data.courses || [];
                 updateParcoursSelect();
@@ -147,7 +149,7 @@
             const tbody = document.getElementById('courseList');
             
             if (window.coursesList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: #666;">{{ 'courses.no_courses'|trans }} <a href="javascript:showCreateCourseModal()">{{ 'courses.create_course'|trans }}</a></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #666;">{{ 'courses.no_courses'|trans }} <a href="javascript:showCreateCourseModal()">{{ 'courses.create_course'|trans }}</a></td></tr>';
                 document.getElementById('pagination').innerHTML = '';
                 return;
             }
@@ -162,21 +164,32 @@
                 const globalIndex = startIndex + index;
                 const parcoursName = course.parcours ? course.parcours.name : '{{ 'courses.info.no_parcours'|trans }}';
                 const runnerCount = course.nbRunners || 0;
-                const createdDate = course.createdAt || new Date().toLocaleDateString('fr-FR', { 
-                    day: '2-digit', 
-                    month: 'short', 
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
+                
+                const formatDate = (dateString) => {
+                    if (!dateString) return '-';
+                    const date = new Date(dateString);
+                    // Get current locale from document or localStorage
+                    const locale = document.documentElement.lang || localStorage.getItem('selectedLanguage') || 'fr';
+                    const localeMap = { 'fr': 'fr-FR', 'en': 'en-GB', 'eu': 'eu-ES' };
+                    return date.toLocaleString(localeMap[locale] || 'fr-FR', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                };
+                
+                const startDate = formatDate(course.startDate);
+                const endDate = formatDate(course.endDate);
                 
                 return `
                     <tr>
                         <td>${course.name || '{{ 'common.no_name'|trans }}'}</td>
                         <td>${parcoursName}</td>
                         <td>${runnerCount}</td>
-                        <td>${createdDate}</td>
+                        <td>${startDate}</td>
+                        <td>${endDate}</td>
                         <td class="table-actions">
                             <button class="action-icon-btn btn-view" onclick="viewCourse(${globalIndex})" title="{{ 'courses.view_on_map'|trans }}">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -255,11 +268,8 @@
             };
 
             try {
-                const response = await fetch('{{ path('api_sessions_save') }}', {
+                const response = await AuthManager.fetch('{{ path('api_sessions_save') }}', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify(courseData)
                 });
 
@@ -299,7 +309,7 @@
             }
 
             try {
-                const response = await fetch(`{{ path('api_sessions_delete', {id: '__ID__'}) }}`.replace('__ID__', course.id), {
+                const response = await AuthManager.fetch(`{{ path('api_sessions_delete', {id: '__ID__'}) }}`.replace('__ID__', course.id), {
                     method: 'DELETE'
                 });
 

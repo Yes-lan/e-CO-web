@@ -47,7 +47,6 @@
     </div>
 </div>
 
-<script src="{{ asset('assets/js/translations.js') }}"></script>
 <script>
     let currentSession = null;
     let currentCourse = null;
@@ -100,7 +99,7 @@
     // Load sessions for a specific course
     async function loadSessionsForCourse(courseId, autoSelectSessionId = null) {
         try {
-            const courseRes = await fetch(`/api/parcours/${courseId}`);
+            const courseRes = await AuthManager.fetch(`/api/parcours/${courseId}`);
             const courseData = await courseRes.json();
             
             const course = courseData.parcours || courseData;
@@ -126,7 +125,7 @@
         }
         
         try {
-            const response = await fetch(`/api/sessions/${sessionId}`);
+            const response = await AuthManager.fetch(`/api/sessions/${sessionId}`);
             currentSession = await response.json();
             
             if (currentSession.course) {
@@ -143,7 +142,7 @@
     // Load course (parcours) data with beacons
     async function loadCourseData(courseId) {
         try {
-            const response = await fetch(`/api/parcours/${courseId}`);
+            const response = await AuthManager.fetch(`/api/parcours/${courseId}`);
             const data = await response.json();
             currentCourse = data.parcours || data;
         } catch (error) {

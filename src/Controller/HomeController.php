@@ -6,6 +6,8 @@ use App\Entity\Course;
 use App\Entity\Beacon;
 use App\Entity\BoundariesCourse;
 use App\Repository\CourseRepository;
+use App\Repository\SessionRepository;
+use App\Repository\LanguageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,7 +19,9 @@ class HomeController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private CourseRepository $courseRepository
+        private CourseRepository $courseRepository,
+        private SessionRepository $sessionRepository,
+        private LanguageRepository $languageRepository
     ) {}
 
     #[Route('/', name: 'app_home')]
@@ -33,9 +37,69 @@ class HomeController extends AbstractController
     }
 
     #[Route('/map', name: 'app_map')]
-    public function map(): Response
+    public function map(Request $request): Response
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        // Get URL parameters
+        $sessionId = $request->query->get('sessionId');
+        $courseId = $request->query->get('courseId');
+
+        // Verify ownership if accessing specific session or course
+        if ($sessionId) {
+            $session = $this->sessionRepository->find($sessionId);
+            if (!$session) {
+                throw $this->createNotFoundException('Session not found');
+            }
+            
+            $course = $session->getCourse();
+            if (!$course || !$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
+                throw $this->createAccessDeniedException('You do not have access to this session');
+            }
+        }
+
+        if ($courseId) {
+            $course = $this->courseRepository->find($courseId);
+            if (!$course) {
+                throw $this->createNotFoundException('Course not found');
+            }
+            
+            if (!$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
+                throw $this->createAccessDeniedException('You do not have access to this course');
+            }
+        }
+
         return $this->render('map/view.html.twig');
+    }
+
+    #[Route('/api/languages', name: 'api_languages', methods: ['GET'])]
+    public function getLanguages(): JsonResponse
+    {
+        $languages = $this->languageRepository->findAll();
+        
+        // Map language codes to flag-icons CSS country codes
+        $flagMap = [
+            'fr' => 'fr', // France
+            'en' => 'gb', // Great Britain
+            'eu' => 'eu'  // European Union
+        ];
+        
+        $languagesData = array_map(function($language) use ($flagMap) {
+            $code = $language->getCode();
+            return [
+                'id' => $language->getId(),
+                'code' => $code,
+                'displayedText' => $language->getDisplayedText(),
+                'flagIcon' => $flagMap[$code] ?? '🌐'
+            ];
+        }, $languages);
+
+        $response = new JsonResponse(['languages' => $languagesData]);
+        $response->setEncodingOptions(JSON_UNESCAPED_UNICODE);
+        return $response;
     }
 
     // DEPRECATED: This legacy endpoint has been replaced by CourseController::apiListCourses

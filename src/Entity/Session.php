@@ -34,7 +34,7 @@ class Session
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $sessionStart = null;
 
-    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $sessionEnd = null;
 
     public function __construct()

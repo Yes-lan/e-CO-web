@@ -44,6 +44,8 @@ courses:
         name: "Course Name"
         parcours: "Orienteering Course"
         nb_participants: "Nb. part."
+        start_date: "Start"
+        end_date: "End"
         created_date: "Created"
         actions: "Actions"
         max_per_page: "Max per page"

@@ -40,7 +40,22 @@ class CourseController extends AbstractController
     #[Route('/api/sessions', name: 'api_sessions_list', methods: ['GET'])]
     public function apiListCourses(): JsonResponse
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        // Get all sessions
         $sessions = $this->sessionRepository->findAll();
+        
+        // Filter sessions to only include those connected to courses created by the current user
+        $sessions = array_filter($sessions, function($session) use ($currentUser) {
+            $course = $session->getCourse();
+            return $course && $course->getUser() && $course->getUser()->getId() === $currentUser->getId();
+        });
+        
+        // Re-index array to avoid JSON object instead of array
+        $sessions = array_values($sessions);
         
         $coursesData = array_map(function($session) {
             $parcours = $session->getCourse();
@@ -48,6 +63,8 @@ class CourseController extends AbstractController
                 'id' => $session->getId(),
                 'name' => $session->getSessionName(),
                 'nbRunners' => $session->getNbRunner(),
+                'startDate' => $session->getSessionStart()?->format('Y-m-d H:i:s'),
+                'endDate' => $session->getSessionEnd()?->format('Y-m-d H:i:s'),
                 'parcours' => $parcours ? [
                     'id' => $parcours->getId(),
                     'name' => $parcours->getName(),
@@ -80,10 +97,21 @@ class CourseController extends AbstractController
     #[Route('/api/sessions/{id}', name: 'api_sessions_get', methods: ['GET'])]
     public function getCourse(int $id): JsonResponse
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
         $session = $this->sessionRepository->find($id);
         
         if (!$session) {
             return new JsonResponse(['error' => 'Session not found'], 404);
+        }
+
+        // Check if the session's course belongs to the current user
+        $course = $session->getCourse();
+        if (!$course || !$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Forbidden'], 403);
         }
 
         $parcours = $session->getCourse();
@@ -139,6 +167,11 @@ class CourseController extends AbstractController
         if (!empty($data['parcoursId'])) {
             $parcours = $this->courseRepository->find($data['parcoursId']);
             if ($parcours) {
+                // Verify the course belongs to the current user
+                $currentUser = $this->getUser();
+                if (!$currentUser || !$parcours->getUser() || $parcours->getUser()->getId() !== $currentUser->getId()) {
+                    return new JsonResponse(['error' => 'Cannot create session with a course you do not own'], 403);
+                }
                 $session->setCourse($parcours);
             }
         }
@@ -152,10 +185,21 @@ class CourseController extends AbstractController
     #[Route('/api/sessions/{id}', name: 'api_sessions_update', methods: ['PUT'])]
     public function updateCourse(int $id, Request $request): JsonResponse
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
         $session = $this->sessionRepository->find($id);
         
         if (!$session) {
             return new JsonResponse(['error' => 'Course not found'], 404);
+        }
+
+        // Check ownership via the session's course
+        $course = $session->getCourse();
+        if (!$course || !$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Forbidden'], 403);
         }
 
         $data = json_decode($request->getContent(), true);
@@ -191,10 +235,21 @@ class CourseController extends AbstractController
     #[Route('/api/sessions/{id}', name: 'api_sessions_delete', methods: ['DELETE'])]
     public function deleteCourse(int $id): JsonResponse
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
         $session = $this->sessionRepository->find($id);
         
         if (!$session) {
             return new JsonResponse(['error' => 'Course not found'], 404);
+        }
+
+        // Check ownership via the session's course
+        $course = $session->getCourse();
+        if (!$course || !$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Forbidden'], 403);
         }
 
         $this->entityManager->remove($session);

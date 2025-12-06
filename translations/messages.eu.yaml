@@ -44,6 +44,8 @@ courses:
         name: "Lasterketaren Izena"
         parcours: "Orientazio-ibilbidea"
         nb_participants: "Part. kop."
+        start_date: "Hasiera"
+        end_date: "Amaiera"
         created_date: "Sortze data"
         actions: "Ekintzak"
         max_per_page: "Gehienez orrialdeko"

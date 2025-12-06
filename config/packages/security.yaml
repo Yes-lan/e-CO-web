@@ -19,13 +19,17 @@ security:
             stateless: true
             json_login:
                 check_path: /api/login_check
+                username_path: email
+                password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
         api:
             pattern:   ^/api
             stateless: true
-            security: false
+            provider: app_user_provider
+            jwt: ~
+            entry_point: jwt
 
         main:
             lazy: true
@@ -56,8 +60,7 @@ security:
         - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/sessions, roles: PUBLIC_ACCESS }
-        - { path: ^/api/parcours, roles: PUBLIC_ACCESS }
+        - { path: ^/api/languages, roles: PUBLIC_ACCESS }
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
 
 

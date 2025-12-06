@@ -632,11 +632,8 @@
                     
                     try {
                         // Save to backend API
-                        const response = await fetch('{{ path('api_parcours_save', {'_locale': app.request.locale}) }}', {
+                        const response = await AuthManager.fetch('{{ path('api_parcours_save', {'_locale': app.request.locale}) }}', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
                             body: JSON.stringify(formData)
                         });
 

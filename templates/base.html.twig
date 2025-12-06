@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}e-CO Web - Créateur de Parcours d'Orientation{% endblock %}</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🧭</text></svg>">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     {% block stylesheets %}
     {% endblock %}
@@ -12,10 +13,50 @@
     {% block javascripts %}
         {% block importmap %}{{ importmap('app') }}{% endblock %}
     {% endblock %}
+    <script src="{{ asset('assets/js/auth.js') }}"></script>
     <script src="{{ asset('assets/js/translations.js') }}"></script>
     <script>
         // Set document language for translation helper
         document.documentElement.lang = '{{ app.request.locale }}';
+
+        // Load languages from database API
+        async function loadLanguages() {
+            try {
+                // Use regular fetch on public pages, AuthManager.fetch on authenticated pages
+                const isPublicPage = window.location.pathname === '/login' || 
+                                     window.location.pathname === '/register' ||
+                                     window.location.pathname.startsWith('/reset-password');
+                const fetchMethod = isPublicPage ? fetch : (AuthManager ? AuthManager.fetch : fetch);
+                const response = await fetchMethod('/api/languages');
+                const data = await response.json();
+                const languages = data.languages || [];
+                
+                const currentLocale = '{{ app.request.locale }}';
+                const dropdownMenu = document.getElementById('languageDropdownMenu');
+                const currentLanguageFlag = document.getElementById('currentLanguageFlag');
+                const currentLanguageText = document.getElementById('currentLanguageText');
+                
+                if (dropdownMenu && languages.length > 0) {
+                    // Update current language display
+                    const currentLang = languages.find(l => l.code === currentLocale);
+                    if (currentLang) {
+                        currentLanguageFlag.innerHTML = `<span class="fi fi-${currentLang.flagIcon}"></span>`;
+                        currentLanguageText.textContent = currentLang.displayedText;
+                    }
+                    
+                    // Populate dropdown
+                    dropdownMenu.innerHTML = languages.map(lang => `
+                        <button class="language-dropdown-item ${lang.code === currentLocale ? 'active' : ''}" 
+                                onclick="changeLanguage('${lang.code}')">
+                            <span class="language-flag"><span class="fi fi-${lang.flagIcon}"></span></span>
+                            <span class="language-name">${lang.displayedText}</span>
+                        </button>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading languages:', error);
+            }
+        }
 
         function changeLanguage(locale) {
             // Store locale preference in localStorage
@@ -25,6 +66,26 @@
             currentUrl.searchParams.set('_locale', locale);
             window.location.href = currentUrl.toString();
         }
+        
+        // Toggle dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLanguages();
+            
+            const dropdownBtn = document.getElementById('languageDropdownBtn');
+            const dropdownMenu = document.getElementById('languageDropdownMenu');
+            
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function() {
+                    dropdownMenu.classList.remove('show');
+                });
+            }
+        });
     </script>
 </head>
 <body>
@@ -56,9 +117,16 @@
 
             <div class="header-actions">
                 <div class="language-switcher">
-                    <button class="language-btn {% if app.request.locale == 'fr' %}active{% endif %}" onclick="changeLanguage('fr')">FR</button>
-                    <button class="language-btn {% if app.request.locale == 'en' %}active{% endif %}" onclick="changeLanguage('en')">EN</button>
-                    <button class="language-btn {% if app.request.locale == 'eu' %}active{% endif %}" onclick="changeLanguage('eu')">EU</button>
+                    <button class="language-dropdown-btn" id="languageDropdownBtn">
+                        <span id="currentLanguageFlag">🌐</span>
+                        <span id="currentLanguageText">{{ app.request.locale|upper }}</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <div class="language-dropdown-menu" id="languageDropdownMenu">
+                        <!-- Languages will be loaded dynamically from API -->
+                    </div>
                 </div>
                 <div class="user-info">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

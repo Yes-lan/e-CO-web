@@ -124,32 +124,97 @@ body {
 }
 
 .language-switcher {
-    display: flex;
-    gap: 0.25rem;
-    background: #f5f5f5;
-    padding: 0.25rem;
-    border-radius: 6px;
+    position: relative;
+    display: inline-block;
 }
 
-.language-btn {
+.language-dropdown-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     padding: 0.5rem 0.75rem;
-    background: transparent;
-    border: none;
-    color: #666;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    color: #333;
     font-weight: 600;
     font-size: 0.85rem;
     cursor: pointer;
-    border-radius: 4px;
     transition: all 0.2s ease;
 }
 
-.language-btn:hover {
-    background: #e0e0e0;
+.language-dropdown-btn:hover {
+    background: #e8e8e8;
+    border-color: #bbb;
 }
 
-.language-btn.active {
-    background: #1976d2;
-    color: white;
+#currentLanguageFlag {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+#currentLanguageFlag .fi {
+    font-size: 1.25rem;
+}
+
+#currentLanguageText {
+    font-size: 0.85rem;
+}
+
+.language-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    z-index: 1000;
+    display: none;
+    overflow: hidden;
+}
+
+.language-dropdown-menu.show {
+    display: block;
+}
+
+.language-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: white;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.language-dropdown-item:hover {
+    background: #f5f5f5;
+}
+
+.language-dropdown-item.active {
+    background: #e3f2fd;
+    color: #1976d2;
+    font-weight: 600;
+}
+
+.language-flag {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.language-flag .fi {
+    font-size: 1.3rem;
+}
+
+.language-name {
+    font-size: 0.9rem;
 }
 
 .container {

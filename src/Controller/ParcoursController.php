@@ -40,7 +40,21 @@ class ParcoursController extends AbstractController
     #[Route('/api/parcours', name: 'api_parcours_list', methods: ['GET'])]
     public function apiListParcours(): JsonResponse
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        // Get all courses
         $parcours = $this->courseRepository->findAll();
+        
+        // Filter courses to only include those created by the current user
+        $parcours = array_filter($parcours, function($course) use ($currentUser) {
+            return $course->getUser() && $course->getUser()->getId() === $currentUser->getId();
+        });
+        
+        // Re-index array to avoid JSON object instead of array
+        $parcours = array_values($parcours);
         
         $parcoursData = array_map(function($p) {
             return [
@@ -83,10 +97,20 @@ class ParcoursController extends AbstractController
     #[Route('/api/parcours/{id}', name: 'api_parcours_get', methods: ['GET'])]
     public function getParcours(int $id): JsonResponse
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
         $parcours = $this->courseRepository->find($id);
         
         if (!$parcours) {
             return new JsonResponse(['error' => 'Course not found'], 404);
+        }
+
+        // Check if the course belongs to the current user
+        if (!$parcours->getUser() || $parcours->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Forbidden'], 403);
         }
         
         $parcoursData = [
@@ -134,6 +158,11 @@ class ParcoursController extends AbstractController
             return new JsonResponse(['error' => 'Invalid data'], 400);
         }
 
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
         $parcours = new Course();
         $parcours->setName($data['name']);
         $parcours->setDescription($data['description'] ?? '');
@@ -141,6 +170,7 @@ class ParcoursController extends AbstractController
         $parcours->setCreateAt(new \DateTime());
         $parcours->setUpdateAt(new \DateTime());
         $parcours->setPlacementCompletedAt(new \DateTime());
+        $parcours->setUser($currentUser);
 
         // Save boundaries
         if (!empty($data['boundaryPoints'])) {
@@ -186,10 +216,20 @@ class ParcoursController extends AbstractController
     #[Route('/api/parcours/{id}', name: 'api_parcours_update', methods: ['PUT'])]
     public function updateParcours(int $id, Request $request): JsonResponse
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
         $parcours = $this->courseRepository->find($id);
         
         if (!$parcours) {
             return new JsonResponse(['error' => 'Parcours not found'], 404);
+        }
+
+        // Check ownership
+        if (!$parcours->getUser() || $parcours->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Forbidden'], 403);
         }
 
         // Prevent editing finished courses
@@ -267,10 +307,20 @@ class ParcoursController extends AbstractController
     #[Route('/api/parcours/{id}/finish', name: 'api_parcours_finish', methods: ['POST'])]
     public function finishParcours(int $id): JsonResponse
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
         $parcours = $this->courseRepository->find($id);
         
         if (!$parcours) {
             return new JsonResponse(['error' => 'Parcours not found'], 404);
+        }
+
+        // Check ownership
+        if (!$parcours->getUser() || $parcours->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Forbidden'], 403);
         }
 
         $parcours->setStatus('finished');
@@ -283,10 +333,20 @@ class ParcoursController extends AbstractController
     #[Route('/api/parcours/{id}', name: 'api_parcours_delete', methods: ['DELETE'])]
     public function deleteParcours(int $id): JsonResponse
     {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
         $parcours = $this->courseRepository->find($id);
         
         if (!$parcours) {
             return new JsonResponse(['error' => 'Parcours not found'], 404);
+        }
+
+        // Check ownership
+        if (!$parcours->getUser() || $parcours->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Forbidden'], 403);
         }
 
         $this->entityManager->remove($parcours);

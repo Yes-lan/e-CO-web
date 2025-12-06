@@ -44,6 +44,8 @@ courses:
         name: "Nom de la Course"
         parcours: "Parcours Associé"
         nb_participants: "Nb. part."
+        start_date: "Début"
+        end_date: "Fin"
         created_date: "Créé le"
         actions: "Actions"
         max_per_page: "Max par page"

@@ -74,9 +74,6 @@
 {% block javascripts %}
     {{ parent() }}
     
-    <!-- Load translations -->
-    <script src="{{ asset('assets/js/translations.js') }}"></script>
-    
     <script>
         // Use window object to prevent redeclaration errors with Turbo
         if (!window.manageCoursePageInitialized) {
@@ -164,7 +161,7 @@
 
         async function loadCourses() {
             try {
-                const response = await fetch('{{ path('api_parcours_list') }}');
+                const response = await AuthManager.fetch('{{ path('api_parcours_list') }}');
                 const data = await response.json();
                 window.manageCourses = data.courses || [];
                 console.log('COURSES PAGE: Loaded', window.manageCourses.length, 'courses:', window.manageCourses);
@@ -808,11 +805,8 @@
             };
             
             try {
-                const response = await fetch(`{{ path('api_parcours_update', {id: '__ID__'}) }}`.replace('__ID__', course.id), {
+                const response = await AuthManager.fetch(`{{ path('api_parcours_update', {id: '__ID__'}) }}`.replace('__ID__', course.id), {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify(updateData)
                 });
                 
@@ -1040,7 +1034,7 @@
             }
             
             try {
-                const response = await fetch(`/api/parcours/${course.id}/finish`, {
+                const response = await AuthManager.fetch(`/api/parcours/${course.id}/finish`, {
                     method: 'POST'
                 });
                 
@@ -1065,7 +1059,7 @@
             }
             
             try {
-                const response = await fetch(`{{ path('api_parcours_delete', {id: '__ID__'}) }}`.replace('__ID__', course.id), {
+                const response = await AuthManager.fetch(`{{ path('api_parcours_delete', {id: '__ID__'}) }}`.replace('__ID__', course.id), {
                     method: 'DELETE'
                 });
                 
