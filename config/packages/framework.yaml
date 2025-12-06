@@ -4,8 +4,10 @@ framework:
 
     # Note that the session will be started ONLY if you read or write from it.
     session: true
-    trusted_proxies: '172.16.0.0/12'
+    trusted_proxies: '172.16.0.0/12,REMOTE_ADDR'
+##    trusted_proxies: '172.16.0.0/12'
     trusted_headers:
+
         - x-forwarded-for
         - x-forwarded-proto
         - x-forwarded-port
