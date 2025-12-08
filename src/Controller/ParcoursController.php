@@ -261,6 +261,7 @@ class ParcoursController extends AbstractController
         $this->entityManager->persist($startBeacon);
         $startBeacon->addCourse($parcours);
 
+        $finishBeacon = null; // Track finish beacon reference
         if (!$parcours->isSameStartFinish()) {
             // Create separate finish beacon
             $finishBeacon = new Beacon();
@@ -293,16 +294,16 @@ class ParcoursController extends AbstractController
         ]);
         $startBeacon->setQr($startQrData);
 
-        if (!$parcours->isSameStartFinish() && $parcours->getFinishBeacon()) {
+        if (!$parcours->isSameStartFinish() && $finishBeacon !== null) {
             $finishQrData = json_encode([
                 'type' => 'FINISH',
                 'courseId' => $parcours->getId(),
                 'courseName' => $parcours->getName(),
-                'waypointId' => $parcours->getFinishBeacon()->getId(),
-                'waypointName' => $parcours->getFinishBeacon()->getName(),
+                'waypointId' => $finishBeacon->getId(),
+                'waypointName' => $finishBeacon->getName(),
                 'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
             ]);
-            $parcours->getFinishBeacon()->setQr($finishQrData);
+            $finishBeacon->setQr($finishQrData);
         }
 
         // Final flush to save QR codes
