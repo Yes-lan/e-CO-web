@@ -551,7 +551,140 @@
         
         const bounds = new google.maps.LatLngBounds();
         
-        // Add beacon markers
+        // Add start beacon if exists
+        if (currentCourse.startBeacon && currentCourse.startBeacon.lat && currentCourse.startBeacon.lng) {
+            const lat = parseFloat(currentCourse.startBeacon.lat);
+            const lng = parseFloat(currentCourse.startBeacon.lng);
+            
+            const marker = new google.maps.Marker({
+                position: { lat, lng },
+                map: map,
+                title: '🟢 ' + (currentCourse.startBeacon.name || 'Départ'),
+                icon: {
+                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                    fillColor: '#4CAF50', // Green for start
+                    fillOpacity: 1,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 2,
+                    scale: 1.3,
+                    anchor: new google.maps.Point(0, 0)
+                }
+            });
+            markers.push(marker);
+            bounds.extend({ lat, lng });
+            
+            // Create label for start beacon
+            const startLabelDiv = document.createElement('div');
+            startLabelDiv.style.position = 'absolute';
+            startLabelDiv.style.fontSize = '16px';
+            startLabelDiv.style.fontWeight = 'bold';
+            startLabelDiv.style.color = '#4CAF50';
+            startLabelDiv.style.textShadow = `-2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, -2px 0 0 #fff, 2px 0 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff`;
+            startLabelDiv.style.whiteSpace = 'nowrap';
+            startLabelDiv.style.transform = 'translate(-50%, -55px)';
+            startLabelDiv.style.pointerEvents = 'none';
+            startLabelDiv.style.userSelect = 'none';
+            startLabelDiv.style.zIndex = '1000';
+            startLabelDiv.textContent = currentCourse.startBeacon.name || 'Départ';
+            
+            class StartLabelOverlay extends google.maps.OverlayView {
+                constructor(position, labelElement) {
+                    super();
+                    this.position = position;
+                    this.labelElement = labelElement;
+                }
+                
+                onAdd() {
+                    this.getPanes().overlayLayer.appendChild(this.labelElement);
+                }
+                
+                draw() {
+                    const projection = this.getProjection();
+                    const position = projection.fromLatLngToDivPixel(this.position);
+                    this.labelElement.style.left = position.x + 'px';
+                    this.labelElement.style.top = position.y + 'px';
+                }
+                
+                onRemove() {
+                    if (this.labelElement.parentElement) {
+                        this.labelElement.parentElement.removeChild(this.labelElement);
+                    }
+                }
+            }
+            
+            const startLabelOverlay = new StartLabelOverlay(new google.maps.LatLng(lat, lng), startLabelDiv);
+            startLabelOverlay.setMap(map);
+            labels.push(startLabelOverlay);
+        }
+        
+        // Add finish beacon if exists and different from start
+        if (currentCourse.finishBeacon && currentCourse.finishBeacon.lat && currentCourse.finishBeacon.lng &&
+            (!currentCourse.startBeacon || currentCourse.finishBeacon.id !== currentCourse.startBeacon.id)) {
+            const lat = parseFloat(currentCourse.finishBeacon.lat);
+            const lng = parseFloat(currentCourse.finishBeacon.lng);
+            
+            const marker = new google.maps.Marker({
+                position: { lat, lng },
+                map: map,
+                title: '🔴 ' + (currentCourse.finishBeacon.name || 'Arrivée'),
+                icon: {
+                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                    fillColor: '#F44336', // Red for finish
+                    fillOpacity: 1,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 2,
+                    scale: 1.3,
+                    anchor: new google.maps.Point(0, 0)
+                }
+            });
+            markers.push(marker);
+            bounds.extend({ lat, lng });
+            
+            // Create label for finish beacon
+            const finishLabelDiv = document.createElement('div');
+            finishLabelDiv.style.position = 'absolute';
+            finishLabelDiv.style.fontSize = '16px';
+            finishLabelDiv.style.fontWeight = 'bold';
+            finishLabelDiv.style.color = '#F44336';
+            finishLabelDiv.style.textShadow = `-2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, -2px 0 0 #fff, 2px 0 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff`;
+            finishLabelDiv.style.whiteSpace = 'nowrap';
+            finishLabelDiv.style.transform = 'translate(-50%, -55px)';
+            finishLabelDiv.style.pointerEvents = 'none';
+            finishLabelDiv.style.userSelect = 'none';
+            finishLabelDiv.style.zIndex = '1000';
+            finishLabelDiv.textContent = currentCourse.finishBeacon.name || 'Arrivée';
+            
+            class FinishLabelOverlay extends google.maps.OverlayView {
+                constructor(position, labelElement) {
+                    super();
+                    this.position = position;
+                    this.labelElement = labelElement;
+                }
+                
+                onAdd() {
+                    this.getPanes().overlayLayer.appendChild(this.labelElement);
+                }
+                
+                draw() {
+                    const projection = this.getProjection();
+                    const position = projection.fromLatLngToDivPixel(this.position);
+                    this.labelElement.style.left = position.x + 'px';
+                    this.labelElement.style.top = position.y + 'px';
+                }
+                
+                onRemove() {
+                    if (this.labelElement.parentElement) {
+                        this.labelElement.parentElement.removeChild(this.labelElement);
+                    }
+                }
+            }
+            
+            const finishLabelOverlay = new FinishLabelOverlay(new google.maps.LatLng(lat, lng), finishLabelDiv);
+            finishLabelOverlay.setMap(map);
+            labels.push(finishLabelOverlay);
+        }
+        
+        // Add control beacon markers (waypoints)
         currentCourse.waypoints.forEach((beacon, idx) => {
             if (!beacon.lat || !beacon.lng) return;
             

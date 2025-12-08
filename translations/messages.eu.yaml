@@ -87,6 +87,12 @@ parcours:
     qr_codes: "QR Kodeak"
     loading: "Ikastaroak kargatzen..."
     error_loading: "Errorea ikastaroak kargatzean"
+    edit_modal_title: "Aldatu Ikastaroa"
+    qr_codes_title: "Ikastaroaren QR Kodeak"
+    qr_important: "Garrantzitsua:"
+    qr_permanent: "QR kode hauek iraunkorrak dira eta ez dira inoiz aldatzen ikastaro honetarako."
+    qr_print_info: "Inprimatu eta zelairatu seguru jar ditzakezu. Baliozkoak izango dira orrialde hau hainbat aldiz ikusi arren."
+    download_all_qr: "Deskargatu QR kode guztiak"
     
     status:
         in_creation: "Sortzen"
@@ -118,6 +124,8 @@ login:
     forgot_password: "Pasahitza ahaztu duzu?"
     please_sign_in: "Mesedez hasi saioa"
     remember_me: "Gogoratu ni"
+    already_logged_in: "Saioa hasi duzu %username% gisa,"
+    logout: "Irten"
 
 sessions:
     page_title: "Lasterketak - e-CO"

@@ -22,8 +22,7 @@ final class Version20251128155303 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE beacon (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, longitude DOUBLE PRECISION NOT NULL, latitude DOUBLE PRECISION NOT NULL, type VARCHAR(255) NOT NULL, is_placed TINYINT(1) NOT NULL, placed_at DATETIME DEFAULT NULL, created_at DATETIME DEFAULT NULL, qr VARCHAR(255) NOT NULL, description LONGTEXT DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE beacon_course (beacon_id INT NOT NULL, course_id INT NOT NULL, INDEX IDX_4EDA6FBCF6AD5578 (beacon_id), INDEX IDX_4EDA6FBC591CC992 (course_id), PRIMARY KEY(beacon_id, course_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE boundaries_course (id INT AUTO_INCREMENT NOT NULL, course_id INT DEFAULT NULL, longitude DOUBLE PRECISION NOT NULL, latitude DOUBLE PRECISION NOT NULL, INDEX IDX_1BEB33BC591CC992 (course_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE course (id INT AUTO_INCREMENT NOT NULL, user_id INT DEFAULT NULL, name VARCHAR(255) NOT NULL, description VARCHAR(255) NOT NULL, status VARCHAR(255) NOT NULL, create_at DATETIME NOT NULL, placement_completed_at DATETIME NOT NULL, update_at DATETIME NOT NULL, INDEX IDX_169E6FB9A76ED395 (user_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE course (id INT AUTO_INCREMENT NOT NULL, user_id INT DEFAULT NULL, name VARCHAR(255) NOT NULL, description VARCHAR(255) NOT NULL, status VARCHAR(255) NOT NULL, create_at DATETIME NOT NULL, placement_completed_at DATETIME NOT NULL, update_at DATETIME NOT NULL, same_start_finish TINYINT(1) DEFAULT 0 NOT NULL, INDEX IDX_169E6FB9A76ED395 (user_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE establishment (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE log_session (id INT AUTO_INCREMENT NOT NULL, runner_id INT DEFAULT NULL, type VARCHAR(255) NOT NULL, time DATETIME NOT NULL, latitude DOUBLE PRECISION DEFAULT NULL, longitude DOUBLE PRECISION DEFAULT NULL, additional_data LONGTEXT DEFAULT NULL, INDEX IDX_E889ED433C7FB593 (runner_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE reset_password_request (id INT AUTO_INCREMENT NOT NULL, user_id INT NOT NULL, selector VARCHAR(20) NOT NULL, hashed_token VARCHAR(100) NOT NULL, requested_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', expires_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_7CE748AA76ED395 (user_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -33,7 +32,6 @@ final class Version20251128155303 extends AbstractMigration
         $this->addSql('CREATE TABLE messenger_messages (id BIGINT AUTO_INCREMENT NOT NULL, body LONGTEXT NOT NULL, headers LONGTEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', available_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', delivered_at DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_75EA56E0FB7336F0 (queue_name), INDEX IDX_75EA56E0E3BD61CE (available_at), INDEX IDX_75EA56E016BA31DB (delivered_at), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('ALTER TABLE beacon_course ADD CONSTRAINT FK_4EDA6FBCF6AD5578 FOREIGN KEY (beacon_id) REFERENCES beacon (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE beacon_course ADD CONSTRAINT FK_4EDA6FBC591CC992 FOREIGN KEY (course_id) REFERENCES course (id) ON DELETE CASCADE');
-        $this->addSql('ALTER TABLE boundaries_course ADD CONSTRAINT FK_1BEB33BC591CC992 FOREIGN KEY (course_id) REFERENCES course (id)');
         $this->addSql('ALTER TABLE course ADD CONSTRAINT FK_169E6FB9A76ED395 FOREIGN KEY (user_id) REFERENCES `user` (id)');
         $this->addSql('ALTER TABLE log_session ADD CONSTRAINT FK_E889ED433C7FB593 FOREIGN KEY (runner_id) REFERENCES runner (id)');
         $this->addSql('ALTER TABLE reset_password_request ADD CONSTRAINT FK_7CE748AA76ED395 FOREIGN KEY (user_id) REFERENCES `user` (id)');
@@ -51,7 +49,6 @@ final class Version20251128155303 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE beacon_course DROP FOREIGN KEY FK_4EDA6FBCF6AD5578');
         $this->addSql('ALTER TABLE beacon_course DROP FOREIGN KEY FK_4EDA6FBC591CC992');
-        $this->addSql('ALTER TABLE boundaries_course DROP FOREIGN KEY FK_1BEB33BC591CC992');
         $this->addSql('ALTER TABLE course DROP FOREIGN KEY FK_169E6FB9A76ED395');
         $this->addSql('ALTER TABLE log_session DROP FOREIGN KEY FK_E889ED433C7FB593');
         $this->addSql('ALTER TABLE reset_password_request DROP FOREIGN KEY FK_7CE748AA76ED395');
@@ -60,7 +57,6 @@ final class Version20251128155303 extends AbstractMigration
         $this->addSql('ALTER TABLE `user` DROP FOREIGN KEY FK_8D93D6498565851');
         $this->addSql('DROP TABLE beacon');
         $this->addSql('DROP TABLE beacon_course');
-        $this->addSql('DROP TABLE boundaries_course');
         $this->addSql('DROP TABLE course');
         $this->addSql('DROP TABLE establishment');
         $this->addSql('DROP TABLE language');

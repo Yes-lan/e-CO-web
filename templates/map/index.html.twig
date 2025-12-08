@@ -228,6 +228,11 @@
                     return;
                 }
                 
+                console.log('[DEBUG] Course data:', course);
+                console.log('[DEBUG] Start beacon:', course.startBeacon);
+                console.log('[DEBUG] Finish beacon:', course.finishBeacon);
+                console.log('[DEBUG] Waypoints:', course.waypoints);
+                
                 // Clear existing markers
                 if (window.app && window.app.map) {
                     // Clear old markers/polygons/labels if they exist
@@ -248,11 +253,72 @@
                     // Calculate automatic boundary from farthest beacons
                     // Will be drawn after all beacons are processed
                     
-                    // Display beacons
+                    // Find extreme points for boundary calculation
+                    let northmost = null, southmost = null, eastmost = null, westmost = null;
+                    
+                    console.log('[BEACON DEBUG] About to render beacons');
+                    console.log('[BEACON DEBUG] Start beacon data:', course.startBeacon);
+                    console.log('[BEACON DEBUG] Finish beacon data:', course.finishBeacon);
+                    console.log('[BEACON DEBUG] Waypoints count:', course.waypoints?.length);
+                    
+                    // Add start beacon if exists
+                    if (course.startBeacon && course.startBeacon.lat && course.startBeacon.lng) {
+                        console.log('[BEACON DEBUG] Rendering start beacon at:', course.startBeacon.lat, course.startBeacon.lng);
+                            const startLat = parseFloat(course.startBeacon.lat);
+                            const startLng = parseFloat(course.startBeacon.lng);
+                            
+                            if (!northmost || startLat > northmost.lat) northmost = {lat: startLat, lng: startLng};
+                            if (!southmost || startLat < southmost.lat) southmost = {lat: startLat, lng: startLng};
+                            if (!eastmost || startLng > eastmost.lng) eastmost = {lat: startLat, lng: startLng};
+                            if (!westmost || startLng < westmost.lng) westmost = {lat: startLat, lng: startLng};
+                            
+                            const startMarker = new google.maps.Marker({
+                                position: { lat: startLat, lng: startLng },
+                                map: window.app.map,
+                                title: '🟢 ' + (course.startBeacon.name || 'Départ'),
+                                icon: {
+                                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                                    fillColor: '#4CAF50', // Green for start
+                                    fillOpacity: 1,
+                                    strokeColor: '#ffffff',
+                                    strokeWeight: 2,
+                                    scale: 1.3, // Larger for visibility
+                                    anchor: new google.maps.Point(0, 0)
+                                }
+                            });
+                            window.courseMarkers.push(startMarker);
+                        }
+
+                        // Add finish beacon if exists and different from start
+                        if (course.finishBeacon && course.finishBeacon.lat && course.finishBeacon.lng && 
+                            (!course.startBeacon || course.finishBeacon.id !== course.startBeacon.id)) {
+                            const finishLat = parseFloat(course.finishBeacon.lat);
+                            const finishLng = parseFloat(course.finishBeacon.lng);
+                            
+                            if (!northmost || finishLat > northmost.lat) northmost = {lat: finishLat, lng: finishLng};
+                            if (!southmost || finishLat < southmost.lat) southmost = {lat: finishLat, lng: finishLng};
+                            if (!eastmost || finishLng > eastmost.lng) eastmost = {lat: finishLat, lng: finishLng};
+                            if (!westmost || finishLng < westmost.lng) westmost = {lat: finishLat, lng: finishLng};
+                            
+                            const finishMarker = new google.maps.Marker({
+                                position: { lat: finishLat, lng: finishLng },
+                                map: window.app.map,
+                                title: '🔴 ' + (course.finishBeacon.name || 'Arrivée'),
+                                icon: {
+                                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                                    fillColor: '#F44336', // Red for finish
+                                    fillOpacity: 1,
+                                    strokeColor: '#ffffff',
+                                    strokeWeight: 2,
+                                    scale: 1.3, // Larger for visibility
+                                    anchor: new google.maps.Point(0, 0)
+                                }
+                            });
+                            window.courseMarkers.push(finishMarker);
+                    }
+                    
+                    // Display control waypoints
                     if (course.waypoints && course.waypoints.length > 0) {
-                        // Find extreme points for boundary calculation
-                        let northmost = null, southmost = null, eastmost = null, westmost = null;
-                        
                         course.waypoints.forEach((waypoint, idx) => {
                             if (waypoint.lat && waypoint.lng) {
                                 const lat = parseFloat(waypoint.lat);
@@ -344,10 +410,10 @@
                                 bounds.extend({ lat, lng });
                             }
                         });
-                        
-                        // Boundaries are no longer displayed
-                        // Extreme points are still tracked for potential future use
                     }
+                    
+                    // Boundaries are no longer displayed
+                    // Extreme points are still tracked for potential future use
                     
                     // Fit map to show all markers
                     if (!bounds.isEmpty()) {
