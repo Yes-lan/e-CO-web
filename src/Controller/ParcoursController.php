@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Course;
 use App\Entity\Beacon;
-use App\Entity\BoundariesCourse;
 use App\Repository\CourseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -75,19 +74,30 @@ class ParcoursController extends AbstractController
                         'type' => $beacon->getType(),
                         'qr' => $beacon->getQr()
                     ];
-                }, $p->getBeacons()->toArray()),
-                'boundaryPoints' => array_map(function($boundary) {
-                    return [
-                        'lat' => $boundary->getLatitude(),
-                        'lng' => $boundary->getLongitude()
-                    ];
-                }, $p->getBoundariesCourses()->toArray()),
-                'boundary_points' => array_map(function($boundary) {
-                    return [
-                        'lat' => $boundary->getLatitude(),
-                        'lng' => $boundary->getLongitude()
-                    ];
-                }, $p->getBoundariesCourses()->toArray())
+                }, array_filter($p->getBeacons()->toArray(), function($beacon) {
+                    return $beacon->getType() === 'control';
+                })),
+                'startBeacon' => $p->getStartBeacon() ? [
+                    'id' => $p->getStartBeacon()->getId(),
+                    'name' => $p->getStartBeacon()->getName(),
+                    'latitude' => $p->getStartBeacon()->getLatitude(),
+                    'longitude' => $p->getStartBeacon()->getLongitude(),
+                    'lat' => $p->getStartBeacon()->getLatitude(),
+                    'lng' => $p->getStartBeacon()->getLongitude(),
+                    'type' => 'start',
+                    'qr' => $p->getStartBeacon()->getQr()
+                ] : null,
+                'finishBeacon' => $p->getFinishBeacon() ? [
+                    'id' => $p->getFinishBeacon()->getId(),
+                    'name' => $p->getFinishBeacon()->getName(),
+                    'latitude' => $p->getFinishBeacon()->getLatitude(),
+                    'longitude' => $p->getFinishBeacon()->getLongitude(),
+                    'lat' => $p->getFinishBeacon()->getLatitude(),
+                    'lng' => $p->getFinishBeacon()->getLongitude(),
+                    'type' => 'finish',
+                    'qr' => $p->getFinishBeacon()->getQr()
+                ] : null,
+                'sameStartFinish' => $p->isSameStartFinish()
             ];
         }, $parcours);
 
@@ -131,19 +141,30 @@ class ParcoursController extends AbstractController
                     'type' => $beacon->getType(),
                     'qr' => $beacon->getQr()
                 ];
-            }, $parcours->getBeacons()->toArray()),
-            'boundaryPoints' => array_map(function($boundary) {
-                return [
-                    'lat' => $boundary->getLatitude(),
-                    'lng' => $boundary->getLongitude()
-                ];
-            }, $parcours->getBoundariesCourses()->toArray()),
-            'boundary_points' => array_map(function($boundary) {
-                return [
-                    'lat' => $boundary->getLatitude(),
-                    'lng' => $boundary->getLongitude()
-                ];
-            }, $parcours->getBoundariesCourses()->toArray())
+            }, array_filter($parcours->getBeacons()->toArray(), function($beacon) {
+                return $beacon->getType() === 'control';
+            })),
+            'startBeacon' => $parcours->getStartBeacon() ? [
+                'id' => $parcours->getStartBeacon()->getId(),
+                'name' => $parcours->getStartBeacon()->getName(),
+                'latitude' => $parcours->getStartBeacon()->getLatitude(),
+                'longitude' => $parcours->getStartBeacon()->getLongitude(),
+                'lat' => $parcours->getStartBeacon()->getLatitude(),
+                'lng' => $parcours->getStartBeacon()->getLongitude(),
+                'type' => 'start',
+                'qr' => $parcours->getStartBeacon()->getQr()
+            ] : null,
+            'finishBeacon' => $parcours->getFinishBeacon() ? [
+                'id' => $parcours->getFinishBeacon()->getId(),
+                'name' => $parcours->getFinishBeacon()->getName(),
+                'latitude' => $parcours->getFinishBeacon()->getLatitude(),
+                'longitude' => $parcours->getFinishBeacon()->getLongitude(),
+                'lat' => $parcours->getFinishBeacon()->getLatitude(),
+                'lng' => $parcours->getFinishBeacon()->getLongitude(),
+                'type' => 'finish',
+                'qr' => $parcours->getFinishBeacon()->getQr()
+            ] : null,
+            'sameStartFinish' => $parcours->isSameStartFinish()
         ];
         
         return new JsonResponse(['parcours' => $parcoursData]);
@@ -171,17 +192,7 @@ class ParcoursController extends AbstractController
         $parcours->setUpdateAt(new \DateTime());
         $parcours->setPlacementCompletedAt(new \DateTime());
         $parcours->setUser($currentUser);
-
-        // Save boundaries
-        if (!empty($data['boundaryPoints'])) {
-            foreach ($data['boundaryPoints'] as $point) {
-                $boundary = new BoundariesCourse();
-                $boundary->setLatitude($point['lat']);
-                $boundary->setLongitude($point['lng']);
-                $this->entityManager->persist($boundary);
-                $parcours->addBoundariesCourse($boundary);
-            }
-        }
+        $parcours->setSameStartFinish($data['sameStartFinish'] ?? false);
 
         $this->entityManager->persist($parcours);
         $this->entityManager->flush(); // Flush first to get the course ID
@@ -237,6 +248,66 @@ class ParcoursController extends AbstractController
             $this->entityManager->flush();
         }
 
+        // Create start and finish beacons
+        $startBeacon = new Beacon();
+        $startBeacon->setName('Départ');
+        $startBeacon->setLatitude(0.0);
+        $startBeacon->setLongitude(0.0);
+        $startBeacon->setType('start');
+        $startBeacon->setIsPlaced(false);
+        $startBeacon->setCreatedAt(new \DateTime());
+        $startBeacon->setPlacedAt(null);
+        $startBeacon->setQr(''); // Will be updated after flush
+        $this->entityManager->persist($startBeacon);
+        $startBeacon->addCourse($parcours);
+
+        if (!$parcours->isSameStartFinish()) {
+            // Create separate finish beacon
+            $finishBeacon = new Beacon();
+            $finishBeacon->setName('Arrivée');
+            $finishBeacon->setLatitude(0.0);
+            $finishBeacon->setLongitude(0.0);
+            $finishBeacon->setType('finish');
+            $finishBeacon->setIsPlaced(false);
+            $finishBeacon->setCreatedAt(new \DateTime());
+            $finishBeacon->setPlacedAt(null);
+            $finishBeacon->setQr(''); // Will be updated after flush
+            $this->entityManager->persist($finishBeacon);
+            $finishBeacon->addCourse($parcours);
+        }
+        // Note: If sameStartFinish is true, only the start beacon is created
+        // The getFinishBeacon() method will return the start beacon automatically
+
+        // Flush to get beacon IDs
+        $this->entityManager->flush();
+
+        // Generate QR codes for start/finish beacons
+        $qrType = $parcours->isSameStartFinish() ? 'START_FINISH' : 'START';
+        $startQrData = json_encode([
+            'type' => $qrType,
+            'courseId' => $parcours->getId(),
+            'courseName' => $parcours->getName(),
+            'waypointId' => $startBeacon->getId(),
+            'waypointName' => $startBeacon->getName(),
+            'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+        ]);
+        $startBeacon->setQr($startQrData);
+
+        if (!$parcours->isSameStartFinish() && $parcours->getFinishBeacon()) {
+            $finishQrData = json_encode([
+                'type' => 'FINISH',
+                'courseId' => $parcours->getId(),
+                'courseName' => $parcours->getName(),
+                'waypointId' => $parcours->getFinishBeacon()->getId(),
+                'waypointName' => $parcours->getFinishBeacon()->getName(),
+                'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+            ]);
+            $parcours->getFinishBeacon()->setQr($finishQrData);
+        }
+
+        // Final flush to save QR codes
+        $this->entityManager->flush();
+
         return new JsonResponse(['success' => true, 'id' => $parcours->getId()]);
     }
 
@@ -278,22 +349,10 @@ class ParcoursController extends AbstractController
             $parcours->setDescription($data['description']);
         }
         $parcours->setUpdateAt(new \DateTime());
-
-        // Update boundaries
-        if (isset($data['boundaryPoints'])) {
-            // Remove old boundaries
-            foreach ($parcours->getBoundariesCourses() as $boundary) {
-                $this->entityManager->remove($boundary);
-            }
-            
-            // Add new boundaries
-            foreach ($data['boundaryPoints'] as $point) {
-                $boundary = new BoundariesCourse();
-                $boundary->setLatitude((string)$point['lat']);
-                $boundary->setLongitude((string)$point['lng']);
-                $this->entityManager->persist($boundary);
-                $parcours->addBoundariesCourse($boundary);
-            }
+        
+        // Update sameStartFinish flag
+        if (isset($data['sameStartFinish'])) {
+            $parcours->setSameStartFinish($data['sameStartFinish']);
         }
 
         // Update waypoints/beacons
@@ -389,6 +448,114 @@ class ParcoursController extends AbstractController
                 $this->entityManager->flush();
             }
         } else {
+            $this->entityManager->flush();
+        }
+
+        // Handle start/finish beacon updates
+        if (isset($data['sameStartFinish'])) {
+            $sameStartFinish = $data['sameStartFinish'];
+            $parcours->setSameStartFinish($sameStartFinish);
+            
+            if ($sameStartFinish) {
+                // Same location for start and finish
+                if (!$parcours->getStartBeacon()) {
+                    // Create new start beacon (will serve as both start and finish)
+                    $startBeacon = new Beacon();
+                    $startBeacon->setName('Départ/Arrivée');
+                    $startBeacon->setLatitude(0.0);
+                    $startBeacon->setLongitude(0.0);
+                    $startBeacon->setType('start');
+                    $startBeacon->setIsPlaced(false);
+                    $startBeacon->setCreatedAt(new \DateTime());
+                    $startBeacon->setPlacedAt(null);
+                    $startBeacon->setQr('');
+                    $this->entityManager->persist($startBeacon);
+                    $startBeacon->addCourse($parcours);
+                    
+                    $this->entityManager->flush();
+                    
+                    // Generate QR code
+                    $qrData = json_encode([
+                        'type' => 'START_FINISH',
+                        'courseId' => $parcours->getId(),
+                        'courseName' => $parcours->getName(),
+                        'waypointId' => $startBeacon->getId(),
+                        'waypointName' => $startBeacon->getName(),
+                        'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+                    ]);
+                    $startBeacon->setQr($qrData);
+                }
+                
+                // Remove any existing separate finish beacon
+                $existingFinishBeacon = null;
+                foreach ($parcours->getBeacons() as $beacon) {
+                    if ($beacon->getType() === 'finish') {
+                        $existingFinishBeacon = $beacon;
+                        break;
+                    }
+                }
+                if ($existingFinishBeacon) {
+                    $parcours->removeBeacon($existingFinishBeacon);
+                    $this->entityManager->remove($existingFinishBeacon);
+                }
+            } else {
+                // Different locations for start and finish
+                if (!$parcours->getStartBeacon()) {
+                    $startBeacon = new Beacon();
+                    $startBeacon->setName('Départ');
+                    $startBeacon->setLatitude(0.0);
+                    $startBeacon->setLongitude(0.0);
+                    $startBeacon->setType('start');
+                    $startBeacon->setIsPlaced(false);
+                    $startBeacon->setCreatedAt(new \DateTime());
+                    $startBeacon->setPlacedAt(null);
+                    $startBeacon->setQr('');
+                    $this->entityManager->persist($startBeacon);
+                    $startBeacon->addCourse($parcours);
+                }
+                
+                if (!$parcours->getFinishBeacon()) {
+                    $finishBeacon = new Beacon();
+                    $finishBeacon->setName('Arrivée');
+                    $finishBeacon->setLatitude(0.0);
+                    $finishBeacon->setLongitude(0.0);
+                    $finishBeacon->setType('finish');
+                    $finishBeacon->setIsPlaced(false);
+                    $finishBeacon->setCreatedAt(new \DateTime());
+                    $finishBeacon->setPlacedAt(null);
+                    $finishBeacon->setQr('');
+                    $this->entityManager->persist($finishBeacon);
+                    $finishBeacon->addCourse($parcours);
+                }
+                
+                $this->entityManager->flush();
+                
+                // Generate QR codes if new beacons were created
+                if ($parcours->getStartBeacon() && !$parcours->getStartBeacon()->getQr()) {
+                    $startQrData = json_encode([
+                        'type' => 'START',
+                        'courseId' => $parcours->getId(),
+                        'courseName' => $parcours->getName(),
+                        'waypointId' => $parcours->getStartBeacon()->getId(),
+                        'waypointName' => $parcours->getStartBeacon()->getName(),
+                        'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+                    ]);
+                    $parcours->getStartBeacon()->setQr($startQrData);
+                }
+                
+                if ($parcours->getFinishBeacon() && !$parcours->getFinishBeacon()->getQr()) {
+                    $finishQrData = json_encode([
+                        'type' => 'FINISH',
+                        'courseId' => $parcours->getId(),
+                        'courseName' => $parcours->getName(),
+                        'waypointId' => $parcours->getFinishBeacon()->getId(),
+                        'waypointName' => $parcours->getFinishBeacon()->getName(),
+                        'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+                    ]);
+                    $parcours->getFinishBeacon()->setQr($finishQrData);
+                }
+            }
+            
             $this->entityManager->flush();
         }
 

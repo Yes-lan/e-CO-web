@@ -87,6 +87,12 @@ parcours:
     qr_codes: "QR Codes"
     loading: "Loading courses..."
     error_loading: "Error loading courses"
+    edit_modal_title: "Edit Course"
+    qr_codes_title: "Course QR Codes"
+    qr_important: "Important:"
+    qr_permanent: "These QR codes are permanent and never change for this course."
+    qr_print_info: "You can safely print and place them on the field. They will remain valid even if you view this page multiple times."
+    download_all_qr: "Download all QR codes"
     
     status:
         in_creation: "In progress"
@@ -118,6 +124,8 @@ login:
     forgot_password: "Forgot password?"
     please_sign_in: "Please sign in"
     remember_me: "Remember me"
+    already_logged_in: "You are logged in as %username%,"
+    logout: "Logout"
 
 sessions:
     page_title: "Courses - e-CO"

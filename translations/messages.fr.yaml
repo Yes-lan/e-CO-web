@@ -87,6 +87,12 @@ parcours:
     qr_codes: "Qr Codes"
     loading: "Chargement des parcours..."
     error_loading: "Erreur de chargement des parcours"
+    edit_modal_title: "Modifier le Parcours"
+    qr_codes_title: "QR Codes du Parcours"
+    qr_important: "Important :"
+    qr_permanent: "Ces QR codes sont permanents et ne changent jamais pour ce parcours."
+    qr_print_info: "Vous pouvez les imprimer et les placer sur le terrain en toute sécurité. Ils resteront valides même si vous consultez cette page plusieurs fois."
+    download_all_qr: "Télécharger tous les QR codes"
     
     status:
         in_creation: "En cours de création"
@@ -118,6 +124,8 @@ login:
     forgot_password: "Mot de passe oublié ?"
     please_sign_in: "Veuillez vous connecter"
     remember_me: "Se souvenir de moi"
+    already_logged_in: "Vous êtes connecté en tant que %username%,"
+    logout: "Déconnexion"
 
 home:
     title: "Accueil - e-CO Web"

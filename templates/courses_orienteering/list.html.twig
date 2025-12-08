@@ -10,7 +10,7 @@
 {% block body %}
 <div class="parcours-page">
     <div class="parcours-header">
-        <h1>Parcours</h1>
+        <h1>{{ 'parcours.title'|trans }}</h1>
         <div class="parcours-header-actions">
             <div class="search-box">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -38,7 +38,7 @@
 <div id="editCourseModal" class="modal">
     <div class="modal-content modal-large">
         <span class="close" onclick="closeEditModal()">&times;</span>
-        <h2 id="modalTitle">Modifier le Parcours</h2>
+        <h2 id="modalTitle">{{ 'parcours.edit_modal_title'|trans }}</h2>
         
         <div id="editCourseContent">
             <!-- Content loaded dynamically -->
@@ -50,15 +50,15 @@
 <div id="qrCodesModal" class="modal">
     <div class="modal-content modal-large">
         <span class="close" onclick="closeQRModal()">&times;</span>
-        <h2>🔲 QR Codes du Parcours</h2>
+        <h2>🔲 {{ 'parcours.qr_codes_title'|trans }}</h2>
         
         <!-- Important information about QR code stability -->
         <div style="background: #e7f3ff; border-left: 4px solid #2196F3; padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
             <p style="margin: 0; color: #0c5460; font-weight: 600;">
-                ℹ️ <strong>Important :</strong> Ces QR codes sont <strong>permanents et ne changent jamais</strong> pour ce parcours.
+                ℹ️ <strong>{{ 'parcours.qr_important'|trans }}</strong> {{ 'parcours.qr_permanent'|trans }}
             </p>
             <p style="margin: 0.5rem 0 0 0; color: #0c5460; font-size: 0.9rem;">
-                Vous pouvez les imprimer et les placer sur le terrain en toute sécurité. Ils resteront valides même si vous consultez cette page plusieurs fois.
+                {{ 'parcours.qr_print_info'|trans }}
             </p>
         </div>
         
@@ -80,7 +80,6 @@
             window.manageCoursePageInitialized = true;
             window.manageCourses = [];
             window.currentEditingCourse = null;
-            window.editBoundaryMap = null;
             window.qrCodeLibraryLoaded = false;
             window.jspdfLibraryLoaded = false;
         }
@@ -143,12 +142,7 @@
             });
         }
 
-        // Cleanup function for Turbo navigation
-        document.addEventListener('turbo:before-visit', function() {
-            if (window.editBoundaryMap) {
-                window.editBoundaryMap = null;
-            }
-        });
+
 
         // Load courses immediately
         async function initManagePage() {
@@ -182,8 +176,6 @@
 
             container.innerHTML = window.manageCourses.map((course, index) => {
                 const waypointCount = course.waypoints ? course.waypoints.length : 0;
-                const boundaries = course.boundaryPoints || course.boundary_points || [];
-                const hasBoundaries = boundaries.length >= 3;
                 
                 let statusText, statusColor;
                 if (course.status === 'finished') {
@@ -286,19 +278,7 @@
                 }));
             }
             
-            // Convert boundary coordinates from strings to numbers
-            if (course.boundaryPoints) {
-                course.boundaryPoints = course.boundaryPoints.map(p => ({
-                    lat: parseFloat(p.lat),
-                    lng: parseFloat(p.lng)
-                }));
-            }
-            if (course.boundary_points) {
-                course.boundary_points = course.boundary_points.map(p => ({
-                    lat: parseFloat(p.lat),
-                    lng: parseFloat(p.lng)
-                }));
-            }
+
             
             window.currentEditingCourse = course;
             showEditModal();
@@ -331,17 +311,6 @@
                         </div>
                     </div>
 
-                    <!-- Boundaries -->
-                    <div class="edit-section">
-                        <h3>🗺️ Limites du Parcours</h3>
-                        <p id="editBoundaryStatus" style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">
-                            ${course.boundaryPoints && course.boundaryPoints.length >= 3 
-                                ? `✅ ${course.boundaryPoints.length} points de limite définis` 
-                                : '⚠️ Aucune limite définie'}
-                        </p>
-                        <div class="boundary-mini-map" id="editBoundaryMap"></div>
-                    </div>
-
                     <!-- Waypoints -->
                     <div class="edit-section">
                         <h3>🎯 Balises</h3>
@@ -369,24 +338,15 @@
                                 <label>Description:</label>
                                 <textarea id="editCourseDescription">${course.description || ''}</textarea>
                             </div>
-                        </div>
-
-                        <!-- Boundaries -->
-                        <div class="edit-section">
-                            <h3>🗺️ Limites du Parcours</h3>
-                            <p style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">
-                                Cliquez sur "Ajouter un point" puis sur la carte pour définir les limites.<br>
-                                <strong>Glissez</strong> les points pour les déplacer, <strong>clic droit</strong> pour supprimer.
-                            </p>
-                            <p id="editBoundaryStatus" style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">
-                                ${course.boundaryPoints && course.boundaryPoints.length >= 3 
-                                    ? `✅ ${course.boundaryPoints.length} points de limite définis` 
-                                    : '⚠️ Aucune limite définie'}
-                            </p>
-                            <div class="boundary-mini-map" id="editBoundaryMap"></div>
-                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                                <button type="button" class="btn btn-secondary btn-small" id="editAddBoundaryPoint" onclick="toggleEditAddPoint()">📍 Ajouter un point</button>
-                                <button type="button" class="btn btn-danger btn-small" onclick="clearEditBoundaryPoints()">🗑️ Effacer tout</button>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="editSameStartFinish" ${course.sameStartFinish ? 'checked' : ''} onchange="toggleStartFinishMode()">
+                                    <span>Départ et arrivée au même endroit</span>
+                                </label>
+                                <small style="color: #666; display: block; margin-top: 5px;">
+                                    Si activé: un seul beacon sert de départ ET d'arrivée.<br>
+                                    Si désactivé: deux beacons distincts (départ vert, arrivée rouge).
+                                </small>
                             </div>
                         </div>
 
@@ -408,9 +368,6 @@
             }
             
             modal.style.display = 'block';
-            
-            // Initialize boundary map after modal is shown (read-only for finished courses)
-            setTimeout(() => initEditBoundaryMap(isFinished), 500);
         }
 
         function renderWaypointsList(course) {
@@ -449,272 +406,23 @@
             `).join('');
         }
 
-        async function initEditBoundaryMap(readOnly = false) {
-            const mapElement = document.getElementById('editBoundaryMap');
-            if (!mapElement || window.editBoundaryMap) return;
 
-            // Load Google Maps if not already loaded
-            try {
-                await window.loadGoogleMapsForManage();
-            } catch (error) {
-                console.error('Failed to load Google Maps:', error);
-                mapElement.innerHTML = '<div style="padding: 20px; text-align: center; color: #d32f2f;"><strong>⚠️ Impossible de charger Google Maps</strong><br><br>Vérifiez votre connexion internet.</div>';
-                return;
-            }
 
-            const course = window.currentEditingCourse;
-            const center = course.boundaryPoints && course.boundaryPoints.length > 0 
-                ? { lat: course.boundaryPoints[0].lat, lng: course.boundaryPoints[0].lng }
-                : { lat: 45.828, lng: 1.256 };
 
-            window.editBoundaryMap = new google.maps.Map(mapElement, {
-                center: center,
-                zoom: 15,
-                mapTypeId: 'hybrid',
-                tilt: 0,
-                rotateControl: false,
-                gestureHandling: readOnly ? 'cooperative' : 'auto',
-                styles: [
-                    { featureType: "poi", stylers: [{ visibility: "off" }] }
-                ]
-            });
 
-            // Initialize boundary management (check both property names)
-            // Convert string coordinates to numbers
-            const rawBoundaryPoints = course.boundaryPoints || course.boundary_points || [];
-            window.editBoundaryPoints = rawBoundaryPoints.map(p => ({
-                lat: parseFloat(p.lat),
-                lng: parseFloat(p.lng)
-            }));
-            window.editBoundaryMarkers = [];
-            window.editBoundaryPolygon = null;
-            window.isEditAddingPoint = false;
-            window.isReadOnlyMap = readOnly;
-            console.log('Initialized editBoundaryPoints with', window.editBoundaryPoints.length, 'points');
 
-            // Add click listener for adding points (only if not read-only)
-            if (!readOnly) {
-                window.editBoundaryMap.addListener('click', function(event) {
-                    if (window.isEditAddingPoint) {
-                        addEditBoundaryPoint(event.latLng.lat(), event.latLng.lng());
-                        window.isEditAddingPoint = false;
-                        updateEditAddButtonState();
-                    }
-                });
-            }
 
-            // Load existing boundaries
-            const bounds = new google.maps.LatLngBounds();
-            if (window.editBoundaryPoints.length > 0) {
-                window.editBoundaryPoints.forEach((point, idx) => {
-                    addEditBoundaryMarker(point.lat, point.lng, idx);
-                    bounds.extend({ lat: point.lat, lng: point.lng });
-                });
-                updateEditBoundaryPolygon();
-            }
 
-            // Load existing beacons/waypoints
-            if (course.waypoints && course.waypoints.length > 0) {
-                course.waypoints.forEach((waypoint, idx) => {
-                    if (waypoint.lat && waypoint.lng) {
-                        const beaconMarker = new google.maps.Marker({
-                            position: { 
-                                lat: parseFloat(waypoint.lat), 
-                                lng: parseFloat(waypoint.lng) 
-                            },
-                            map: window.editBoundaryMap,
-                            title: waypoint.name || `Balise ${idx + 1}`,
-                            icon: {
-                                path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
-                                fillColor: '#2196F3',
-                                fillOpacity: 1,
-                                strokeColor: '#ffffff',
-                                strokeWeight: 2,
-                                scale: 1,
-                                anchor: new google.maps.Point(0, 0)
-                            },
-                            label: {
-                                text: waypoint.name || `${idx + 1}`,
-                                color: 'white',
-                                fontSize: '10px',
-                                fontWeight: 'bold'
-                            }
-                        });
-                        bounds.extend({ lat: parseFloat(waypoint.lat), lng: parseFloat(waypoint.lng) });
-                    }
-                });
-            }
 
-            // Fit map to show all markers
-            if (!bounds.isEmpty()) {
-                window.editBoundaryMap.fitBounds(bounds);
-            }
-        }
 
-        function addEditBoundaryMarker(lat, lng, index) {
-            const isReadOnly = window.isReadOnlyMap || false;
-            const marker = new google.maps.Marker({
-                position: { lat: lat, lng: lng },
-                map: window.editBoundaryMap,
-                title: isReadOnly ? `Limite ${index + 1}` : `Limite ${index + 1} - Glisser pour déplacer, clic droit pour supprimer`,
-                draggable: !isReadOnly,
-                label: {
-                    text: `${index + 1}`,
-                    color: 'white',
-                    fontSize: '12px',
-                    fontWeight: 'bold'
-                },
-                icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 8,
-                    fillColor: isReadOnly ? '#9E9E9E' : '#FF6B35',
-                    fillOpacity: 1,
-                    strokeColor: '#ffffff',
-                    strokeWeight: 2
-                }
-            });
 
-            marker.boundaryPointIndex = index;
 
-            // Drag event (only if not read-only)
-            if (!isReadOnly) {
-                marker.addListener('dragend', function(event) {
-                    const newLat = event.latLng.lat();
-                    const newLng = event.latLng.lng();
-                    window.editBoundaryPoints[marker.boundaryPointIndex].lat = newLat;
-                    window.editBoundaryPoints[marker.boundaryPointIndex].lng = newLng;
-                    updateEditBoundaryPolygon();
-                    // Update course object (both property names for compatibility)
-                    window.currentEditingCourse.boundaryPoints = [...window.editBoundaryPoints];
-                    window.currentEditingCourse.boundary_points = [...window.editBoundaryPoints];
-                });
 
-                // Right-click to remove
-                marker.addListener('rightclick', function() {
-                    if (confirm(`Supprimer le point de limite ${index + 1} ?`)) {
-                        removeEditBoundaryPoint(marker.boundaryPointIndex);
-                    }
-                });
-            }
 
-            window.editBoundaryMarkers[index] = marker;
-        }
 
-        function addEditBoundaryPoint(lat, lng) {
-            const index = window.editBoundaryPoints.length;
-            window.editBoundaryPoints.push({ lat: lat, lng: lng });
-            addEditBoundaryMarker(lat, lng, index);
-            updateEditBoundaryPolygon();
-            
-            // Update course object
-            window.currentEditingCourse.boundaryPoints = [...window.editBoundaryPoints];
-            window.currentEditingCourse.boundary_points = [...window.editBoundaryPoints];
-        }
 
-        function removeEditBoundaryPoint(index) {
-            // Remove marker
-            if (window.editBoundaryMarkers[index]) {
-                window.editBoundaryMarkers[index].setMap(null);
-            }
 
-            // Remove from arrays
-            window.editBoundaryPoints.splice(index, 1);
-            window.editBoundaryMarkers.splice(index, 1);
 
-            // Re-index remaining markers
-            window.editBoundaryMarkers.forEach((marker, idx) => {
-                marker.boundaryPointIndex = idx;
-                marker.setLabel({
-                    text: `${idx + 1}`,
-                    color: 'white',
-                    fontSize: '12px',
-                    fontWeight: 'bold'
-                });
-                marker.setTitle(`Limite ${idx + 1} - Glisser pour déplacer, clic droit pour supprimer`);
-            });
-
-            updateEditBoundaryPolygon();
-            
-            // Update course object
-            window.currentEditingCourse.boundaryPoints = [...window.editBoundaryPoints];
-        }
-
-        function updateEditBoundaryPolygon() {
-            // Remove old polygon
-            if (window.editBoundaryPolygon) {
-                window.editBoundaryPolygon.setMap(null);
-            }
-
-            // Create new polygon if we have at least 3 points
-            if (window.editBoundaryPoints.length >= 3) {
-                const path = window.editBoundaryPoints.map(p => ({ lat: p.lat, lng: p.lng }));
-                window.editBoundaryPolygon = new google.maps.Polygon({
-                    paths: path,
-                    strokeColor: '#667eea',
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    fillColor: '#667eea',
-                    fillOpacity: 0.2,
-                    map: window.editBoundaryMap
-                });
-            }
-            
-            // Update status text
-            updateEditBoundaryStatus();
-        }
-
-        function updateEditBoundaryStatus() {
-            const statusElement = document.getElementById('editBoundaryStatus');
-            if (!statusElement) return;
-            
-            const count = window.editBoundaryPoints ? window.editBoundaryPoints.length : 0;
-            if (count >= 3) {
-                statusElement.innerHTML = `✅ ${count} points de limite définis`;
-                statusElement.style.color = '#2e7d32';
-            } else if (count > 0) {
-                statusElement.innerHTML = `⚠️ ${count} point(s) défini(s) - minimum 3 requis`;
-                statusElement.style.color = '#f57c00';
-            } else {
-                statusElement.innerHTML = '⚠️ Aucune limite définie';
-                statusElement.style.color = '#666';
-            }
-        }
-
-        function toggleEditAddPoint() {
-            window.isEditAddingPoint = !window.isEditAddingPoint;
-            updateEditAddButtonState();
-        }
-
-        function updateEditAddButtonState() {
-            const btn = document.getElementById('editAddBoundaryPoint');
-            if (!btn) return;
-            
-            if (window.isEditAddingPoint) {
-                btn.classList.add('active');
-                btn.textContent = '📍 Cliquez sur la carte...';
-                btn.style.backgroundColor = '#4CAF50';
-            } else {
-                btn.classList.remove('active');
-                btn.textContent = '📍 Ajouter un point';
-                btn.style.backgroundColor = '';
-            }
-        }
-
-        function clearEditBoundaryPoints() {
-            if (!confirm('Supprimer tous les points de limite ?')) return;
-            
-            window.editBoundaryMarkers.forEach(marker => marker.setMap(null));
-            window.editBoundaryMarkers = [];
-            window.editBoundaryPoints = [];
-            
-            if (window.editBoundaryPolygon) {
-                window.editBoundaryPolygon.setMap(null);
-                window.editBoundaryPolygon = null;
-            }
-            
-            // Update course object
-            window.currentEditingCourse.boundaryPoints = [];
-        }
 
         function addWaypoint() {
             const course = window.currentEditingCourse;
@@ -764,16 +472,7 @@
             }
         }
 
-        function clearBoundaries() {
-            if (confirm('Effacer toutes les limites du parcours ?')) {
-                window.currentEditingCourse.boundaryPoints = null;
-                if (window.editBoundaryMap) {
-                    // Reinitialize map
-                    window.editBoundaryMap = null;
-                    initEditBoundaryMap();
-                }
-            }
-        }
+
 
         async function saveCourseChanges(event) {
             event.preventDefault();
@@ -782,17 +481,13 @@
             const course = window.currentEditingCourse;
             course.name = document.getElementById('editCourseName').value;
             course.description = document.getElementById('editCourseDescription').value;
+            const sameStartFinish = document.getElementById('editSameStartFinish')?.checked || false;
             
-            // Prepare data for API (use boundaryPoints and boundary_points for compatibility)
-            const boundaryData = window.editBoundaryPoints || course.boundaryPoints || course.boundary_points || [];
-            console.log('Saving boundaries:', boundaryData);
-            console.log('window.editBoundaryPoints:', window.editBoundaryPoints);
-            console.log('course.boundaryPoints:', course.boundaryPoints);
-            console.log('course.boundary_points:', course.boundary_points);
+            // Prepare data for API
             const updateData = {
                 name: course.name,
                 description: course.description,
-                boundaryPoints: boundaryData,
+                sameStartFinish: sameStartFinish,
                 waypoints: (course.waypoints || []).map(wp => {
                     const waypoint = {
                         name: wp.name,
@@ -821,11 +516,9 @@
                 const result = await response.json();
                 
                 if (response.ok && result.success) {
-                    // Update the course in the local array with the saved boundary data
+                    // Update the course in the local array
                     const courseIndex = course.index !== undefined ? course.index : window.manageCourses.findIndex(c => c.id === course.id);
                     if (courseIndex !== -1) {
-                        window.manageCourses[courseIndex].boundaryPoints = boundaryData;
-                        window.manageCourses[courseIndex].boundary_points = boundaryData;
                         window.manageCourses[courseIndex].name = course.name;
                         window.manageCourses[courseIndex].description = course.description;
                     }
@@ -844,8 +537,20 @@
 
         function closeEditModal() {
             document.getElementById('editCourseModal').style.display = 'none';
-            window.editBoundaryMap = null;
             window.currentEditingCourse = null;
+        }
+
+        function toggleStartFinishMode() {
+            const checkbox = document.getElementById('editSameStartFinish');
+            if (!checkbox) return;
+            
+            const course = window.currentEditingCourse;
+            if (course) {
+                course.sameStartFinish = checkbox.checked;
+            }
+            
+            // Could add visual feedback here if needed
+            console.log('Start/Finish mode:', checkbox.checked ? 'Same location' : 'Different locations');
         }
 
         function viewOnMap(index) {

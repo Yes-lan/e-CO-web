@@ -35,11 +35,8 @@ class Course
     #[ORM\Column]
     private ?\DateTime $updateAt = null;
 
-    /**
-     * @var Collection<int, BoundariesCourse>
-     */
-    #[ORM\OneToMany(targetEntity: BoundariesCourse::class, mappedBy: 'course')]
-    private Collection $boundariesCourses;
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $sameStartFinish = false;
 
     /**
      * @var Collection<int, Beacon>
@@ -58,9 +55,9 @@ class Course
 
     public function __construct()
     {
-        $this->boundariesCourses = new ArrayCollection();
         $this->beacons = new ArrayCollection();
         $this->sessions = new ArrayCollection();
+        $this->sameStartFinish = false;
     }
 
     public function getId(): ?int
@@ -141,32 +138,44 @@ class Course
     }
 
     /**
-     * @return Collection<int, BoundariesCourse>
+     * Get the start beacon by filtering beacons with type 'start'
      */
-    public function getBoundariesCourses(): Collection
+    public function getStartBeacon(): ?Beacon
     {
-        return $this->boundariesCourses;
-    }
-
-    public function addBoundariesCourse(BoundariesCourse $boundariesCourse): static
-    {
-        if (!$this->boundariesCourses->contains($boundariesCourse)) {
-            $this->boundariesCourses->add($boundariesCourse);
-            $boundariesCourse->setCourse($this);
-        }
-
-        return $this;
-    }
-
-    public function removeBoundariesCourse(BoundariesCourse $boundariesCourse): static
-    {
-        if ($this->boundariesCourses->removeElement($boundariesCourse)) {
-            // set the owning side to null (unless already changed)
-            if ($boundariesCourse->getCourse() === $this) {
-                $boundariesCourse->setCourse(null);
+        foreach ($this->beacons as $beacon) {
+            if ($beacon->getType() === 'start') {
+                return $beacon;
             }
         }
+        return null;
+    }
 
+    /**
+     * Get the finish beacon by filtering beacons with type 'finish'
+     * If sameStartFinish is true, returns the start beacon
+     */
+    public function getFinishBeacon(): ?Beacon
+    {
+        if ($this->sameStartFinish) {
+            return $this->getStartBeacon();
+        }
+        
+        foreach ($this->beacons as $beacon) {
+            if ($beacon->getType() === 'finish') {
+                return $beacon;
+            }
+        }
+        return null;
+    }
+
+    public function isSameStartFinish(): bool
+    {
+        return $this->sameStartFinish;
+    }
+
+    public function setSameStartFinish(bool $sameStartFinish): static
+    {
+        $this->sameStartFinish = $sameStartFinish;
         return $this;
     }
 
