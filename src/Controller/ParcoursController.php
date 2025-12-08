@@ -440,9 +440,169 @@ class ParcoursController extends AbstractController
             return new JsonResponse(['error' => 'Forbidden'], 403);
         }
 
+        // Supprimer toutes les balises associées à ce parcours
+        foreach ($parcours->getBeacons() as $beacon) {
+            $this->entityManager->remove($beacon);
+        }
+
+        // Supprimer le parcours
         $this->entityManager->remove($parcours);
         $this->entityManager->flush();
 
         return new JsonResponse(['success' => true]);
+    }
+    
+    /**
+     * Get all waypoints/beacons for a specific course
+     */
+    #[Route('/api/parcours/{id}/waypoints', name: 'api_parcours_waypoints', methods: ['GET'])]
+    public function getWaypoints(int $id): JsonResponse
+    {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $course = $this->courseRepository->find($id);
+        if (!$course) {
+            return new JsonResponse(['error' => 'Course not found'], 404);
+        }
+
+        // Verify user owns this course
+        if ($course->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Forbidden'], 403);
+        }
+
+        $waypoints = array_map(function($beacon) {
+            return [
+                'id' => $beacon->getId(),
+                'name' => $beacon->getName(),
+                'latitude' => $beacon->getLatitude(),
+                'longitude' => $beacon->getLongitude(),
+                'type' => $beacon->getType(),
+                'qr' => $beacon->getQr(),
+                'isPlaced' => $beacon->isPlaced() ?? false,
+                'placedAt' => $beacon->getPlacedAt()?->format('Y-m-d H:i:s'),
+            ];
+        }, $course->getBeacons()->toArray());
+
+        return new JsonResponse([
+            'courseId' => $course->getId(),
+            'courseName' => $course->getName(),
+            'waypoints' => $waypoints
+        ]);
+    }
+
+    /**
+     * Update beacon/waypoint position and mark as placed
+     */
+    #[Route('/api/waypoints/{id}/place', name: 'api_waypoint_place', methods: ['PATCH'])]
+    public function placeWaypoint(int $id, Request $request): JsonResponse
+    {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $beaconRepository = $this->entityManager->getRepository(Beacon::class);
+        $beacon = $beaconRepository->find($id);
+        
+        if (!$beacon) {
+            return new JsonResponse(['error' => 'Waypoint not found'], 404);
+        }
+
+        // Verify user owns the course this beacon belongs to
+        $courses = $beacon->getCourse()->toArray();
+        if (empty($courses) || $courses[0]->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Forbidden'], 403);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        
+        if (!isset($data['latitude']) || !isset($data['longitude'])) {
+            return new JsonResponse(['error' => 'Latitude and longitude are required'], 400);
+        }
+
+        // Update beacon position
+        $beacon->setLatitude((float)$data['latitude']);
+        $beacon->setLongitude((float)$data['longitude']);
+        $beacon->setIsPlaced(true);
+        $beacon->setPlacedAt(new \DateTime());
+
+        $this->entityManager->persist($beacon);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Waypoint placed successfully',
+            'waypoint' => [
+                'id' => $beacon->getId(),
+                'name' => $beacon->getName(),
+                'latitude' => $beacon->getLatitude(),
+                'longitude' => $beacon->getLongitude(),
+                'isPlaced' => $beacon->isPlaced(),
+                'placedAt' => $beacon->getPlacedAt()?->format('Y-m-d H:i:s'),
+            ]
+        ]);
+    }
+
+    /**
+     * Mark course as ready after all beacons are placed
+     */
+    #[Route('/api/parcours/{id}/mark-ready', name: 'api_parcours_mark_ready', methods: ['POST'])]
+    public function markReady(int $id): JsonResponse
+    {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $course = $this->courseRepository->find($id);
+        if (!$course) {
+            return new JsonResponse(['error' => 'Course not found'], 404);
+        }
+
+        // Verify user owns this course
+        if ($course->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Forbidden'], 403);
+        }
+
+        // Check if all beacons are placed
+        $beacons = $course->getBeacons()->toArray();
+        $totalBeacons = count($beacons);
+        $placedBeacons = 0;
+
+        foreach ($beacons as $beacon) {
+            if ($beacon->isPlaced()) {
+                $placedBeacons++;
+            }
+        }
+
+        if ($placedBeacons < $totalBeacons) {
+            return new JsonResponse([
+                'error' => 'Not all waypoints are placed',
+                'placed' => $placedBeacons,
+                'total' => $totalBeacons
+            ], 400);
+        }
+
+        // Update course status to 'ready' or 'finished'
+        $course->setStatus('ready');
+        $course->setUpdateAt(new \DateTime());
+
+        $this->entityManager->persist($course);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Course marked as ready',
+            'course' => [
+                'id' => $course->getId(),
+                'name' => $course->getName(),
+                'status' => $course->getStatus(),
+                'beaconsPlaced' => $placedBeacons,
+                'totalBeacons' => $totalBeacons
+            ]
+        ]);
     }
 }
