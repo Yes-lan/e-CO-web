@@ -62,6 +62,12 @@ security:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/languages, roles: PUBLIC_ACCESS }
         - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/parcours,roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/courses,roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/map,roles: IS_AUTHENTICATED_FULLY }
+
+
+
 
 
 when@test:
