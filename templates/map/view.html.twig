@@ -305,7 +305,7 @@
             // Add small markers for GPS log points
             gpsLogs.forEach(log => {
                 const logTime = new Date(log.time);
-                const sessionStartTime = currentSession.sessionStart ? new Date(currentSession.sessionStart) : null;
+                const sessionStartTime = runner.departure ? new Date(runner.departure) : null;
                 const elapsedSeconds = sessionStartTime ? Math.floor((logTime - sessionStartTime) / 1000) : null;
                 const elapsedFormatted = elapsedSeconds !== null ? formatElapsedTime(elapsedSeconds) : '-';
                 
@@ -357,7 +357,7 @@
                     const markerColor = isValid ? '#4CAF50' : '#F44336'; // Green or Red
                     
                     const scanTime = new Date(scan.time);
-                    const sessionStartTime = currentSession.sessionStart ? new Date(currentSession.sessionStart) : null;
+                    const sessionStartTime = runner.departure ? new Date(runner.departure) : null;
                     const elapsedSeconds = sessionStartTime ? Math.floor((scanTime - sessionStartTime) / 1000) : null;
                     const elapsedFormatted = elapsedSeconds !== null ? formatElapsedTime(elapsedSeconds) : '-';
                     
@@ -568,7 +568,8 @@
                     strokeWeight: 2,
                     scale: 1.3,
                     anchor: new google.maps.Point(0, 0)
-                }
+                },
+                zIndex: 100
             });
             markers.push(marker);
             bounds.extend({ lat, lng });
@@ -581,10 +582,10 @@
             startLabelDiv.style.color = '#4CAF50';
             startLabelDiv.style.textShadow = `-2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, -2px 0 0 #fff, 2px 0 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff`;
             startLabelDiv.style.whiteSpace = 'nowrap';
-            startLabelDiv.style.transform = 'translate(-50%, -55px)';
+            startLabelDiv.style.transform = 'translate(-50%, -65px)';
             startLabelDiv.style.pointerEvents = 'none';
             startLabelDiv.style.userSelect = 'none';
-            startLabelDiv.style.zIndex = '1000';
+            startLabelDiv.style.zIndex = '10000';
             startLabelDiv.textContent = currentCourse.startBeacon.name || 'Départ';
             
             class StartLabelOverlay extends google.maps.OverlayView {
@@ -595,7 +596,7 @@
                 }
                 
                 onAdd() {
-                    this.getPanes().overlayLayer.appendChild(this.labelElement);
+                    this.getPanes().floatPane.appendChild(this.labelElement);
                 }
                 
                 draw() {
@@ -635,7 +636,8 @@
                     strokeWeight: 2,
                     scale: 1.3,
                     anchor: new google.maps.Point(0, 0)
-                }
+                },
+                zIndex: 100
             });
             markers.push(marker);
             bounds.extend({ lat, lng });
@@ -648,10 +650,10 @@
             finishLabelDiv.style.color = '#F44336';
             finishLabelDiv.style.textShadow = `-2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, -2px 0 0 #fff, 2px 0 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff`;
             finishLabelDiv.style.whiteSpace = 'nowrap';
-            finishLabelDiv.style.transform = 'translate(-50%, -55px)';
+            finishLabelDiv.style.transform = 'translate(-50%, -65px)';
             finishLabelDiv.style.pointerEvents = 'none';
             finishLabelDiv.style.userSelect = 'none';
-            finishLabelDiv.style.zIndex = '1000';
+            finishLabelDiv.style.zIndex = '10000';
             finishLabelDiv.textContent = currentCourse.finishBeacon.name || 'Arrivée';
             
             class FinishLabelOverlay extends google.maps.OverlayView {
@@ -662,7 +664,7 @@
                 }
                 
                 onAdd() {
-                    this.getPanes().overlayLayer.appendChild(this.labelElement);
+                    this.getPanes().floatPane.appendChild(this.labelElement);
                 }
                 
                 draw() {
