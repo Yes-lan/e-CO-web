@@ -49,7 +49,15 @@ class AuthenticatorECOAuthenticator extends AbstractLoginFormAuthenticator
         }
 
         // Redirect to courses orienteering list page after successful login
-        return new RedirectResponse($this->urlGenerator->generate('app_parcours_list'));
+        $roles = $token->getRoleNames();
+
+        if (in_array('ROLE_ADMIN', $roles)) {
+            return new RedirectResponse($this->urlGenerator->generate('admin'));
+        }
+
+        if (in_array('ROLE_USER', $roles)) {
+            return new RedirectResponse($this->urlGenerator->generate('app_parcours_list'));
+        }
     }
 
     protected function getLoginUrl(Request $request): string
