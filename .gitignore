@@ -28,4 +28,3 @@ yarn-error.log
 ###> lexik/jwt-authentication-bundle ###
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
->>>>>>> 54a68a4b598bb313ffb1bde17bd0c22508c32680
