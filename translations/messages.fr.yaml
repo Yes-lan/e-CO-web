@@ -18,6 +18,7 @@ map:
     beacons_validated: "Balises"
     completion_time: "Temps"
     course_map: "Carte du Parcours"
+    course_info: "Informations du Parcours"
     beacon_validation: "Validation des Balises"
     no_runners: "Aucun coureur pour cette course"
     no_course_data: "Aucune donnée de parcours disponible"

@@ -18,6 +18,7 @@ map:
     beacons_validated: "Balizak"
     completion_time: "Denbora"
     course_map: "Ibilbidearen Mapa"
+    course_info: "Ibilbidearen Informazioa"
     beacon_validation: "Balizen Balioztatze"
     no_runners: "Ez dago korrikalarik lasterketa honetan"
     no_course_data: "Ez dago ibilbide daturik eskuragarri"

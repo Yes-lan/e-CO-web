@@ -39,7 +39,7 @@
     <div class="modal-content modal-large">
         <span class="close" onclick="closeEditModal()">&times;</span>
         <h2 id="modalTitle">{{ 'parcours.edit_modal_title'|trans }}</h2>
-        
+
         <div id="editCourseContent">
             <!-- Content loaded dynamically -->
         </div>
@@ -227,6 +227,13 @@
                                 ${trans('parcours.qr_codes')}
                             </button>
                             ${course.status !== 'finished' ? `
+                            <button class="action-btn btn-view" onclick="viewCourse(${index})" style="background: #2196f3;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" stroke="white" stroke-width="2"/>
+                                    <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/>
+                                </svg>
+                                ${trans('parcours.view')}
+                            </button>
                             <button class="action-btn btn-edit" onclick="editCourse(${index})">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="white" stroke-width="2" stroke-linecap="round"/>
@@ -234,19 +241,13 @@
                                 </svg>
                                 ${trans('parcours.edit')}
                             </button>
-                            <button class="action-btn btn-finish" onclick="finishCourse(${index})" style="background: #4caf50;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                                ${trans('parcours.finish')}
-                            </button>
                             <button class="action-btn btn-delete" onclick="deleteCourse(${index})">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="white" stroke-width="2" stroke-linecap="round"/>
                                 </svg>
                             </button>
                             ` : `
-                            <button class="action-btn btn-edit" onclick="editCourse(${index})" style="background: #2196f3;">
+                            <button class="action-btn btn-view" onclick="viewCourse(${index})" style="background: #2196f3;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" stroke="white" stroke-width="2"/>
                                     <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/>
@@ -263,10 +264,16 @@
             }).join('');
         }
 
+        function viewCourse(index) {
+            const course = window.manageCourses[index];
+            // Redirect to map page with only courseId (no session)
+            window.location.href = `/map?courseId=${course.id}`;
+        }
+
         function editCourse(index) {
             const courseData = window.manageCourses[index];
             const course = { ...courseData, index };
-            
+
             // Convert waypoint coordinates from strings to numbers
             if (course.waypoints) {
                 course.waypoints = course.waypoints.map(wp => ({
@@ -277,9 +284,7 @@
                     lng: parseFloat(wp.lng || wp.longitude)
                 }));
             }
-            
 
-            
             window.currentEditingCourse = course;
             showEditModal();
         }
@@ -287,8 +292,242 @@
         function showEditModal() {
             const modal = document.getElementById('editCourseModal');
             const content = document.getElementById('editCourseContent');
-            
+
             const course = window.currentEditingCourse;
+            const isFinished = course.status === 'finished';
+
+            if (isFinished) {
+                // Read-only view for finished courses
+                content.innerHTML = `
+                    <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #ffc107;">
+                        <strong>⚠️ Parcours terminé</strong> - Ce parcours est terminé et ne peut plus être modifié.
+                    </div>
+
+                    <!-- Basic Info -->
+                    <div class="edit-section">
+                        <h3>ℹ️ Informations Générales</h3>
+                        <div class="form-group">
+                            <label>Nom du parcours:</label>
+                            <input type="text" value="${course.name || ''}" disabled style="background: #f5f5f5; cursor: not-allowed;">
+                        </div>
+                        <div class="form-group">
+                            <label>Description:</label>
+                            <textarea disabled style="background: #f5f5f5; cursor: not-allowed;">${course.description || ''}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Waypoints -->
+                    <div class="edit-section">
+                        <h3>📍 Balises</h3>
+                        <div id="editWaypointsList">
+                            ${renderWaypointsListReadOnly(course)}
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Fermer</button>
+                    </div>
+                `;
+            } else {
+                // Editable view for non-finished courses
+                content.innerHTML = `
+                    <form id="editCourseForm" onsubmit="saveCourseChanges(event)">
+                        <!-- Basic Info -->
+                        <div class="edit-section">
+                            <h3>ℹ️ Informations Générales</h3>
+                            <div class="form-group">
+                                <label>Nom du parcours:</label>
+                                <input type="text" id="editCourseName" value="${course.name || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Description:</label>
+                                <textarea id="editCourseDescription">${course.description || ''}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="editSameStartFinish" ${course.sameStartFinish ? 'checked' : ''} onchange="toggleStartFinishMode()">
+                                    <span>Départ et arrivée au même endroit</span>
+                                </label>
+                                <small style="color: #666; display: block; margin-top: 5px;">
+                                    Si activé: un seul beacon sert de départ ET d'arrivée.<br>
+                                    Si désactivé: deux beacons distincts (départ vert, arrivée rouge).
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Waypoints -->
+                        <div class="edit-section">
+                            <h3>📍 Balises</h3>
+                            <div id="editWaypointsList">
+                                ${renderWaypointsList(course)}
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-small" onclick="addWaypoint()">➕ Ajouter une balise</button>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Annuler</button>
+                            <button type="submit" class="btn btn-success">✅ Enregistrer les modifications</button>
+                        </div>
+                    </form>
+                `;
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function renderWaypointsList(course) {
+            if (!course.waypoints || course.waypoints.length === 0) {
+                return '<p style="color: #666;">Aucune balise</p>';
+            }
+
+            return course.waypoints.map((wp, idx) => `
+                <div class="waypoint-list-item" data-waypoint-index="${idx}">
+                    <div>
+                        <strong>Balise ${wp.id || idx + 1}:</strong> ${wp.name || 'Sans nom'}
+                        <br>
+                        <small style="color: #666;">${wp.lat != null ? `📍 ${wp.lat.toFixed(6)}, ${wp.lng.toFixed(6)}` : '⚠️ Pas de coordonnées'}</small>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-warning btn-small" onclick="editWaypoint(${idx})">✏️</button>
+                        <button type="button" class="btn btn-danger btn-small" onclick="removeWaypoint(${idx})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderWaypointsListReadOnly(course) {
+            if (!course.waypoints || course.waypoints.length === 0) {
+                return '<p style="color: #666;">Aucune balise</p>';
+            }
+
+            return course.waypoints.map((wp, idx) => `
+                <div class="waypoint-list-item" style="background: #f5f5f5;">
+                    <div>
+                        <strong>Balise ${wp.id || idx + 1}:</strong> ${wp.name || 'Sans nom'}
+                        <br>
+                        <small style="color: #666;">${wp.lat != null ? `📍 ${wp.lat.toFixed(6)}, ${wp.lng.toFixed(6)}` : '⚠️ Pas de coordonnées'}</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addWaypoint() {
+            const course = window.currentEditingCourse;
+
+            // Create new waypoint WITHOUT an ID (backend will assign one)
+            let tempId = Date.now(); // Unique temporary ID
+
+            const newWaypoint = {
+                tempId: tempId, // Temporary ID for frontend tracking only
+                name: `Nouvelle balise`,
+                description: '',
+                lat: null,
+                lng: null,
+                type: 'control'
+            };
+
+            if (!course.waypoints) {
+                course.waypoints = [];
+            }
+            course.waypoints.push(newWaypoint);
+
+            // Refresh the waypoints list
+            document.getElementById('editWaypointsList').innerHTML = renderWaypointsList(course);
+
+            alert('⚠️ IMPORTANT: Nouvelle balise ajoutée!\n\n' +
+                  'Cette balise a un nouveau QR code qui sera créé.\n' +
+                  'Après avoir sauvegardé, vous devez:\n' +
+                  '1. Consulter les QR codes mis à jour\n' +
+                  '2. Imprimer le nouveau QR code\n' +
+                  '3. Placer ce nouveau QR code sur le terrain\n\n' +
+                  'Les autres QR codes restent inchangés!');
+        }
+
+        function editWaypoint(index) {
+            alert(`Modifier balise ${index + 1}`);
+        }
+
+        function removeWaypoint(index) {
+            if (confirm(`Supprimer la balise ${index + 1} ?`)) {
+                window.currentEditingCourse.waypoints.splice(index, 1);
+                document.getElementById('editWaypointsList').innerHTML = renderWaypointsList(window.currentEditingCourse);
+            }
+        }
+
+        async function saveCourseChanges(event) {
+            event.preventDefault();
+
+            const course = window.currentEditingCourse;
+            course.name = document.getElementById('editCourseName').value;
+            course.description = document.getElementById('editCourseDescription').value;
+            const sameStartFinish = document.getElementById('editSameStartFinish')?.checked || false;
+
+            const updateData = {
+                name: course.name,
+                description: course.description,
+                sameStartFinish: sameStartFinish,
+                waypoints: (course.waypoints || []).map(wp => {
+                    const waypoint = {
+                        name: wp.name,
+                        latitude: wp.latitude || wp.lat || 0,
+                        longitude: wp.longitude || wp.lng || 0,
+                        type: wp.type || 'control',
+                        qr: wp.qr || ''
+                    };
+
+                    if (wp.id !== undefined && wp.id !== null) {
+                        waypoint.id = wp.id;
+                    }
+
+                    return waypoint;
+                })
+            };
+
+            try {
+                const response = await AuthManager.fetch(`{{ path('api_parcours_update', {id: '__ID__'}) }}`.replace('__ID__', course.id), {
+                    method: 'PUT',
+                    body: JSON.stringify(updateData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const courseIndex = course.index !== undefined ? course.index : window.manageCourses.findIndex(c => c.id === course.id);
+                    if (courseIndex !== -1) {
+                        window.manageCourses[courseIndex].name = course.name;
+                        window.manageCourses[courseIndex].description = course.description;
+                    }
+
+                    alert('✅ Modifications enregistrées avec succès !');
+                    closeEditModal();
+                    await loadCourses();
+                } else {
+                    throw new Error(result.error || 'Erreur lors de la sauvegarde');
+                }
+            } catch (error) {
+                console.error('Error saving course:', error);
+                alert('❌ Erreur lors de la sauvegarde : ' + error.message);
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editCourseModal').style.display = 'none';
+            window.currentEditingCourse = null;
+        }
+
+        function toggleStartFinishMode() {
+            const checkbox = document.getElementById('editSameStartFinish');
+            if (!checkbox) return;
+
+            const course = window.currentEditingCourse;
+            if (course) {
+                course.sameStartFinish = checkbox.checked;
+            }
+        }
+
+        async function viewQRCodes(index) {
+            const course = window.manageCourses[index];
+            const modal = document.getElementById('qrCodesModal');
             const isFinished = course.status === 'finished';
             
             if (isFinished) {
@@ -738,31 +977,6 @@
 
         function closeQRModal() {
             document.getElementById('qrCodesModal').style.display = 'none';
-        }
-
-        async function finishCourse(index) {
-            const course = window.manageCourses[index];
-            if (!confirm(`Marquer le parcours "${course.name}" comme terminé ?\n\nUne fois terminé, le parcours ne pourra plus être modifié.\n\nContinuer ?`)) {
-                return;
-            }
-            
-            try {
-                const response = await AuthManager.fetch(`/api/parcours/${course.id}/finish`, {
-                    method: 'POST'
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok && result.success) {
-                    alert('✅ Parcours marqué comme terminé !');
-                    await loadCourses();
-                } else {
-                    throw new Error(result.error || 'Erreur lors de la finalisation');
-                }
-            } catch (error) {
-                console.error('Error finishing course:', error);
-                alert('❌ Erreur : ' + error.message);
-            }
         }
 
         async function deleteCourse(index) {

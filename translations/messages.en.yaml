@@ -18,6 +18,7 @@ map:
     beacons_validated: "Beacons"
     completion_time: "Time"
     course_map: "Course Map"
+    course_info: "Course Information"
     beacon_validation: "Beacon Validation"
     no_runners: "No runners for this course"
     no_course_data: "No course data available"

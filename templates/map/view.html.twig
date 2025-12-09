@@ -2,14 +2,108 @@
 
 {% block title %}{{ 'map.title'|trans }} - e-CO{% endblock %}
 
+{% block stylesheets %}
+<style>
+    .course-info-panel {
+        flex: 0 0 350px;
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        overflow-y: auto;
+        max-height: calc(100vh - 180px);
+    }
+    
+    .course-info-panel h2 {
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        color: #333;
+        font-size: 1.5rem;
+        border-bottom: 2px solid #2196F3;
+        padding-bottom: 0.5rem;
+    }
+    
+    .info-item {
+        margin-bottom: 1.2rem;
+        padding: 0.8rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border-left: 3px solid #2196F3;
+    }
+    
+    .info-item strong {
+        display: block;
+        color: #555;
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.3rem 0.8rem;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    .status-badge.finished {
+        background: #4caf50;
+        color: white;
+    }
+    
+    .status-badge.active {
+        background: #ff9800;
+        color: white;
+    }
+    
+    .beacon-list {
+        list-style: none;
+        padding: 0;
+        margin: 0.5rem 0 0 0;
+    }
+    
+    .beacon-list li {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        background: white;
+        border-radius: 4px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .beacon-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: #2196F3;
+        color: white;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 0.85rem;
+        margin-right: 0.8rem;
+        flex-shrink: 0;
+    }
+    
+    .beacon-name {
+        color: #333;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="map-view-container">
     <!-- Main Content: Session Selector + Runners Table + Map -->
     <div class="map-content">
         <!-- Left Column: Runners Table -->
-        <div class="left-column">
+        <div class="left-column" id="leftColumn">
             <!-- Runners Table -->
-            <div class="runners-panel">
+            <div class="runners-panel" id="runnersPanel">
                 <h2>👥 {{ 'map.runners'|trans }}</h2>
                 <div class="runners-table-container">
                     <table class="runners-table">
@@ -34,10 +128,18 @@
         <div class="map-panel" id="mapPanel">
             <div id="map"></div>
         </div>
+        
+        <!-- Course Info Panel (shown when no session selected) -->
+        <div class="course-info-panel" id="courseInfoPanel" style="display: none;">
+            <h2>📋 {{ 'map.course_info'|trans }}</h2>
+            <div id="courseInfoContent">
+                <!-- Course info will be populated here -->
+            </div>
+        </div>
     </div>
     
     <!-- Bottom: Beacon Validation Table -->
-    <div class="beacon-validation-panel">
+    <div class="beacon-validation-panel" id="beaconValidationPanel">
         <div id="runnerNameBadge" class="runner-name-badge" style="display: none;"></div>
         <div class="beacon-table-container">
             <div id="beaconValidationContent" class="no-data">
@@ -70,16 +172,95 @@
         const sessionId = urlParams.get('sessionId');
         const courseId = urlParams.get('courseId');
         
-        if (courseId) {
+        if (courseId && !sessionId) {
+            // Course-only view: hide session/runner tables, show course info
+            showCourseOnlyView();
+            loadCourseOnlyData(courseId);
+        } else if (courseId) {
             // Came from course/parcours page - load sessions for this course
+            showSessionView();
             loadSessionsForCourse(courseId, sessionId);
         } else if (sessionId) {
             // Direct session link - load all sessions and select the one
+            showSessionView();
             loadSessions(sessionId);
         } else {
             // No parameters - just load all sessions
+            showSessionView();
             loadSessions();
         }
+    }
+    
+    // Show course-only view (hide session tables, show course info)
+    function showCourseOnlyView() {
+        document.getElementById('leftColumn').style.display = 'none';
+        document.getElementById('beaconValidationPanel').style.display = 'none';
+        document.getElementById('courseInfoPanel').style.display = 'block';
+        document.getElementById('mapPanel').style.flex = '1';
+    }
+    
+    // Show session view (show tables, hide course info)
+    function showSessionView() {
+        document.getElementById('leftColumn').style.display = 'block';
+        document.getElementById('beaconValidationPanel').style.display = 'block';
+        document.getElementById('courseInfoPanel').style.display = 'none';
+        document.getElementById('mapPanel').style.flex = '2';
+    }
+    
+    // Load course data only (no session)
+    async function loadCourseOnlyData(courseId) {
+        try {
+            const courseRes = await AuthManager.fetch(`/api/parcours/${courseId}`);
+            const courseData = await courseRes.json();
+            
+            const course = courseData.parcours || courseData;
+            
+            // Load course data
+            currentCourse = course;
+            displayCourseInfo(course);
+            updateMap();
+        } catch (error) {
+            console.error('Error loading course data:', error);
+        }
+    }
+    
+    // Display course information in the info panel
+    function displayCourseInfo(course) {
+        const content = document.getElementById('courseInfoContent');
+        const createdAt = course.createdAt ? new Date(course.createdAt).toLocaleDateString('fr-FR') : 'N/A';
+        const beaconCount = course.waypoints ? course.waypoints.length : 0;
+        
+        content.innerHTML = `
+            <div class="info-item">
+                <strong>Nom:</strong> ${course.name || 'N/A'}
+            </div>
+            <div class="info-item">
+                <strong>Description:</strong> ${course.description || 'Aucune description'}
+            </div>
+            <div class="info-item">
+                <strong>Statut:</strong> 
+                <span class="status-badge ${course.status}">${course.status === 'finished' ? 'Terminé' : 'En cours'}</span>
+            </div>
+            <div class="info-item">
+                <strong>Date de création:</strong> ${createdAt}
+            </div>
+            <div class="info-item">
+                <strong>Nombre de balises:</strong> ${beaconCount}
+            </div>
+            ${course.waypoints && course.waypoints.length > 0 ? `
+            <div class="info-item">
+                <strong>Balises:</strong>
+                <ul class="beacon-list">
+                    ${course.waypoints.map((w, i) => `
+                        <li>
+                            <span class="beacon-number">${i + 1}</span>
+                            <span class="beacon-name">${w.name || 'Balise ' + (i + 1)}</span>
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+            ` : ''}
+        `;
     }
 
 
