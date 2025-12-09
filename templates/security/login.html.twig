@@ -41,4 +41,10 @@
         <a href="{{ path('app_forgot_password_request') }}">{{ 'login.forgot_password'|trans }}</a>
     </div>
 </form>
+
+<script>
+    // Clear JWT token when accessing login page to ensure fresh token after login
+    localStorage.removeItem('eco_jwt_token');
+    console.log('JWT token cleared from localStorage on login page');
+</script>
 {% endblock %}
