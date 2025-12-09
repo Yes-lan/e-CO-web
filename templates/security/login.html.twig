@@ -8,6 +8,12 @@
         <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
     {% endif %}
 
+    {% for message in app.flashes('success') %}
+        <div style="padding: 15px; margin-bottom: 20px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 4px;">
+            ✅ {{ message }}
+        </div>
+    {% endfor %}
+
     {% if app.user %}
         <div class="mb-3">
             {{ 'login.already_logged_in'|trans({'%username%': app.user.userIdentifier}) }} <a href="{{ path('app_logout') }}">{{ 'login.logout'|trans }}</a>
@@ -30,5 +36,9 @@
     <button class="btn btn-lg btn-primary" type="submit">
         {{ 'login.sign_in'|trans }}
     </button>
+    
+    <div class="text-center mt-3">
+        <a href="{{ path('app_forgot_password_request') }}">{{ 'login.forgot_password'|trans }}</a>
+    </div>
 </form>
 {% endblock %}

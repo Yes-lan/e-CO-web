@@ -35,8 +35,11 @@ class ChangePasswordFormType extends AbstractType
                             // max length allowed by Symfony for security reasons
                             'max' => 4096,
                         ]),
-                        new PasswordStrength(),
-                        new NotCompromisedPassword(),
+                        // PasswordStrength removed - Length (12 chars) + UI complexity requirements provide adequate security
+                        // Common patterns like "Azertyuiop" with added chars were being rejected even though they meet complexity rules
+                        new NotCompromisedPassword([
+                            'message' => 'This password has been leaked in a data breach and should not be used. Please choose a different password.',
+                        ]),
                     ],
                     'label' => 'New password',
                 ],

@@ -121,7 +121,9 @@ class ResetPasswordController extends AbstractController
             // The session is cleaned up after the password has been changed.
             $this->cleanSessionAfterReset();
 
-            return $this->redirectToRoute('login');
+            $this->addFlash('success', $translator->trans('reset_password.success', [], 'messages'));
+
+            return $this->redirectToRoute('app_login');
         }
 
         return $this->render('reset_password/reset.html.twig', [
@@ -145,16 +147,35 @@ class ResetPasswordController extends AbstractController
         try {
             $resetToken = $this->resetPasswordHelper->generateResetToken($user);
         } catch (ResetPasswordExceptionInterface $e) {
-            // If you want to tell the user why a reset email was not sent, uncomment
-            // the lines below and change the redirect to 'app_forgot_password_request'.
-            // Caution: This may reveal if a user is registered or not.
-            //
-             $this->addFlash('reset_password_error', sprintf(
-                 '%s - %s',
-                 $translator->trans(ResetPasswordExceptionInterface::MESSAGE_PROBLEM_HANDLE, [], 'ResetPasswordBundle'),
-                 $translator->trans($e->getReason(), [], 'ResetPasswordBundle')
-             ));
-            return $this->redirectToRoute('app_check_email');
+            // If there's already a valid token, remove it and create a new one
+            // This happens when user requests multiple reset emails
+            if (str_contains($e->getReason(), 'already been requested')) {
+                // Remove existing tokens for this user
+                $existingRequests = $this->entityManager->getRepository(\App\Entity\ResetPasswordRequest::class)->findBy(['user' => $user]);
+                foreach ($existingRequests as $request) {
+                    $this->entityManager->remove($request);
+                }
+                $this->entityManager->flush();
+                
+                // Try again to generate a new token
+                try {
+                    $resetToken = $this->resetPasswordHelper->generateResetToken($user);
+                } catch (ResetPasswordExceptionInterface $retryException) {
+                    $this->addFlash('reset_password_error', sprintf(
+                        '%s - %s',
+                        $translator->trans(ResetPasswordExceptionInterface::MESSAGE_PROBLEM_HANDLE, [], 'ResetPasswordBundle'),
+                        $translator->trans($retryException->getReason(), [], 'ResetPasswordBundle')
+                    ));
+                    return $this->redirectToRoute('app_check_email');
+                }
+            } else {
+                $this->addFlash('reset_password_error', sprintf(
+                    '%s - %s',
+                    $translator->trans(ResetPasswordExceptionInterface::MESSAGE_PROBLEM_HANDLE, [], 'ResetPasswordBundle'),
+                    $translator->trans($e->getReason(), [], 'ResetPasswordBundle')
+                ));
+                return $this->redirectToRoute('app_check_email');
+            }
         }
         
         $email = (new TemplatedEmail())

@@ -3,20 +3,26 @@
 {% block title %}{{ 'reset_password.page_title'|trans }}{% endblock %}
 
 {% block body %}
+<div style="max-width: 500px; margin: 50px auto; padding: 20px;">
     {% for flash_error in app.flashes('reset_password_error') %}
-        <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+        <div style="padding: 15px; margin-bottom: 20px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px;">
+            ❌ {{ flash_error }}
+        </div>
     {% endfor %}
-    <h1>Reset your password</h1>
+    
+    <h1 style="margin-bottom: 30px;">{{ 'reset_password.request_title'|trans }}</h1>
 
     {{ form_start(requestForm) }}
-        {{ form_row(requestForm.email) }}
-        <div>
-            <small>
-                Enter your email address, and we will send you a
-                link to reset your password.
-            </small>
+        <div style="margin-bottom: 20px;">
+            {{ form_row(requestForm.email, {'attr': {'class': 'form-control', 'placeholder': 'votre.email@exemple.com'}}) }}
+        </div>
+        <div style="margin-bottom: 20px; padding: 12px; background: #e3f2fd; border-left: 4px solid #2196F3; font-size: 14px;">
+            💡 {{ 'reset_password.enter_email_hint'|trans }}
         </div>
 
-        <button class="btn btn-primary">Send password reset email</button>
+        <button class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 16px;">
+            {{ 'reset_password.send_reset_email'|trans }}
+        </button>
     {{ form_end(requestForm) }}
+</div>
 {% endblock %}
