@@ -170,6 +170,83 @@ class ParcoursController extends AbstractController
         return new JsonResponse(['parcours' => $parcoursData]);
     }
 
+    #[Route('/api/parcours/{id}/waypoints', name: 'api_parcours_waypoints', methods: ['GET'])]
+    public function getParcoursWaypoints(int $id): JsonResponse
+    {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $parcours = $this->courseRepository->find($id);
+        
+        if (!$parcours) {
+            return new JsonResponse(['error' => 'Course not found'], 404);
+        }
+
+        // Check if the course belongs to the current user
+        if (!$parcours->getUser() || $parcours->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Forbidden'], 403);
+        }
+        
+        // Collect all waypoints including start and finish beacons
+        $waypoints = [];
+        
+        // Add start beacon
+        if ($parcours->getStartBeacon()) {
+            $startBeacon = $parcours->getStartBeacon();
+            $waypoints[] = [
+                'id' => $startBeacon->getId(),
+                'name' => $startBeacon->getName(),
+                'latitude' => $startBeacon->getLatitude(),
+                'longitude' => $startBeacon->getLongitude(),
+                'type' => $startBeacon->getType(),
+                'isPlaced' => $startBeacon->isPlaced(),
+                'placedAt' => $startBeacon->getPlacedAt()?->format('Y-m-d H:i:s'),
+                'createdAt' => $startBeacon->getCreatedAt()?->format('Y-m-d H:i:s'),
+                'qr' => $startBeacon->getQr(),
+                'description' => $startBeacon->getDescription()
+            ];
+        }
+        
+        // Add control beacons
+        foreach ($parcours->getBeacons() as $beacon) {
+            if ($beacon->getType() === 'control') {
+                $waypoints[] = [
+                    'id' => $beacon->getId(),
+                    'name' => $beacon->getName(),
+                    'latitude' => $beacon->getLatitude(),
+                    'longitude' => $beacon->getLongitude(),
+                    'type' => $beacon->getType(),
+                    'isPlaced' => $beacon->isPlaced(),
+                    'placedAt' => $beacon->getPlacedAt()?->format('Y-m-d H:i:s'),
+                    'createdAt' => $beacon->getCreatedAt()?->format('Y-m-d H:i:s'),
+                    'qr' => $beacon->getQr(),
+                    'description' => $beacon->getDescription()
+                ];
+            }
+        }
+        
+        // Add finish beacon (if different from start)
+        if (!$parcours->isSameStartFinish() && $parcours->getFinishBeacon()) {
+            $finishBeacon = $parcours->getFinishBeacon();
+            $waypoints[] = [
+                'id' => $finishBeacon->getId(),
+                'name' => $finishBeacon->getName(),
+                'latitude' => $finishBeacon->getLatitude(),
+                'longitude' => $finishBeacon->getLongitude(),
+                'type' => $finishBeacon->getType(),
+                'isPlaced' => $finishBeacon->isPlaced(),
+                'placedAt' => $finishBeacon->getPlacedAt()?->format('Y-m-d H:i:s'),
+                'createdAt' => $finishBeacon->getCreatedAt()?->format('Y-m-d H:i:s'),
+                'qr' => $finishBeacon->getQr(),
+                'description' => $finishBeacon->getDescription()
+            ];
+        }
+        
+        return new JsonResponse(['waypoints' => $waypoints]);
+    }
+
     #[Route('/api/parcours/save', name: 'api_parcours_save', methods: ['POST'])]
     public function saveParcours(Request $request): JsonResponse
     {
@@ -348,6 +425,9 @@ class ParcoursController extends AbstractController
         }
         if (isset($data['description'])) {
             $parcours->setDescription($data['description']);
+        }
+        if (isset($data['status'])) {
+            $parcours->setStatus($data['status']);
         }
         $parcours->setUpdateAt(new \DateTime());
         
