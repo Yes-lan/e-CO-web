@@ -181,6 +181,9 @@
                 if (course.status === 'finished') {
                     statusText = trans('parcours.status.completed');
                     statusColor = '#4caf50';
+                } else if (course.status === 'ready') {
+                    statusText = trans('parcours.status.ready');
+                    statusColor = '#2196f3';
                 } else {
                     statusText = trans('parcours.status.in_creation');
                     statusColor = '#ff6b35';
@@ -226,7 +229,6 @@
                                 </svg>
                                 ${trans('parcours.qr_codes')}
                             </button>
-                            ${course.status !== 'finished' ? `
                             <button class="action-btn btn-view" onclick="viewCourse(${index})" style="background: #2196f3;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" stroke="white" stroke-width="2"/>
@@ -234,6 +236,7 @@
                                 </svg>
                                 ${trans('parcours.view')}
                             </button>
+                            ${course.status === 'draft' ? `
                             <button class="action-btn btn-edit" onclick="editCourse(${index})">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="white" stroke-width="2" stroke-linecap="round"/>
@@ -241,13 +244,14 @@
                                 </svg>
                                 ${trans('parcours.edit')}
                             </button>
+                            ` : ''}
                             <button class="action-btn btn-delete" onclick="deleteCourse(${index})">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="white" stroke-width="2" stroke-linecap="round"/>
                                 </svg>
                             </button>
+                            ${course.status !== 'draft' ? `
                             ` : `
-                            <button class="action-btn btn-view" onclick="viewCourse(${index})" style="background: #2196f3;">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" stroke="white" stroke-width="2"/>
                                     <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/>
@@ -294,13 +298,18 @@
             const content = document.getElementById('editCourseContent');
 
             const course = window.currentEditingCourse;
-            const isFinished = course.status === 'finished';
+            const isReadOnly = course.status === 'finished' || course.status === 'ready';
 
-            if (isFinished) {
-                // Read-only view for finished courses
+            if (isReadOnly) {
+                // Read-only view for ready and finished courses
+                const warningMessage = course.status === 'ready' 
+                    ? '<strong>🔒 Parcours prêt</strong> - Ce parcours est prêt pour les sessions et ne peut plus être modifié. Toutes les balises ont été placées.'
+                    : '<strong>⚠️ Parcours terminé</strong> - Ce parcours est terminé et ne peut plus être modifié.';
+                const warningColor = course.status === 'ready' ? '#2196f3' : '#ffc107';
+                
                 content.innerHTML = `
-                    <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #ffc107;">
-                        <strong>⚠️ Parcours terminé</strong> - Ce parcours est terminé et ne peut plus être modifié.
+                    <div style="background: ${course.status === 'ready' ? '#e3f2fd' : '#fff3cd'}; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid ${warningColor};">
+                        ${warningMessage}
                     </div>
 
                     <!-- Basic Info -->

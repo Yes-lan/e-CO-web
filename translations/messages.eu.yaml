@@ -96,7 +96,8 @@ parcours:
     download_all_qr: "Deskargatu QR kode guztiak"
     
     status:
-        in_creation: "Sortzen"
+        in_creation: "Sorkuntzan"
+        ready: "Saiorako prest"
         completed: "Osatuta"
         
     info:

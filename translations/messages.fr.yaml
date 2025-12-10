@@ -97,6 +97,7 @@ parcours:
     
     status:
         in_creation: "En cours de création"
+        ready: "Prêt pour les sessions"
         completed: "Complété"
         
     info:

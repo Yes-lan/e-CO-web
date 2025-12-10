@@ -408,9 +408,9 @@ class ParcoursController extends AbstractController
             return new JsonResponse(['error' => 'Forbidden'], 403);
         }
 
-        // Prevent editing finished courses
-        if ($parcours->getStatus() === 'finished') {
-            return new JsonResponse(['error' => 'Cannot edit a finished course'], 403);
+        // Prevent editing ready and finished courses
+        if ($parcours->getStatus() === 'finished' || $parcours->getStatus() === 'ready') {
+            return new JsonResponse(['error' => 'Cannot edit a ready or finished course'], 403);
         }
 
         $data = json_decode($request->getContent(), true);
