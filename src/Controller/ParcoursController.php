@@ -46,22 +46,43 @@ class ParcoursController extends AbstractController
     }
 
     #[Route('/course/new', name: 'app_parcours_create')]
-    public function createParcours(): Response
+    public function createParcours(Request $request): Response
     {
 
         $course = new Course();
 
         $courseForm = $this->createForm(CourseType::class, $course);
 
-        $course->handleRequest($request);
-        if ($course->isSubmitted() && $course->isValid()) {
+        $courseForm->handleRequest($request);
+        if ($courseForm->isSubmitted() && $courseForm->isValid()) {
 
-            $task = $course->getData();
 
-            return $this->redirectToRoute('task_success');
+            for ($i=1; $i <= $courseForm->get('nbBeacons')->getData(); $i++) {
+                $beacon = new Beacon();
+                $beacon->setName($i);
+                $beacon->setLatitude(floatval(0));
+                $beacon->setLongitude(floatval(0));
+                $beacon->setType('control');
+                $beacon->setIsPlaced('0');
+                $beacon->setQr('{}');
+                // Configure the beacon as needed
+                $course->addBeacon($beacon);
+                $this->entityManager->persist($beacon);
+            }
+            $course->setStatus('draft');
+            $course->setCreateAt(new \DateTime());
+            $course->setUpdateAt(new \DateTime());
+            $course->setPlacementCompletedAt(new \DateTime());
+
+            $this->entityManager->persist($course);
+            $this->entityManager->flush();
+
+            return $this->redirectToRoute('app_parcours_list');
         }
 
-        return $this->render('courses_orienteering/create.html.twig');
+        return $this->render('courses_orienteering/create.html.twig', [
+            'courseForm' => $courseForm,
+        ]);
     }
 
     #[Route('/course/{id}/tags', name: 'app_parcours_tags')]

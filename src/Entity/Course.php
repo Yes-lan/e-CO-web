@@ -247,4 +247,18 @@ class Course
 
         return $this;
     }
+
+    //Get count of control beacons (excluding start/finish)
+    public function getBeaconsCount(): int
+    {
+        return $this->beacons->filter(function(Beacon $beacon) {
+            return $beacon->getType() === 'control';
+        })->count();
+    }
+
+    // Get count of all beacons (including start/finish)
+    public function getTotalBeaconsCount(): int
+    {
+        return $this->beacons->count();
+    }
 }

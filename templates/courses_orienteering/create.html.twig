@@ -9,16 +9,21 @@
     <div class="course-creation-container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <a href="{{ path('app_parcours_list') }}" class="back-link">← Retour à la liste</a>
-            <a href="{{ path('app_parcours_list') }}" class="btn btn-info btn-small">🗂️ Gérer les parcours</a>
         </div>
 
         <div class="creation-header">
             <h1>📍 Créer un Nouveau Parcours</h1>
             <p>Configurez votre parcours d'orientation étape par étape</p>
         </div>
+            {{ form(courseForm) }}
 
-        <form id="courseCreationForm">
-            <!-- Informations générales -->
+        <!--<form id="courseCreationForm">
+            
+
+
+
+
+             Informations générales 
             <div class="form-section">
                 <h2>📋 Informations Générales</h2>
                 
@@ -35,7 +40,7 @@
                 </div>
             </div>
 
-            <!-- Point de départ/arrivée -->
+            <!-- Point de départ/arrivée 
             <div class="form-section">
                 <h2>🚩 Point de Départ/Arrivée</h2>
                 
@@ -63,7 +68,7 @@
                 </div>
             </div>
 
-            <!-- Nombre de balises -->
+            <!-- Nombre de balises 
             <div class="form-section">
                 <h2>🎯 Configuration des Balises</h2>
                 
@@ -83,13 +88,13 @@
                 </div>
             </div>
 
-            <!-- Actions -->
+            <!-- Actions 
             <div class="form-actions">
                 <button type="submit" class="btn btn-success">
                     ✅ Créer le parcours
                 </button>
-            </div>
-        </form>
+            </div> 
+        </form>-->
     </div>
 
     {% block javascripts %}
