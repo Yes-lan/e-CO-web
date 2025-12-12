@@ -46,13 +46,23 @@ class CourseController extends AbstractController
         }
 
         // Get all sessions
-        $sessions = $this->sessionRepository->findAll();
+        $allSessions = $this->sessionRepository->findAll();
+        error_log("📋 Total sessions in DB: " . count($allSessions));
         
         // Filter sessions to only include those connected to courses created by the current user
-        $sessions = array_filter($sessions, function($session) use ($currentUser) {
+        $sessions = array_filter($allSessions, function($session) use ($currentUser) {
             $course = $session->getCourse();
-            return $course && $course->getUser() && $course->getUser()->getId() === $currentUser->getId();
+            $hasValidCourse = $course && $course->getUser() && $course->getUser()->getId() === $currentUser->getId();
+            
+            if (!$hasValidCourse) {
+                error_log("❌ Session #{$session->getId()} rejected - Course: " . ($course ? $course->getId() : 'null') . 
+                    ", User: " . ($course && $course->getUser() ? $course->getUser()->getId() : 'null'));
+            }
+            
+            return $hasValidCourse;
         });
+        
+        error_log("✅ Filtered sessions for user #{$currentUser->getId()}: " . count($sessions));
         
         // Re-index array to avoid JSON object instead of array
         $sessions = array_values($sessions);
@@ -86,6 +96,60 @@ class CourseController extends AbstractController
                                 'additionalData' => $log->getAdditionalData()
                             ];
                         }, $runner->getLogSessions()->toArray())
+                    ];
+                }, $session->getRunners()->toArray())
+            ];
+        }, $sessions);
+
+        return new JsonResponse(['courses' => $coursesData]);
+    }
+
+    #[Route('/api/sessions/active', name: 'api_sessions_active', methods: ['GET'])]
+    public function apiListActiveCourses(): JsonResponse
+    {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        // Get only active sessions (sessionStart != null AND sessionEnd == null)
+        $allActiveSessions = $this->sessionRepository->createQueryBuilder('s')
+            ->where('s.sessionStart IS NOT NULL')
+            ->andWhere('s.sessionEnd IS NULL')
+            ->getQuery()
+            ->getResult();
+        
+        error_log("🟢 Active sessions in DB: " . count($allActiveSessions));
+        
+        // Filter by user's courses
+        $sessions = array_filter($allActiveSessions, function($session) use ($currentUser) {
+            $course = $session->getCourse();
+            return $course && $course->getUser() && $course->getUser()->getId() === $currentUser->getId();
+        });
+        
+        error_log("✅ Active sessions for user #{$currentUser->getId()}: " . count($sessions));
+        
+        $sessions = array_values($sessions);
+        
+        $coursesData = array_map(function($session) {
+            $parcours = $session->getCourse();
+            return [
+                'id' => $session->getId(),
+                'name' => $session->getSessionName(),
+                'nbRunners' => $session->getNbRunner(),
+                'startDate' => $session->getSessionStart()?->format('Y-m-d H:i:s'),
+                'endDate' => $session->getSessionEnd()?->format('Y-m-d H:i:s'),
+                'parcours' => $parcours ? [
+                    'id' => $parcours->getId(),
+                    'name' => $parcours->getName(),
+                    'description' => $parcours->getDescription()
+                ] : null,
+                'runners' => array_map(function($runner) {
+                    return [
+                        'id' => $runner->getId(),
+                        'name' => $runner->getName(),
+                        'departure' => $runner->getDeparture()?->format('Y-m-d H:i:s'),
+                        'arrival' => $runner->getArrival()?->format('Y-m-d H:i:s'),
                     ];
                 }, $session->getRunners()->toArray())
             ];
@@ -162,6 +226,13 @@ class CourseController extends AbstractController
         $session = new Session();
         $session->setSessionName($data['sessionName']);
         $session->setNbRunner($data['nbRunners'] ?? 0);
+        
+        // Auto-start session if requested (default: true)
+        $autoStart = $data['autoStart'] ?? true;
+        if ($autoStart) {
+            // Utiliser le timezone Europe/Paris
+            $session->setSessionStart(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
+        }
 
         // Link to parcours if provided
         if (!empty($data['parcoursId'])) {
@@ -180,6 +251,33 @@ class CourseController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse(['success' => true, 'id' => $session->getId()]);
+    }
+
+    #[Route('/api/sessions/{id}/end', name: 'api_sessions_end', methods: ['PATCH'])]
+    public function endSession(int $id): JsonResponse
+    {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $session = $this->sessionRepository->find($id);
+        
+        if (!$session) {
+            return new JsonResponse(['error' => 'Session not found'], 404);
+        }
+
+        // Vérifier que la session appartient à l'utilisateur
+        $course = $session->getCourse();
+        if (!$course || !$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Unauthorized'], 403);
+        }
+
+        // Terminer la session avec le timezone Europe/Paris
+        $session->setSessionEnd(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
+        $this->entityManager->flush();
+
+        return new JsonResponse(['success' => true]);
     }
 
     #[Route('/api/sessions/{id}', name: 'api_sessions_update', methods: ['PUT'])]
