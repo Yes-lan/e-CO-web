@@ -45,11 +45,15 @@ class ParcoursController extends AbstractController
         ]);
     }
 
-    #[Route('/course/new', name: 'app_parcours_create')]
-    public function createParcours(Request $request): Response
+    #[Route('/course/edit/{id<\d+>?0}', name: 'app_parcours_edit')]
+    public function createParcours(Request $request, int $id, CourseRepository $courseRepository): Response
     {
 
-        $course = new Course();
+        if (empty($id)) {
+            $course = new Course();
+        } else {
+            $course = $courseRepository->findOneById($id);
+        }
 
         $courseForm = $this->createForm(CourseType::class, $course);
 

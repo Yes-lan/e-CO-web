@@ -17,13 +17,13 @@
                 </svg>
                 <input type="text" id="searchInput">
             </div>
-            <button class="btn btn-primary" id="newParcoursBtn" onclick="window.location.href='{{ path('app_parcours_create') }}'"
+            <a class="btn btn-primary" id="newParcoursBtn" href="{{ path('app_parcours_edit', {id: 0}) }}"
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/>
                     <path d="M12 8v8M8 12h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
                 </svg>
                 <span id="newParcoursBtnText">{{ "New Course"|trans }}</span>
-            </button>
+            </a>
         </div>
     </div>
 
