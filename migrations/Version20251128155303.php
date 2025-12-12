@@ -42,15 +42,6 @@ final class Version20251128155303 extends AbstractMigration
         $this->addSql("INSERT INTO language (code, displayed_text) VALUES ('fr', 'Français')");
         $this->addSql("INSERT INTO language (code, displayed_text) VALUES ('en', 'English')");
         $this->addSql("INSERT INTO language (code, displayed_text) VALUES ('eu', 'Euskara')");
-
-        // Insert establishment
-        $this->addSql("INSERT INTO establishment (name) VALUES ('Test School')");
-
-        // Insert admin user
-        $this->addSql("INSERT INTO user (establishment_id, roles, email, password, first_name, last_name) VALUES (1, '[\"ROLE_ADMIN\"]', 'test@test.fr', '\$2y\$13\$e4uQ/Bf4yixU/tDxoV83hOk33Kgd5chJwPNStsruOzv2qHb02Bdl6', 'Sandra', 'Doe')");
-
-        // Insert Lilou Doe
-        $this->addSql("INSERT INTO user (establishment_id, roles, email, password, first_name, last_name) VALUES (1, '[\"ROLE_USER\"]', 'lilou@doe.com', '\$2y\$12\$dymB4uwai3dj2F3xj74V1.jFQT4XVCNOwwOmDGGwrN21kdVG8m0K6', 'Lilou', 'Doe')");
     }
 
     public function down(Schema $schema): void
