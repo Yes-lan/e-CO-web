@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Course;
 use App\Entity\Beacon;
+use App\Entity\User;
+use App\Form\CourseType;
 use App\Repository\CourseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,23 +21,61 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 class ParcoursController extends AbstractController
 {
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private CourseRepository $courseRepository
     ) {}
 
     #[Route('/parcours', name: 'app_parcours_list')]
-    public function listParcours(): Response
+    public function listParcours(CourseRepository $parcoursRepository): Response
     {
-        return $this->render('courses_orienteering/list.html.twig');
+        return $this->render('courses_orienteering/list.html.twig', [
+            // TODO: restreindre parcours utilisateur
+            'courses' => $parcoursRepository->findAll(),
+        ]);
     }
 
-    #[Route('/parcours/create', name: 'app_parcours_create')]
+    #[Route('/course/{id}/view', name: 'app_parcours_view')]
+    public function viewParcours(Course $course, User $user): Response
+    {
+        return $this->render('courses_orienteering/view.html.twig', [
+            'course' => $course,
+            'user' => $user,
+        ]);
+    }
+
+    #[Route('/course/new', name: 'app_parcours_create')]
     public function createParcours(): Response
     {
+
+        $course = new Course();
+
+        $courseForm = $this->createForm(CourseType::class, $course);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // $form->getData() holds the submitted values
+            // but, the original `$task` variable has also been updated
+            $task = $form->getData();
+
+            // ... perform some action, such as saving the task to the database
+
+            return $this->redirectToRoute('task_success');
+        }
+
         return $this->render('courses_orienteering/create.html.twig');
     }
 
+    #[Route('/course/{id}/tags', name: 'app_parcours_tags')]
+    public function waypointsParcours(Course $course): Response
+    {
+        return $this->render('courses_orienteering/tags.html.twig', [
+            'course' => $course,
+        ]);
+    }
+
+    /*
     #[Route('/api/parcours', name: 'api_parcours_list', methods: ['GET'])]
     public function apiListParcours(): JsonResponse
     {
@@ -693,4 +733,5 @@ class ParcoursController extends AbstractController
 
         return new JsonResponse(['success' => true]);
     }
+        */
 }

@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'parcours.page_title'|trans }}{% endblock %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block body %}
+<div class="modal-content modal-large">
+        <span class="close" onclick="closeQRModal()">×</span>
+        <h2>🔲 Course QR Codes</h2>
+        
+        <!-- Important information about QR code stability -->
+        <div style="background: #e7f3ff; border-left: 4px solid #2196F3; padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
+            <p style="margin: 0; color: #0c5460; font-weight: 600;">
+                ℹ️ <strong>Important:</strong> These QR codes are permanent and never change for this course.
+            </p>
+            <p style="margin: 0.5rem 0 0 0; color: #0c5460; font-size: 0.9rem;">
+                You can safely print and place them on the field. They will remain valid even if you view this page multiple times.
+            </p>
+        </div>
+        
+        <div style="text-align: right; margin-bottom: 1rem;">
+            <button class="btn btn-primary" id="downloadAllQRBtn" onclick="downloadAllQRCodes()">📥 Download all (PDF)</button>
+        </div>
+        <div id="qrCodesContent" class="qr-codes-grid">
+        {% if course.beacons|length > 0 %}
+            {% for beacon in course.beacons %}
+                {% include 'courses_orienteering/tiles/qr.html.twig' with { 'course': course } %}
+            {% endfor %}
+        {% endif %}
+        </div>
+    </div>
+
+        {% block javascripts %}
+        
+        
+        <!-- Load libraries from local assets (no CDN needed) -->
+        <script src="{{ asset('assets/js/qrcode.min.js') }}" onload="window.qrCodeLibraryLoaded = true; console.log('QRCode library loaded from local assets');"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" data-turbo-track="reload" async onload="window.jspdfLibraryLoaded = true; console.log('jsPDF library loaded');"></script>
+    {% endblock %}
+
+{% endblock %}

@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'login.html.twig' %}
 
 {% block title %}{{ 'login.page_title'|trans }}{% endblock %}
 
@@ -42,9 +42,4 @@
     </div>
 </form>
 
-<script>
-    // Clear JWT token when accessing login page to ensure fresh token after login
-    localStorage.removeItem('eco_jwt_token');
-    console.log('JWT token cleared from localStorage on login page');
-</script>
 {% endblock %}
