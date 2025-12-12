@@ -3,339 +3,69 @@
 {% block title %}{{ 'sessions.page_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 {% endblock %}
 
 {% block body %}
-<div class="parcours-page">
-    <div class="parcours-header">
-        <h1>{{ 'courses.title'|trans }}</h1>
-        <div class="parcours-header-actions">
-            <div class="search-box">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="11" cy="11" r="8" stroke="#666" stroke-width="2"/>
-                    <path d="M21 21l-4.35-4.35" stroke="#666" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                <input type="text" placeholder="{{ 'courses.search_placeholder'|trans }}" id="searchInput">
+    <div class="parcours-page">
+        <div class="parcours-header">
+            <h1>{{ 'courses.title'|trans }}</h1>
+            <div class="parcours-header-actions">
+                <div class="search-box">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="11" cy="11" r="8" stroke="#666" stroke-width="2"/>
+                        <path d="M21 21l-4.35-4.35" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <input type="text" placeholder="{{ 'courses.search_placeholder'|trans }}" id="searchInput">
+                </div>
+                <button class="btn btn-primary" onclick="showCreateCourseModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/>
+                        <path d="M12 8v8M8 12h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    {{ 'courses.new_course'|trans }}
+                </button>
             </div>
-            <button class="btn btn-primary" onclick="showCreateCourseModal()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/>
-                    <path d="M12 8v8M8 12h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                {{ 'courses.new_course'|trans }}
-            </button>
         </div>
-    </div>
 
-    <div class="table-container">
-        <table class="courses-table" id="coursesTable">
-            <thead>
-                <tr>
-                    <th>{{ 'courses.table.name'|trans }}</th>
-                    <th>{{ 'courses.table.parcours'|trans }}</th>
-                    <th>{{ 'courses.table.nb_participants'|trans }}</th>
-                    <th>{{ 'courses.table.start_date'|trans }}</th>
-                    <th>{{ 'courses.table.end_date'|trans }}</th>
-                    <th>{{ 'courses.table.actions'|trans }}</th>
-                </tr>
-            </thead>
-            <tbody id="courseList">
-                <tr>
-                    <td colspan="6" style="text-align: center; padding: 2rem; color: #666;">{{ 'courses.loading'|trans }}</td>
-                </tr>
-            </tbody>
-        </table>
-        
-        <div class="table-footer">
-            <div class="pagination-info">
-                {{ 'courses.table.max_per_page'|trans }}
-                <select id="itemsPerPage" onchange="changeItemsPerPage()">
-                    <option value="8">8</option>
-                    <option value="15">15</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                </select>
-            </div>
-            <div class="pagination" id="pagination"></div>
-        </div>
-    </div>
-</div>
-
-<!-- Create Course Modal -->
-<div id="createCourseModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeCreateCourseModal()">&times;</span>
-        <h2>{{ 'courses.modal.create_title'|trans }}</h2>
-        
-        <form id="createCourseForm" onsubmit="submitCreateCourse(event)">
-            <div class="form-group">
-                <label for="courseName">{{ 'courses.modal.name_label'|trans }}</label>
-                <input type="text" id="courseName" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="courseParcoursId">{{ 'courses.modal.parcours_label'|trans }}</label>
-                <select id="courseParcoursId" required>
-                    <option value="">{{ 'courses.modal.parcours_select'|trans }}</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="courseNbRunners">{{ 'courses.modal.nb_runners_label'|trans }}</label>
-                <input type="number" id="courseNbRunners" min="0" value="0">
-            </div>
-            
-            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
-                <button type="button" class="btn btn-secondary" onclick="closeCreateCourseModal()">{{ 'courses.modal.cancel'|trans }}</button>
-                <button type="submit" class="btn btn-primary">{{ 'courses.modal.create'|trans }}</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{% block javascripts %}
-    {{ parent() }}
-    
-    <script>
-        if (!window.coursesPageInitialized) {
-            window.coursesPageInitialized = true;
-            window.coursesList = [];
-            window.parcoursList = [];
-            window.currentPage = 1;
-            window.itemsPerPage = 8;
-        }
-
-        async function loadCourses() {
-            try {
-                const response = await AuthManager.fetch('{{ path('api_sessions_list') }}');
-                const data = await response.json();
-                // Filter to only show sessions with non-null end dates
-                window.coursesList = (data.courses || []).filter(course => course.endDate != null);
-                console.log('SESSIONS PAGE: Loaded', window.coursesList.length, 'completed sessions:', window.coursesList);
-                displayCourses();
-            } catch (error) {
-                console.error('Error loading courses:', error);
-                document.getElementById('courseList').innerHTML = '<p style="color: #d32f2f; text-align: center;">{{ 'courses.error_loading'|trans }}</p>';
-            }
-        }
-
-        async function loadParcours() {
-            try {
-                const response = await AuthManager.fetch('{{ path('api_parcours_list') }}');
-                const data = await response.json();
-                window.parcoursList = data.courses || [];
-                updateParcoursSelect();
-            } catch (error) {
-                console.error('Error loading parcours:', error);
-            }
-        }
-
-        function updateParcoursSelect() {
-            const select = document.getElementById('courseParcoursId');
-            if (!select) return;
-            
-            select.innerHTML = '<option value="">{{ 'courses.modal.parcours_select'|trans }}</option>';
-            window.parcoursList.forEach(parcours => {
-                const option = document.createElement('option');
-                option.value = parcours.id;
-                option.textContent = parcours.name;
-                select.appendChild(option);
-            });
-        }
-
-        function displayCourses() {
-            const tbody = document.getElementById('courseList');
-            
-            if (window.coursesList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #666;">{{ 'courses.no_courses'|trans }} <a href="javascript:showCreateCourseModal()">{{ 'courses.create_course'|trans }}</a></td></tr>';
-                document.getElementById('pagination').innerHTML = '';
-                return;
-            }
-
-            // Pagination
-            const totalPages = Math.ceil(window.coursesList.length / window.itemsPerPage);
-            const startIndex = (window.currentPage - 1) * window.itemsPerPage;
-            const endIndex = startIndex + window.itemsPerPage;
-            const paginatedCourses = window.coursesList.slice(startIndex, endIndex);
-
-            tbody.innerHTML = paginatedCourses.map((course, index) => {
-                const globalIndex = startIndex + index;
-                const parcoursName = course.parcours ? course.parcours.name : '{{ 'courses.info.no_parcours'|trans }}';
-                const runnerCount = course.nbRunners || 0;
-                
-                const formatDate = (dateString) => {
-                    if (!dateString) return '-';
-                    const date = new Date(dateString);
-                    // Get current locale from document or localStorage
-                    const locale = document.documentElement.lang || localStorage.getItem('selectedLanguage') || 'fr';
-                    const localeMap = { 'fr': 'fr-FR', 'en': 'en-GB', 'eu': 'eu-ES' };
-                    return date.toLocaleString(localeMap[locale] || 'fr-FR', { 
-                        day: '2-digit', 
-                        month: 'short', 
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                };
-                
-                const startDate = formatDate(course.startDate);
-                const endDate = formatDate(course.endDate);
-                
-                return `
+        <div class="table-container">
+            <table class="courses-table" id="coursesTable">
+                <thead>
                     <tr>
-                        <td>${course.name || '{{ 'common.no_name'|trans }}'}</td>
-                        <td>${parcoursName}</td>
-                        <td>${runnerCount}</td>
-                        <td>${startDate}</td>
-                        <td>${endDate}</td>
-                        <td class="table-actions">
-                            <button class="action-icon-btn btn-view" onclick="viewCourse(${globalIndex})" title="{{ 'courses.view_on_map'|trans }}">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                    <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                                    <path d="M8 2v16M16 6v16" stroke="currentColor" stroke-width="2"/>
-                                </svg>
-                            </button>
-                            <button class="action-icon-btn btn-delete" onclick="deleteCourse(${globalIndex})" title="{{ 'courses.delete'|trans }}">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2"/>
-                                </svg>
-                            </button>
-                        </td>
+                        <th>{{ 'courses.table.name'|trans }}</th>
+                        <th>{{ 'courses.table.parcours'|trans }}</th>
+                        <th>{{ 'courses.table.nb_participants'|trans }}</th>
+                        <th>{{ 'courses.table.start_date'|trans }}</th>
+                        <th>{{ 'courses.table.end_date'|trans }}</th>
+                        <th>{{ 'courses.table.actions'|trans }}</th>
                     </tr>
-                `;
-            }).join('');
-
-            renderPagination(totalPages);
-        }
-
-        function renderPagination(totalPages) {
-            const pagination = document.getElementById('pagination');
-            if (totalPages <= 1) {
-                pagination.innerHTML = '';
-                return;
-            }
-
-            let html = '';
+                </thead>
+                <tbody id="courseList">
+                    {% if sessions|length > 0 %}
+                        {% for session in sessions %}
+                            {% include 'sessions/tile/session.html.twig' with { 'session': session } %}
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
             
-            // Previous button
-            html += `<button class="pagination-btn" ${window.currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${window.currentPage - 1})">&lt;</button>`;
-            
-            // Page numbers
-            for (let i = 1; i <= totalPages; i++) {
-                if (i === 1 || i === totalPages || (i >= window.currentPage - 1 && i <= window.currentPage + 1)) {
-                    html += `<button class="pagination-btn ${i === window.currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
-                } else if (i === window.currentPage - 2 || i === window.currentPage + 2) {
-                    html += `<span class="pagination-dots">...</span>`;
-                }
-            }
-            
-            // Next button
-            html += `<button class="pagination-btn" ${window.currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${window.currentPage + 1})">&gt;</button>`;
-            
-            pagination.innerHTML = html;
-        }
+            <div class="table-footer">
+                <div class="pagination-info">
+                    {{ 'courses.table.max_per_page'|trans }}
+                    <select id="itemsPerPage" onchange="changeItemsPerPage()">
+                        <option value="8">8</option>
+                        <option value="15">15</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </div>
+    </div>
 
-        function goToPage(page) {
-            window.currentPage = page;
-            displayCourses();
-        }
 
-        function changeItemsPerPage() {
-            window.itemsPerPage = parseInt(document.getElementById('itemsPerPage').value);
-            window.currentPage = 1;
-            displayCourses();
-        }
-
-        function showCreateCourseModal() {
-            document.getElementById('createCourseModal').style.display = 'block';
-            loadParcours();
-        }
-
-        function closeCreateCourseModal() {
-            document.getElementById('createCourseModal').style.display = 'none';
-            document.getElementById('createCourseForm').reset();
-        }
-
-        async function submitCreateCourse(event) {
-            event.preventDefault();
-            
-            const courseData = {
-                sessionName: document.getElementById('courseName').value,
-                parcoursId: parseInt(document.getElementById('courseParcoursId').value),
-                nbRunners: parseInt(document.getElementById('courseNbRunners').value)
-            };
-
-            try {
-                const response = await AuthManager.fetch('{{ path('api_sessions_save') }}', {
-                    method: 'POST',
-                    body: JSON.stringify(courseData)
-                });
-
-                const result = await response.json();
-                
-                if (response.ok && result.success) {
-                    alert('✅ {{ 'courses.messages.created'|trans }}');
-                    closeCreateCourseModal();
-                    await loadCourses();
-                } else {
-                    throw new Error(result.error || '{{ 'courses.messages.error_create'|trans }}');
-                }
-            } catch (error) {
-                console.error('Error creating course:', error);
-                alert('❌ {{ 'courses.messages.error_create'|trans }} : ' + error.message);
-            }
-        }
-
-        function viewCourse(index) {
-            const course = window.coursesList[index];
-            if (course && course.id) {
-                // Pass both sessionId and courseId (from parcours)
-                const courseId = course.parcours ? course.parcours.id : '';
-                const url = `/map?sessionId=${course.id}${courseId ? '&courseId=' + courseId : ''}`;
-                window.location.href = url;
-            } else {
-                console.error('Course not found or missing ID');
-            }
-        }
-
-        async function deleteCourse(index) {
-            const course = window.coursesList[index];
-            
-            const message = `{{ 'courses.messages.confirm_delete'|trans }}`.replace('%name%', course.name);
-            if (!confirm(message)) {
-                return;
-            }
-
-            try {
-                const response = await AuthManager.fetch(`{{ path('api_sessions_delete', {id: '__ID__'}) }}`.replace('__ID__', course.id), {
-                    method: 'DELETE'
-                });
-
-                const result = await response.json();
-                
-                if (response.ok && result.success) {
-                    alert('✅ {{ 'courses.messages.deleted'|trans }}');
-                    await loadCourses();
-                } else {
-                    throw new Error(result.error || '{{ 'courses.messages.error_delete'|trans }}');
-                }
-            } catch (error) {
-                console.error('Error deleting course:', error);
-                alert('❌ {{ 'courses.messages.error_delete'|trans }} : ' + error.message);
-            }
-        }
-
-        // Load courses on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadCourses();
-        });
-
-        // Handle Turbo navigation
-        document.addEventListener('turbo:load', function() {
-            loadCourses();
-        });
-    </script>
-{% endblock %}
+    {% block javascripts %}
+        
+    {% endblock %}
 {% endblock %}

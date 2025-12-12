@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Session;
+use App\Entity\Course;
 use App\Repository\SessionRepository;
 use App\Repository\CourseRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,9 +27,13 @@ class CourseController extends AbstractController
     ) {}
 
     #[Route('/courses', name: 'app_courses_list')]
-    public function listCourses(): Response
+    public function listCourses(SessionRepository $sessionRepository, Course $course): Response
     {
-        return $this->render('sessions/list.html.twig');
+        return $this->render('sessions/list.html.twig', [
+            // TODO: restreindre parcours utilisateur
+            'sessions' => $sessionRepository->findAll(),
+            'courses' => $course,
+        ]);
     }
 
     #[Route('/courses/create', name: 'app_courses_create')]
@@ -37,6 +42,10 @@ class CourseController extends AbstractController
         return $this->render('sessions/create.html.twig');
     }
 
+
+    
+
+    /*
     #[Route('/api/sessions', name: 'api_sessions_list', methods: ['GET'])]
     public function apiListCourses(): JsonResponse
     {
@@ -354,5 +363,5 @@ class CourseController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse(['success' => true]);
-    }
+    }*/
 }

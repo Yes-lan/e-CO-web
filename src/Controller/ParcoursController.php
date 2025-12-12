@@ -36,7 +36,7 @@ class ParcoursController extends AbstractController
         ]);
     }
 
-    #[Route('/course/{id}/view', name: 'app_parcours_view')]
+    #[Route('/parcours/{id}/view', name: 'app_parcours_view')]
     public function viewParcours(Course $course, User $user): Response
     {
         return $this->render('courses_orienteering/view.html.twig', [
@@ -45,7 +45,7 @@ class ParcoursController extends AbstractController
         ]);
     }
 
-    #[Route('/course/new', name: 'app_parcours_create')]
+    #[Route('/parcours/new', name: 'app_parcours_create')]
     public function createParcours(Request $request): Response
     {
 
