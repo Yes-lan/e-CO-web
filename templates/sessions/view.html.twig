@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'courses.view.title'|trans }} - e-CO{% endblock %}
+
+{% block body %}
+<div class="parcours-page">
+    <div class="parcours-header">
+        <h1>{{ session.sessionName }}</h1>
+        <div class="parcours-header-actions">
+            <a href="{{ path('app_courses_list') }}" class="btn btn-secondary">
+                {{ 'courses.actions.back'|trans }}
+            </a>
+            <a href="{{ path('app_courses_edit', {id: session.id}) }}" class="btn btn-primary">
+                {{ 'courses.actions.edit'|trans }}
+            </a>
+        </div>
+    </div>
+
+    <div class="course-details">
+        <div class="detail-section">
+            <h2>{{ 'courses.view.details'|trans }}</h2>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>{{ 'courses.table.name'|trans }}:</label>
+                    <span>{{ session.sessionName }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>{{ 'courses.table.parcours'|trans }}:</label>
+                    <span>{{ session.course ? session.course.name : 'N/A' }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>{{ 'courses.table.runners'|trans }}:</label>
+                    <span>{{ session.nbRunner }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>{{ 'courses.table.start'|trans }}:</label>
+                    <span>{{ session.sessionStart ? session.sessionStart|date('Y-m-d H:i:s') : 'N/A' }}</span>
+                </div>
+                <div class="detail-item">
+                    <label>{{ 'courses.table.end'|trans }}:</label>
+                    <span>{{ session.sessionEnd ? session.sessionEnd|date('Y-m-d H:i:s') : 'N/A' }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if session.runners|length > 0 %}
+        <div class="detail-section">
+            <h2>{{ 'courses.view.runners_list'|trans }}</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'courses.runners.name'|trans }}</th>
+                        <th>{{ 'courses.runners.departure'|trans }}</th>
+                        <th>{{ 'courses.runners.arrival'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for runner in session.runners %}
+                    <tr>
+                        <td>{{ runner.name }}</td>
+                        <td>{{ runner.departure ? runner.departure|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                        <td>{{ runner.arrival ? runner.arrival|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

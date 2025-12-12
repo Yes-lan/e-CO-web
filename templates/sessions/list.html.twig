@@ -66,6 +66,44 @@
 
 
     {% block javascripts %}
-        
+        <script>
+            // Delete session function
+            async function deleteSession(sessionId, sessionName) {
+                if (!confirm(`{{ 'courses.delete.confirm'|trans }}: ${sessionName}?`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/sessions/${sessionId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+
+                    if (response.ok) {
+                        // Reload the page to show updated list
+                        window.location.reload();
+                    } else {
+                        const error = await response.json();
+                        alert('{{ 'courses.delete.error'|trans }}: ' + (error.message || '{{ 'courses.delete.failed'|trans }}'));
+                    }
+                } catch (error) {
+                    console.error('Error deleting session:', error);
+                    alert('{{ 'courses.delete.failed'|trans }}');
+                }
+            }
+
+            // Show create course modal
+            function showCreateCourseModal() {
+                window.location.href = '{{ path('app_courses_create') }}';
+            }
+
+            // Change items per page (placeholder)
+            function changeItemsPerPage() {
+                // TODO: Implement pagination
+                console.log('Items per page changed');
+            }
+        </script>
     {% endblock %}
 {% endblock %}

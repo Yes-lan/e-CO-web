@@ -27,12 +27,11 @@ class CourseController extends AbstractController
     ) {}
 
     #[Route('/courses', name: 'app_courses_list')]
-    public function listCourses(SessionRepository $sessionRepository, Course $course): Response
+    public function listCourses(SessionRepository $sessionRepository): Response
     {
         return $this->render('sessions/list.html.twig', [
             // TODO: restreindre parcours utilisateur
             'sessions' => $sessionRepository->findAll(),
-            'courses' => $course,
         ]);
     }
 
@@ -42,8 +41,33 @@ class CourseController extends AbstractController
         return $this->render('sessions/create.html.twig');
     }
 
+    #[Route('/courses/{id}/view', name: 'app_courses_view')]
+    public function viewCourse(int $id): Response
+    {
+        $session = $this->sessionRepository->find($id);
+        
+        if (!$session) {
+            throw $this->createNotFoundException('Session not found');
+        }
 
-    
+        return $this->render('sessions/view.html.twig', [
+            'session' => $session,
+        ]);
+    }
+
+    #[Route('/courses/{id}/edit', name: 'app_courses_edit')]
+    public function editCourse(int $id): Response
+    {
+        $session = $this->sessionRepository->find($id);
+        
+        if (!$session) {
+            throw $this->createNotFoundException('Session not found');
+        }
+
+        return $this->render('sessions/edit.html.twig', [
+            'session' => $session,
+        ]);
+    }
 
     /*
     #[Route('/api/sessions', name: 'api_sessions_list', methods: ['GET'])]
