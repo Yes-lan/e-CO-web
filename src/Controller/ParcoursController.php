@@ -53,13 +53,10 @@ class ParcoursController extends AbstractController
 
         $courseForm = $this->createForm(CourseType::class, $course);
 
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            // $form->getData() holds the submitted values
-            // but, the original `$task` variable has also been updated
-            $task = $form->getData();
+        $course->handleRequest($request);
+        if ($course->isSubmitted() && $course->isValid()) {
 
-            // ... perform some action, such as saving the task to the database
+            $task = $course->getData();
 
             return $this->redirectToRoute('task_success');
         }

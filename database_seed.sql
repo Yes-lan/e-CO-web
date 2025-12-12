@@ -8,27 +8,6 @@
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ============================================
--- Table: establishment
--- ============================================
-INSERT INTO `establishment` (`id`, `name`) VALUES 
-(1, 'test establishment');
-
--- ============================================
--- Table: language
--- ============================================
-INSERT INTO `language` (`id`, `code`, `displayed_text`) VALUES 
-(1, 'fr', 'Français'),
-(2, 'en', 'English'),
-(3, 'eu', 'Euskara');
-
--- ============================================
--- Table: user
--- Password for all users: "password"
--- ============================================
-INSERT INTO `user` (`id`, `establishment_id`, `email`, `roles`, `password`, `first_name`, `last_name`) VALUES 
-(2, 1, 'test@test.fr', '[\"USER_ROLE\"]', '$2y$13$R4zCWwSUjteSGchaD5kM4ubPlRc3okJG/ZksbHb5ai.zqKINZGAki', 'Sylvie', 'Cihigoyenetche');
-
--- ============================================
 -- Table: course
 -- ============================================
 INSERT INTO `course` (`id`, `user_id`, `name`, `description`, `status`, `create_at`, `placement_completed_at`, `update_at`, `same_start_finish`) VALUES 
@@ -301,12 +280,6 @@ INSERT INTO `log_session` (`id`, `runner_id`, `type`, `time`, `latitude`, `longi
 (205, 5, 'gps', '2025-12-07 09:42:00', 45.8337, 1.2614, NULL),
 (206, 5, 'gps', '2025-12-07 09:46:00', 45.8338, 1.2613, NULL),
 (207, 5, 'gps', '2025-12-07 09:49:00', 45.8339, 1.2613, NULL);
-
--- ============================================
--- Table: doctrine_migration_versions
--- ============================================
-INSERT INTO `doctrine_migration_versions` (`version`, `executed_at`, `execution_time`) VALUES 
-('DoctrineMigrations\\Version20251128155303', '2025-12-07 19:29:29', 3049);
 
 -- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
