@@ -7,6 +7,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 
 class UserCrudController extends AbstractCrudController
 {
@@ -24,6 +25,10 @@ class UserCrudController extends AbstractCrudController
             TextField::new('email'),
             TextField::new('firstName'),
             TextField::new('lastName'),
+            AssociationField::new('establishment')
+                ->setCrudController(EstablishmentCrudController::class)
+                ->setRequired(false)
+                ->setLabel('Établissement'),
         ];
     }
 
@@ -42,5 +47,6 @@ class UserCrudController extends AbstractCrudController
 
         parent::persistEntity($entityManager, $entityInstance);
     }
+
     
 }
