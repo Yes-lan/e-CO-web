@@ -1,0 +1,79 @@
+/* Styles for the login page matching the provided screenshot */
+:root{
+  --primary:#0d5b86;
+  --primary-dark:#084a6b;
+  --muted:#6c757d;
+  --bg:#ffffff;
+}
+
+html,body{height:100%;}
+body{
+  background:#faf7fb;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  color: #222;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:40px 20px;
+}
+
+.login-wrapper{
+  text-align:center;
+  width:100%;
+  max-width:640px;
+}
+
+.login-brand{
+  margin-bottom:18px;
+}
+.login-brand img{max-width:160px;height:auto}
+
+.login-card{
+  background:#fff;
+  border:1px solid #e6e6e6;
+  border-radius:6px;
+  padding:28px 34px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+  text-align:left;
+}
+
+.login-card h1{font-size:18px;margin-bottom:14px;color:var(--muted);font-weight:600}
+
+.form-control{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid #e1e1e1;
+  border-radius:4px;
+  margin-bottom:12px;
+  box-sizing:border-box;
+}
+
+.checkbox{font-size:14px;color:#555}
+
+.btn-primary{
+  background:linear-gradient(180deg,var(--primary),var(--primary-dark));
+  color:#fff;
+  border:none;
+  padding:10px 14px;
+  width:100%;
+  border-radius:6px;
+}
+
+.footer-bar{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  background:var(--primary);
+  color:#fff;
+  padding:6px 12px;
+  font-size:13px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.login-help{margin-top:12px;text-align:center}
+.login-help a{color:var(--primary);text-decoration:underline}
+
+@media (max-width:480px){
+  .login-wrapper{padding:0 12px}
+  .login-card{padding:18px}
+}
