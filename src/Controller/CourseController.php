@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Session;
 use App\Entity\Course;
+use App\Entity\Runner;
 use App\Repository\SessionRepository;
 use App\Repository\CourseRepository;
+use App\Repository\RunnerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,7 +25,8 @@ class CourseController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private SessionRepository $sessionRepository,
-        private CourseRepository $courseRepository
+        private CourseRepository $courseRepository,
+        private RunnerRepository $runnerRepository
     ) {}
 
     #[Route('/courses', name: 'app_courses_list')]
@@ -388,4 +391,113 @@ class CourseController extends AbstractController
 
         return new JsonResponse(['success' => true]);
     }*/
+
+    /**
+     * API endpoint to get runner GPS logs and waypoint validations
+     * Using /runners/ path instead of /api/ to work with session authentication
+     */
+    #[Route('/runners/{id}/logs', name: 'runner_logs', methods: ['GET'])]
+    public function getRunnerLogs(int $id): JsonResponse
+    {
+        $runner = $this->runnerRepository->find($id);
+        
+        if (!$runner) {
+            return new JsonResponse(['error' => 'Runner not found'], 404);
+        }
+
+        // Get the session and course to access beacons
+        $session = $runner->getSession();
+        $course = $session ? $session->getCourse() : null;
+        $courseBeacons = [];
+        
+        if ($course) {
+            foreach ($course->getBeacons() as $beacon) {
+                $courseBeacons[$beacon->getId()] = [
+                    'id' => $beacon->getId(),
+                    'name' => $beacon->getName(),
+                    'latitude' => $beacon->getLatitude(),
+                    'longitude' => $beacon->getLongitude(),
+                ];
+            }
+        }
+
+        // Get all log sessions for this runner (GPS tracking)
+        $logSessions = $runner->getLogSessions();
+        
+        $logs = [];
+        $waypoints = [];
+        
+        foreach ($logSessions as $log) {
+            // GPS tracking logs (type: 'gps' or 'location')
+            if ($log->getType() === 'gps' || $log->getType() === 'location') {
+                $logs[] = [
+                    'latitude' => $log->getLatitude(),
+                    'longitude' => $log->getLongitude(),
+                    'timestamp' => $log->getTime()?->format('c'),
+                ];
+            }
+            
+            // Beacon validation logs (type: 'beacon_scan')
+            if ($log->getType() === 'beacon_scan') {
+                // Get beacon ID from additional_data (stored as integer string)
+                $additionalData = $log->getAdditionalData();
+                $beaconId = $additionalData ? (int)$additionalData : null;
+                
+                $scannedLat = $log->getLatitude();
+                $scannedLng = $log->getLongitude();
+                
+                // Calculate distance and validation
+                $distance = null;
+                $isValid = false;
+                $beaconName = 'Unknown';
+                
+                if ($beaconId && isset($courseBeacons[$beaconId]) && $scannedLat && $scannedLng) {
+                    $trueLat = $courseBeacons[$beaconId]['latitude'];
+                    $trueLng = $courseBeacons[$beaconId]['longitude'];
+                    $beaconName = $courseBeacons[$beaconId]['name'];
+                    
+                    // Calculate distance in meters using Haversine formula
+                    $distance = $this->calculateDistance($trueLat, $trueLng, $scannedLat, $scannedLng);
+                    
+                    // Beacon is valid if within 20 meters (adjustable threshold)
+                    $isValid = $distance <= 20;
+                }
+                
+                $waypoints[] = [
+                    'beaconId' => $beaconId,
+                    'beaconName' => $beaconName,
+                    'timestamp' => $log->getTime()?->format('c'),
+                    'isValid' => $isValid,
+                    'distance' => $distance,
+                    'latitude' => $scannedLat,
+                    'longitude' => $scannedLng,
+                ];
+            }
+        }
+
+        return new JsonResponse([
+            'logs' => $logs,
+            'waypoints' => $waypoints,
+        ]);
+    }
+
+    /**
+     * Calculate distance between two GPS coordinates using Haversine formula
+     * Returns distance in meters
+     */
+    private function calculateDistance(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $earthRadius = 6371000; // Earth's radius in meters
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLon / 2) * sin($dLon / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
+    }
 }

@@ -25,11 +25,31 @@
         <h2>{{ 'parcours.description'|trans }}</h2>
         <p>{{ course.description }}</p>
     </div>
+
+    {# Map widget to display beacons/waypoints #}
+    <div class="course-map-section">
+        <h2>{{ 'parcours.map_view'|trans }}</h2>
+        {% include 'widgets/map_widget.html.twig' with {
+            'course': course,
+            'showCourseInfo': true,
+            'showRunnersList': false,
+            'mapId': 'courseViewMap'
+        } %}
+    </div>
 </div>
 
 
     {% block javascripts %}
+        <!-- Google Maps API -->
+        <script>
+            function initViewMapCallback() {
+                console.log('Google Maps API loaded for course view');
+            }
+        </script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBi8sXKGGafzB837kvxraWuqohlZ-JJRu8&libraries=geometry,places&callback=initViewMapCallback" async defer></script>
         
+        <!-- View Map Widget Script -->
+        <script src="{{ asset('assets/js/view_map.js') }}" defer></script>
         
         <!-- Load libraries from local assets (no CDN needed) -->
         <script src="{{ asset('assets/js/qrcode.min.js') }}" onload="window.qrCodeLibraryLoaded = true; console.log('QRCode library loaded from local assets');"></script>

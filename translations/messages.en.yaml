@@ -27,6 +27,14 @@ map:
     scan_time: "Scan Time"
     invalid: "Invalid"
     distance: "Distance"
+    runners_list: "Runners list"
+    runner_details: "Runner details"
+    waypoint: "Waypoint"
+    time: "Time"
+    departure: "Departure"
+    no_data: "No data available"
+    beacon: "Beacon"
+    validation_status: "Validation"
     
 courses:
     title: "Courses"
@@ -49,6 +57,7 @@ courses:
         title: "Course Details"
         details: "Information"
         runners_list: "Runners List"
+        map: "Map and Tracking"
     
     edit:
         title: "Edit Course"
@@ -127,6 +136,12 @@ parcours:
     qr_permanent: "These QR codes are permanent and never change for this course."
     qr_print_info: "You can safely print and place them on the field. They will remain valid even if you view this page multiple times."
     download_all_qr: "Download all QR codes"
+    map_view: "Course Map"
+    description: "Description"
+    beacons_count: "Number of beacons"
+    beacons_list: "Beacons list"
+    baliseStartFinishY: "Start and finish at the same location"
+    baliseStartFinishN: "Start and finish at different locations"
     
     status:
         in_creation: "In progress"
@@ -137,9 +152,7 @@ parcours:
         beacons: "beacon(s)"
         boundaries: "Boundaries defined"
         no_boundaries: "No boundaries"
-        
-    description:
-        default: "Start at the south entrance on the table"
+        default_description: "Start at the south entrance on the table"
         
     messages:
         created: "Course created successfully!"

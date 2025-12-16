@@ -27,6 +27,14 @@ map:
     scan_time: "Heure de scan"
     invalid: "Invalide"
     distance: "Distance"
+    runners_list: "Liste des coureurs"
+    runner_details: "Détails du coureur"
+    waypoint: "Balise"
+    time: "Temps"
+    departure: "Départ"
+    no_data: "Aucune donnée disponible"
+    beacon: "Balise"
+    validation_status: "Validation"
     
 courses:
     title: "Courses"
@@ -49,6 +57,7 @@ courses:
         title: "Détails de la Course"
         details: "Informations"
         runners_list: "Liste des coureurs"
+        map: "Carte et Suivi"
     
     edit:
         title: "Modifier la Course"
@@ -127,6 +136,12 @@ parcours:
     qr_permanent: "Ces QR codes sont permanents et ne changent jamais pour ce parcours."
     qr_print_info: "Vous pouvez les imprimer et les placer sur le terrain en toute sécurité. Ils resteront valides même si vous consultez cette page plusieurs fois."
     download_all_qr: "Télécharger tous les QR codes"
+    map_view: "Carte du Parcours"
+    description: "Description"
+    beacons_count: "Nombre de balises"
+    beacons_list: "Liste des balises"
+    baliseStartFinishY: "Départ et arrivée au même endroit"
+    baliseStartFinishN: "Départ et arrivée à des endroits différents"
     
     status:
         in_creation: "En cours de création"
@@ -137,9 +152,7 @@ parcours:
         beacons: "balise(s)"
         boundaries: "Limites définies"
         no_boundaries: "Pas de limites"
-        
-    description:
-        default: "Départ à l'entrée sud sur la table"
+        default_description: "Départ à l'entrée sud sur la table"
         
     messages:
         created: "Parcours créé avec succès !"

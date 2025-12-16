@@ -27,6 +27,14 @@ map:
     scan_time: "Eskaneatze ordua"
     invalid: "Baliogabea"
     distance: "Distantzia"
+    runners_list: "Korrikalarien zerrenda"
+    runner_details: "Korrikalariari buruzko xehetasunak"
+    waypoint: "Baliza"
+    time: "Denbora"
+    departure: "Irteera"
+    no_data: "Ez dago daturik eskuragarri"
+    beacon: "Baliza"
+    validation_status: "Balioztatze"
     
 courses:
     title: "Lasterketak"
@@ -49,6 +57,7 @@ courses:
         title: "Lasterketaren Xehetasunak"
         details: "Informazioa"
         runners_list: "Korrikalarien Zerrenda"
+        map: "Mapa eta Jarraipena"
     
     edit:
         title: "Aldatu Lasterketa"
@@ -127,6 +136,12 @@ parcours:
     qr_permanent: "QR kode hauek iraunkorrak dira eta ez dira inoiz aldatzen ikastaro honetarako."
     qr_print_info: "Inprimatu eta zelairatu seguru jar ditzakezu. Baliozkoak izango dira orrialde hau hainbat aldiz ikusi arren."
     download_all_qr: "Deskargatu QR kode guztiak"
+    map_view: "Ibilbidearen Mapa"
+    description: "Deskribapena"
+    beacons_count: "Balizen kopurua"
+    beacons_list: "Balizen zerrenda"
+    baliseStartFinishY: "Irteera eta helmuga leku berean"
+    baliseStartFinishN: "Irteera eta helmuga leku desberdinetan"
     
     status:
         in_creation: "Sorkuntzan"
@@ -137,9 +152,7 @@ parcours:
         beacons: "baliza"
         boundaries: "Mugak definituta"
         no_boundaries: "Mugarik ez"
-        
-    description:
-        default: "Hasi hego sarreran mahaian"
+        default_description: "Hasi hego sarreran mahaian"
         
     messages:
         created: "Ikastaroa ondo sortu da!"
