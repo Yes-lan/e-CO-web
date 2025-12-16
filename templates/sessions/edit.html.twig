@@ -1,0 +1,126 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'courses.edit.title'|trans }} - e-CO{% endblock %}
+
+{% block body %}
+<div class="parcours-page">
+    <div class="parcours-header">
+        <h1>{{ 'courses.edit.title'|trans }}</h1>
+        <div class="parcours-header-actions">
+            <a href="{{ path('app_courses_list') }}" class="btn btn-secondary">
+                {{ 'courses.actions.cancel'|trans }}
+            </a>
+        </div>
+    </div>
+
+    <div class="course-form-container">
+        <form id="sessionForm" class="course-form">
+            <input type="hidden" id="sessionId" value="{{ session.id }}">
+            
+            <div class="form-group">
+                <label for="sessionName">{{ 'courses.form.name'|trans }}</label>
+                <input type="text" id="sessionName" name="sessionName" value="{{ session.sessionName }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="courseId">{{ 'courses.form.parcours'|trans }}</label>
+                <select id="courseId" name="courseId" required>
+                    <option value="">{{ 'courses.form.select_parcours'|trans }}</option>
+                    {# Options will be loaded via JavaScript #}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="nbRunner">{{ 'courses.form.runners'|trans }}</label>
+                <input type="number" id="nbRunner" name="nbRunner" value="{{ session.nbRunner }}" min="1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="sessionStart">{{ 'courses.form.start'|trans }}</label>
+                <input type="datetime-local" id="sessionStart" name="sessionStart" value="{{ session.sessionStart ? session.sessionStart|date('Y-m-d\\TH:i') : '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="sessionEnd">{{ 'courses.form.end'|trans }}</label>
+                <input type="datetime-local" id="sessionEnd" name="sessionEnd" value="{{ session.sessionEnd ? session.sessionEnd|date('Y-m-d\\TH:i') : '' }}">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    {{ 'courses.actions.save'|trans }}
+                </button>
+                <a href="{{ path('app_courses_list') }}" class="btn btn-secondary">
+                    {{ 'courses.actions.cancel'|trans }}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block javascripts %}
+<script>
+    // Load courses for the dropdown
+    async function loadCourses() {
+        try {
+            const response = await fetch('/api/parcours');
+            const data = await response.json();
+            const select = document.getElementById('courseId');
+            
+            data.courses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.id;
+                option.textContent = course.name;
+                if ({{ session.course ? session.course.id : 'null' }} === course.id) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading courses:', error);
+        }
+    }
+
+    // Handle form submission
+    document.getElementById('sessionForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const sessionId = document.getElementById('sessionId').value;
+        const formData = {
+            sessionName: document.getElementById('sessionName').value,
+            courseId: parseInt(document.getElementById('courseId').value),
+            nbRunner: parseInt(document.getElementById('nbRunner').value),
+            sessionStart: document.getElementById('sessionStart').value || null,
+            sessionEnd: document.getElementById('sessionEnd').value || null
+        };
+
+        try {
+            const response = await fetch(`/api/sessions/${sessionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                window.location.href = '{{ path('app_courses_list') }}';
+            } else {
+                const error = await response.json();
+                alert('Error: ' + (error.message || 'Failed to update session'));
+            }
+        } catch (error) {
+            console.error('Error updating session:', error);
+            alert('Failed to update session');
+        }
+    });
+
+    // Load courses on page load
+    document.addEventListener('turbo:load', loadCourses);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadCourses);
+    } else {
+        loadCourses();
+    }
+</script>
+{% endblock %}
+{% endblock %}

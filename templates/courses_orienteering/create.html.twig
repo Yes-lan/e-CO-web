@@ -3,24 +3,27 @@
 {% block title %}{{ 'parcours.create_page_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 {% endblock %}
 
 {% block body %}
     <div class="course-creation-container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <a href="{{ path('app_parcours_list') }}" class="back-link">← Retour à la liste</a>
-            <a href="{{ path('app_parcours_list') }}" class="btn btn-info btn-small">🗂️ Gérer les parcours</a>
         </div>
 
         <div class="creation-header">
             <h1>📍 Créer un Nouveau Parcours</h1>
             <p>Configurez votre parcours d'orientation étape par étape</p>
         </div>
+            {{ form(courseForm) }}
 
-        <form id="courseCreationForm">
-            <!-- Informations générales -->
+        <!--<form id="courseCreationForm">
+            
+
+
+
+
+             Informations générales 
             <div class="form-section">
                 <h2>📋 Informations Générales</h2>
                 
@@ -37,7 +40,7 @@
                 </div>
             </div>
 
-            <!-- Point de départ/arrivée -->
+            <!-- Point de départ/arrivée 
             <div class="form-section">
                 <h2>🚩 Point de Départ/Arrivée</h2>
                 
@@ -65,7 +68,7 @@
                 </div>
             </div>
 
-            <!-- Nombre de balises -->
+            <!-- Nombre de balises 
             <div class="form-section">
                 <h2>🎯 Configuration des Balises</h2>
                 
@@ -85,197 +88,16 @@
                 </div>
             </div>
 
-            <!-- Actions -->
+            <!-- Actions 
             <div class="form-actions">
                 <button type="submit" class="btn btn-success">
                     ✅ Créer le parcours
                 </button>
-            </div>
-        </form>
+            </div> 
+        </form>-->
     </div>
 
     {% block javascripts %}
-        {{ parent() }}
         
-        <script>
-            (function() {
-                // Course creation form initialization
-                // Notification helper function
-                function showNotification(message, type = 'success') {
-                    // Remove any existing notifications
-                    const existingNotif = document.querySelector('.notification');
-                    if (existingNotif) {
-                        existingNotif.remove();
-                    }
-
-                    const notification = document.createElement('div');
-                    notification.className = `notification ${type}`;
-                    notification.textContent = message;
-                    document.body.appendChild(notification);
-
-                    setTimeout(() => {
-                        notification.style.animation = 'slideOut 0.3s ease-out';
-                        setTimeout(() => notification.remove(), 300);
-                    }, 3000);
-                }
-
-                function initializeCourseForm() {
-                    const form = document.getElementById('courseCreationForm');
-                    const generateBtn = document.getElementById('generateWaypoints');
-                    const waypointCountInput = document.getElementById('waypointCount');
-                    const waypointsContainer = document.getElementById('waypointsContainer');
-
-                    if (!form || !generateBtn || !waypointCountInput || !waypointsContainer) {
-                        return;
-                    }
-
-                    // Check if event listeners are already attached
-                    const hasListeners = generateBtn.hasAttribute('data-listeners-attached');
-
-                    if (hasListeners) {
-                        return;
-                    }
-
-                    // Generate waypoint forms
-                    const clickHandler = function(e) {
-                        e.preventDefault();
-                        
-                        const count = parseInt(waypointCountInput.value);
-                        waypointsContainer.innerHTML = '';
-
-                        for (let i = 1; i <= count; i++) {
-                            const waypointHtml = `
-                                <div class="waypoint-item" data-waypoint-id="${i}">
-                                    <div class="waypoint-header">
-                                        <h4>Balise ${i}</h4>
-                                        <div class="waypoint-controls">
-                                            <button type="button" class="btn btn-danger btn-small remove-waypoint" data-waypoint="${i}">
-                                                🗑️ Supprimer
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="waypoint_${i}_name">Nom de la balise</label>
-                                        <input type="text" id="waypoint_${i}_name" name="waypoint_${i}_name" 
-                                               placeholder="Ex: Balise ${i}" value="Balise ${i}">
-                                    </div>
-                                    <p style="color: #666; font-size: 0.9rem; margin: 0;">
-                                        📱 Position GPS à définir sur le terrain via scan QR code
-                                    </p>
-                                </div>
-                            `;
-                            waypointsContainer.insertAdjacentHTML('beforeend', waypointHtml);
-                        }
-
-                        // Add remove handlers
-                        document.querySelectorAll('.remove-waypoint').forEach(btn => {
-                            btn.addEventListener('click', function() {
-                                const waypointId = this.getAttribute('data-waypoint');
-                                const waypointItem = this.closest('.waypoint-item');
-                                waypointItem.remove();
-                                showNotification(`Balise ${waypointId} supprimée`, 'info');
-                            });
-                        });
-
-                        showNotification(`${count} balises générées!`, 'success');
-                    };
-
-                    generateBtn.addEventListener('click', clickHandler);
-
-                    // Mark button as having listeners attached
-                    generateBtn.setAttribute('data-listeners-attached', 'true');
-
-                    // Form submission
-                    form.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-
-                    const formData = {
-                        name: document.getElementById('courseName').value,
-                        description: document.getElementById('courseDescription').value,
-                        startPoint: {
-                            name: document.getElementById('startPointName').value,
-                            description: document.getElementById('startPointDescription').value,
-                            lat: null,
-                            lng: null
-                        },
-                        waypoints: [],
-                        status: 'draft',
-                        createdAt: new Date().toISOString()
-                    };
-
-                    // Collect waypoint data
-                    document.querySelectorAll('.waypoint-item').forEach((item, index) => {
-                        const id = item.getAttribute('data-waypoint-id');
-                        const waypoint = {
-                            id: parseInt(id),
-                            name: document.getElementById(`waypoint_${id}_name`)?.value || `Balise ${id}`,
-                            latitude: null,
-                            longitude: null,
-                            type: 'control',
-                            qr: ''
-                        };
-
-                        formData.waypoints.push(waypoint);
-                    });
-
-                    console.log('Course data to save:', formData);
-                    
-                    try {
-                        // Save to backend API
-                        const response = await AuthManager.fetch('{{ path('api_parcours_save', {'_locale': app.request.locale}) }}', {
-                            method: 'POST',
-                            body: JSON.stringify(formData)
-                        });
-
-                        const result = await response.json();
-
-                        if (response.ok && result.success) {
-                            showNotification(`Parcours "${formData.name}" créé avec succès!`, 'success');
-                            
-                            // Redirect to parcours list after notification
-                            setTimeout(() => {
-                                window.location.href = '{{ path('app_parcours_list') }}';
-                            }, 1500);
-                        } else {
-                            throw new Error(result.message || 'Erreur lors de la sauvegarde');
-                        }
-                    } catch (error) {
-                        console.error('Error saving course:', error);
-                        showNotification('Erreur lors de la création du parcours', 'error');
-                    }
-                    });
-                }
-
-                // Track initialization per Turbo render
-            let initialized = false;
-
-            // Clean up on page unload
-            document.addEventListener('turbo:before-render', function() {
-                initialized = false;
-            });
-
-            // Initialize on Turbo load
-            document.addEventListener('turbo:load', function() {
-                if (!initialized) {
-                    initialized = true;
-                    initializeCourseForm();
-                }
-            });
-
-            // Also initialize on DOMContentLoaded (fallback if Turbo doesn't fire)
-            document.addEventListener('DOMContentLoaded', function() {
-                if (!initialized) {
-                    initialized = true;
-                    initializeCourseForm();
-                }
-            });
-            
-            // Also initialize immediately if DOM is ready (first page load without Turbo)
-            if (document.readyState !== 'loading' && !initialized) {
-                initialized = true;
-                initializeCourseForm();
-            }
-            })();
-        </script>
     {% endblock %}
 {% endblock %}

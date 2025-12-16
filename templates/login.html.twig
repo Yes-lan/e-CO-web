@@ -15,7 +15,78 @@
     
     {% block javascripts %}
     {% endblock %}
-    
+    <script>
+        // Set document language for translation helper
+        document.documentElement.lang = '{{ app.request.locale }}';
+
+        // Load languages from database API
+        async function loadLanguages() {
+            try {
+                // Use regular fetch on public pages, AuthManager.fetch on authenticated pages
+                const isPublicPage = window.location.pathname === '/login' || 
+                                     window.location.pathname === '/register' ||
+                                     window.location.pathname.startsWith('/reset-password');
+                const fetchMethod = isPublicPage ? fetch : (AuthManager ? AuthManager.fetch : fetch);
+                const response = await fetchMethod('/api/languages');
+                const data = await response.json();
+                const languages = data.languages || [];
+                
+                const currentLocale = '{{ app.request.locale }}';
+                const dropdownMenu = document.getElementById('languageDropdownMenu');
+                const currentLanguageFlag = document.getElementById('currentLanguageFlag');
+                const currentLanguageText = document.getElementById('currentLanguageText');
+                
+                if (dropdownMenu && languages.length > 0) {
+                    // Update current language display
+                    const currentLang = languages.find(l => l.code === currentLocale);
+                    if (currentLang) {
+                        currentLanguageFlag.innerHTML = `<span class="fi fi-${currentLang.flagIcon}"></span>`;
+                        currentLanguageText.textContent = currentLang.displayedText;
+                    }
+                    
+                    // Populate dropdown
+                    dropdownMenu.innerHTML = languages.map(lang => `
+                        <button class="language-dropdown-item ${lang.code === currentLocale ? 'active' : ''}" 
+                                onclick="changeLanguage('${lang.code}')">
+                            <span class="language-flag"><span class="fi fi-${lang.flagIcon}"></span></span>
+                            <span class="language-name">${lang.displayedText}</span>
+                        </button>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading languages:', error);
+            }
+        }
+
+        function changeLanguage(locale) {
+            // Store locale preference in localStorage
+            localStorage.setItem('locale', locale);
+            // Reload page with locale query parameter (Symfony LocaleSubscriber will save to session)
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('_locale', locale);
+            window.location.href = currentUrl.toString();
+        }
+        
+        // Toggle dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLanguages();
+            
+            const dropdownBtn = document.getElementById('languageDropdownBtn');
+            const dropdownMenu = document.getElementById('languageDropdownMenu');
+            
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function() {
+                    dropdownMenu.classList.remove('show');
+                });
+            }
+        });
+    </script>
 </head>
 <body>
     {% if app.user %}

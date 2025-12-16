@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Course;
 use App\Entity\Beacon;
+use App\Entity\User;
+use App\Form\CourseType;
 use App\Repository\CourseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,23 +21,84 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 class ParcoursController extends AbstractController
 {
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private CourseRepository $courseRepository
     ) {}
 
     #[Route('/parcours', name: 'app_parcours_list')]
-    public function listParcours(): Response
+    public function listParcours(CourseRepository $parcoursRepository): Response
     {
-        return $this->render('courses_orienteering/list.html.twig');
+        $currentUser = $this->getUser();
+        
+        return $this->render('courses_orienteering/list.html.twig', [
+            'courses' => $parcoursRepository->findBy(['user' => $currentUser]),
+        ]);
     }
 
-    #[Route('/parcours/create', name: 'app_parcours_create')]
-    public function createParcours(): Response
+    #[Route('/parcours/{id}/view', name: 'app_parcours_view')]
+    public function viewParcours(Course $course, User $user): Response
     {
-        return $this->render('courses_orienteering/create.html.twig');
+        return $this->render('courses_orienteering/view.html.twig', [
+            'course' => $course,
+            'user' => $user,
+        ]);
     }
 
+    #[Route('/course/edit/{id<\d+>?0}', name: 'app_parcours_edit')]
+    public function createParcours(Request $request, int $id, CourseRepository $courseRepository): Response
+    {
+
+        if (empty($id)) {
+            $course = new Course();
+        } else {
+            $course = $courseRepository->findOneById($id);
+        }
+
+        $courseForm = $this->createForm(CourseType::class, $course);
+
+        $courseForm->handleRequest($request);
+        if ($courseForm->isSubmitted() && $courseForm->isValid()) {
+
+
+            for ($i=1; $i <= $courseForm->get('nbBeacons')->getData(); $i++) {
+                $beacon = new Beacon();
+                $beacon->setName($i);
+                $beacon->setLatitude(floatval(0));
+                $beacon->setLongitude(floatval(0));
+                $beacon->setType('control');
+                $beacon->setIsPlaced('0');
+                $beacon->setQr('{}');
+                // Configure the beacon as needed
+                $course->addBeacon($beacon);
+                $this->entityManager->persist($beacon);
+            }
+            $course->setStatus('draft');
+            $course->setCreateAt(new \DateTime());
+            $course->setUpdateAt(new \DateTime());
+            $course->setPlacementCompletedAt(new \DateTime());
+
+            $this->entityManager->persist($course);
+            $this->entityManager->flush();
+
+            return $this->redirectToRoute('app_parcours_list');
+        }
+
+        return $this->render('courses_orienteering/create.html.twig', [
+            'courseForm' => $courseForm,
+        ]);
+    }
+
+    #[Route('/course/{id}/tags', name: 'app_parcours_tags')]
+    public function waypointsParcours(Course $course): Response
+    {
+        return $this->render('courses_orienteering/tags.html.twig', [
+            'course' => $course,
+        ]);
+    }
+
+    /*
     #[Route('/api/parcours', name: 'api_parcours_list', methods: ['GET'])]
     public function apiListParcours(): JsonResponse
     {
@@ -168,6 +231,83 @@ class ParcoursController extends AbstractController
         ];
         
         return new JsonResponse(['parcours' => $parcoursData]);
+    }
+
+    #[Route('/api/parcours/{id}/waypoints', name: 'api_parcours_waypoints', methods: ['GET'])]
+    public function getParcoursWaypoints(int $id): JsonResponse
+    {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Unauthorized'], 401);
+        }
+
+        $parcours = $this->courseRepository->find($id);
+        
+        if (!$parcours) {
+            return new JsonResponse(['error' => 'Course not found'], 404);
+        }
+
+        // Check if the course belongs to the current user
+        if (!$parcours->getUser() || $parcours->getUser()->getId() !== $currentUser->getId()) {
+            return new JsonResponse(['error' => 'Forbidden'], 403);
+        }
+        
+        // Collect all waypoints including start and finish beacons
+        $waypoints = [];
+        
+        // Add start beacon
+        if ($parcours->getStartBeacon()) {
+            $startBeacon = $parcours->getStartBeacon();
+            $waypoints[] = [
+                'id' => $startBeacon->getId(),
+                'name' => $startBeacon->getName(),
+                'latitude' => $startBeacon->getLatitude(),
+                'longitude' => $startBeacon->getLongitude(),
+                'type' => $startBeacon->getType(),
+                'isPlaced' => $startBeacon->isPlaced(),
+                'placedAt' => $startBeacon->getPlacedAt()?->format('Y-m-d H:i:s'),
+                'createdAt' => $startBeacon->getCreatedAt()?->format('Y-m-d H:i:s'),
+                'qr' => $startBeacon->getQr(),
+                'description' => $startBeacon->getDescription()
+            ];
+        }
+        
+        // Add control beacons
+        foreach ($parcours->getBeacons() as $beacon) {
+            if ($beacon->getType() === 'control') {
+                $waypoints[] = [
+                    'id' => $beacon->getId(),
+                    'name' => $beacon->getName(),
+                    'latitude' => $beacon->getLatitude(),
+                    'longitude' => $beacon->getLongitude(),
+                    'type' => $beacon->getType(),
+                    'isPlaced' => $beacon->isPlaced(),
+                    'placedAt' => $beacon->getPlacedAt()?->format('Y-m-d H:i:s'),
+                    'createdAt' => $beacon->getCreatedAt()?->format('Y-m-d H:i:s'),
+                    'qr' => $beacon->getQr(),
+                    'description' => $beacon->getDescription()
+                ];
+            }
+        }
+        
+        // Add finish beacon (if different from start)
+        if (!$parcours->isSameStartFinish() && $parcours->getFinishBeacon()) {
+            $finishBeacon = $parcours->getFinishBeacon();
+            $waypoints[] = [
+                'id' => $finishBeacon->getId(),
+                'name' => $finishBeacon->getName(),
+                'latitude' => $finishBeacon->getLatitude(),
+                'longitude' => $finishBeacon->getLongitude(),
+                'type' => $finishBeacon->getType(),
+                'isPlaced' => $finishBeacon->isPlaced(),
+                'placedAt' => $finishBeacon->getPlacedAt()?->format('Y-m-d H:i:s'),
+                'createdAt' => $finishBeacon->getCreatedAt()?->format('Y-m-d H:i:s'),
+                'qr' => $finishBeacon->getQr(),
+                'description' => $finishBeacon->getDescription()
+            ];
+        }
+        
+        return new JsonResponse(['waypoints' => $waypoints]);
     }
 
     #[Route('/api/parcours/save', name: 'api_parcours_save', methods: ['POST'])]
@@ -331,9 +471,9 @@ class ParcoursController extends AbstractController
             return new JsonResponse(['error' => 'Forbidden'], 403);
         }
 
-        // Prevent editing finished courses
-        if ($parcours->getStatus() === 'finished') {
-            return new JsonResponse(['error' => 'Cannot edit a finished course'], 403);
+        // Prevent editing ready and finished courses
+        if ($parcours->getStatus() === 'finished' || $parcours->getStatus() === 'ready') {
+            return new JsonResponse(['error' => 'Cannot edit a ready or finished course'], 403);
         }
 
         $data = json_decode($request->getContent(), true);
@@ -348,6 +488,9 @@ class ParcoursController extends AbstractController
         }
         if (isset($data['description'])) {
             $parcours->setDescription($data['description']);
+        }
+        if (isset($data['status'])) {
+            $parcours->setStatus($data['status']);
         }
         $parcours->setUpdateAt(new \DateTime());
         
@@ -613,4 +756,5 @@ class ParcoursController extends AbstractController
 
         return new JsonResponse(['success' => true]);
     }
+        */
 }

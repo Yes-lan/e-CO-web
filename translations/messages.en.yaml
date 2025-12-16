@@ -34,12 +34,42 @@ courses:
     search_placeholder: "Search..."
     no_courses: "No courses available."
     create_course: "Create a course"
-    view: "View"
-    view_on_map: "View on map"
-    edit: "Edit"
-    delete: "Delete"
     loading: "Loading courses..."
     error_loading: "Error loading courses"
+    
+    actions:
+        view: "View"
+        edit: "Edit"
+        delete: "Delete"
+        back: "Back"
+        save: "Save"
+        cancel: "Cancel"
+    
+    view:
+        title: "Course Details"
+        details: "Information"
+        runners_list: "Runners List"
+    
+    edit:
+        title: "Edit Course"
+    
+    form:
+        name: "Course name"
+        parcours: "Orienteering course"
+        select_parcours: "Select an orienteering course..."
+        runners: "Number of runners"
+        start: "Start date"
+        end: "End date"
+    
+    runners:
+        name: "Name"
+        departure: "Departure"
+        arrival: "Arrival"
+    
+    delete:
+        confirm: "Are you sure you want to delete this course"
+        error: "Error deleting"
+        failed: "Deletion failed"
     
     table:
         name: "Course Name"
@@ -50,6 +80,9 @@ courses:
         created_date: "Created"
         actions: "Actions"
         max_per_page: "Max per page"
+        start: "Start"
+        end: "End"
+        runners: "Runners"
     
     modal:
         create_title: "Create a New Course"
@@ -97,6 +130,7 @@ parcours:
     
     status:
         in_creation: "In progress"
+        ready: "Ready for Sessions"
         completed: "Completed"
         
     info:
