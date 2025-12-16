@@ -40,6 +40,8 @@ courses:
     delete: "Supprimer"
     loading: "Chargement des courses..."
     error_loading: "Erreur de chargement des courses"
+    course_description: "Description de la Course"
+    placement_baliseST: "les balises de départ et d'arrivée sont placées au même point"
     
     table:
         name: "Nom de la Course"

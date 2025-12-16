@@ -40,6 +40,8 @@ courses:
     delete: "Delete"
     loading: "Loading courses..."
     error_loading: "Error loading courses"
+    course_description: "Course Description"
+    placement_baliseST: "the start and finish markers are placed at the same point"
     
     table:
         name: "Course Name"
