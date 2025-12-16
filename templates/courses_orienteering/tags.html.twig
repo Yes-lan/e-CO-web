@@ -38,11 +38,12 @@
         <!-- Load libraries from local assets (no CDN needed) -->
         <script src="{{ asset('assets/js/qrcode.min.js') }}" onload="window.qrCodeLibraryLoaded = true; console.log('QRCode library loaded from local assets');"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" data-turbo-track="reload" async onload="window.jspdfLibraryLoaded = true; console.log('jsPDF library loaded');"></script>
+        
+    {% endblock %}
         <script> 
             const beaconsQr=document.getElementsByClassName("js-qrcode");
             for (beaconQr of beaconsQr){
                 new QRCode(document.getElementById(beaconQr.id), beaconQr.title);
             }
         </script>
-    {% endblock %}
 {% endblock %}
