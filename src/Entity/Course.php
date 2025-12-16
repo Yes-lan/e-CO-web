@@ -7,41 +7,85 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
+use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            uriTemplate: '/parcours',
+            security: "is_granted('ROLE_USER')",
+            provider: 'App\State\UserCoursesProvider'
+        ),
+        new Get(
+            uriTemplate: '/parcours/{id}',
+            security: "is_granted('ROLE_USER') and object.getUser() == user"
+        ),
+        new Post(
+            uriTemplate: '/parcours',
+            security: "is_granted('ROLE_USER')",
+            processor: 'App\State\CourseProcessor'
+        ),
+        new Patch(
+            uriTemplate: '/parcours/{id}',
+            security: "is_granted('ROLE_USER') and object.getUser() == user",
+            processor: 'App\State\CourseProcessor'
+        ),
+        new Delete(
+            uriTemplate: '/parcours/{id}',
+            security: "is_granted('ROLE_USER') and object.getUser() == user"
+        ),
+    ],
+    normalizationContext: ['groups' => ['course:read']],
+    denormalizationContext: ['groups' => ['course:write']],
+    security: "is_granted('ROLE_USER')"
+)]
 #[ORM\Entity(repositoryClass: CourseRepository::class)]
 class Course
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['course:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['course:read', 'course:write'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['course:read', 'course:write'])]
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['course:read', 'course:write'])]
     private ?string $status = null;
 
     #[ORM\Column]
+    #[Groups(['course:read'])]
     private ?\DateTime $createAt = null;
 
     #[ORM\Column]
+    #[Groups(['course:read'])]
     private ?\DateTime $placementCompletedAt = null;
 
     #[ORM\Column]
+    #[Groups(['course:read'])]
     private ?\DateTime $updateAt = null;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[Groups(['course:read', 'course:write'])]
     private bool $sameStartFinish = false;
 
     /**
      * @var Collection<int, Beacon>
      */
     #[ORM\ManyToMany(targetEntity: Beacon::class, mappedBy: 'course')]
+    #[Groups(['course:read'])]
     private Collection $beacons;
 
     /**
@@ -51,6 +95,7 @@ class Course
     private Collection $sessions;
 
     #[ORM\ManyToOne(inversedBy: 'course')]
+    #[Groups(['course:read'])]
     private ?User $user = null;
 
     public function __construct()
