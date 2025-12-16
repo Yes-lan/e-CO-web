@@ -30,13 +30,14 @@ class ParcoursController extends AbstractController
     #[Route('/parcours', name: 'app_parcours_list')]
     public function listParcours(CourseRepository $parcoursRepository): Response
     {
+        $currentUser = $this->getUser();
+        
         return $this->render('courses_orienteering/list.html.twig', [
-            // TODO: restreindre parcours utilisateur
-            'courses' => $parcoursRepository->findAll(),
+            'courses' => $parcoursRepository->findBy(['user' => $currentUser]),
         ]);
     }
 
-    #[Route('/course/{id}/view', name: 'app_parcours_view')]
+    #[Route('/parcours/{id}/view', name: 'app_parcours_view')]
     public function viewParcours(Course $course, User $user): Response
     {
         return $this->render('courses_orienteering/view.html.twig', [
@@ -45,7 +46,7 @@ class ParcoursController extends AbstractController
         ]);
     }
 
-    #[Route('/course/edit/{id<\d+>?0}', name: 'app_parcours_edit')]
+    #[Route('/parcours/edit/{id<\d+>?0}', name: 'app_parcours_edit')]
     public function createParcours(Request $request, int $id, CourseRepository $courseRepository): Response
     {
 
@@ -77,6 +78,7 @@ class ParcoursController extends AbstractController
             $course->setCreateAt(new \DateTime());
             $course->setUpdateAt(new \DateTime());
             $course->setPlacementCompletedAt(new \DateTime());
+            $course->setUser($this->getUser());
 
             $this->entityManager->persist($course);
             $this->entityManager->flush();
@@ -89,7 +91,7 @@ class ParcoursController extends AbstractController
         ]);
     }
 
-    #[Route('/course/{id}/tags', name: 'app_parcours_tags')]
+    #[Route('/parcours/{id}/tags', name: 'app_parcours_tags')]
     public function waypointsParcours(Course $course): Response
     {
         return $this->render('courses_orienteering/tags.html.twig', [

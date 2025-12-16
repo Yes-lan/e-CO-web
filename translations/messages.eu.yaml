@@ -34,12 +34,44 @@ courses:
     search_placeholder: "Bilatu..."
     no_courses: "Ez dago lasterketarik eskuragarri."
     create_course: "Sortu lasterketa bat"
-    view: "Ikusi"
-    view_on_map: "Ikusi mapan"
-    edit: "Aldatu"
-    delete: "Ezabatu"
     loading: "Lasterketak kargatzen..."
     error_loading: "Errorea lasterketak kargatzean"
+    course_description: "Ikastaroaren deskribapena"
+    placement_baliseST: "hasiera eta amaiera markatzaileak puntu berean daude"
+    
+    actions:
+        view: "Ikusi"
+        edit: "Aldatu"
+        delete: "Ezabatu"
+        back: "Atzera"
+        save: "Gorde"
+        cancel: "Utzi"
+    
+    view:
+        title: "Lasterketaren Xehetasunak"
+        details: "Informazioa"
+        runners_list: "Korrikalarien Zerrenda"
+    
+    edit:
+        title: "Aldatu Lasterketa"
+    
+    form:
+        name: "Lasterketaren izena"
+        parcours: "Orientazio-ibilbidea"
+        select_parcours: "Hautatu orientazio-ibilbide bat..."
+        runners: "Korrikalarien kopurua"
+        start: "Hasiera data"
+        end: "Amaiera data"
+    
+    runners:
+        name: "Izena"
+        departure: "Irteera"
+        arrival: "Helmuga"
+    
+    delete:
+        confirm: "Ziur zaude lasterketa hau ezabatu nahi duzula"
+        error: "Errorea ezabatzean"
+        failed: "Ezabatzeak huts egin du"
     
     table:
         name: "Lasterketaren Izena"
@@ -50,6 +82,9 @@ courses:
         created_date: "Sortze data"
         actions: "Ekintzak"
         max_per_page: "Gehienez orrialdeko"
+        start: "Hasiera"
+        end: "Amaiera"
+        runners: "Korrikalariak"
     
     modal:
         create_title: "Sortu Lasterketa Berria"
