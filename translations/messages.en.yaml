@@ -36,6 +36,8 @@ courses:
     create_course: "Create a course"
     loading: "Loading courses..."
     error_loading: "Error loading courses"
+    course_description: "Course Description"
+    placement_baliseST: "the start and finish markers are placed at the same point"
     
     actions:
         view: "View"

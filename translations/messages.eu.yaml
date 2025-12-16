@@ -36,6 +36,8 @@ courses:
     create_course: "Sortu lasterketa bat"
     loading: "Lasterketak kargatzen..."
     error_loading: "Errorea lasterketak kargatzean"
+    course_description: "Ikastaroaren deskribapena"
+    placement_baliseST: "hasiera eta amaiera markatzaileak puntu berean daude"
     
     actions:
         view: "Ikusi"
