@@ -30,13 +30,14 @@ class ParcoursController extends AbstractController
     #[Route('/parcours', name: 'app_parcours_list')]
     public function listParcours(CourseRepository $parcoursRepository): Response
     {
+        $currentUser = $this->getUser();
+        
         return $this->render('courses_orienteering/list.html.twig', [
-            // TODO: restreindre parcours utilisateur
-            'courses' => $parcoursRepository->findAll(),
+            'courses' => $parcoursRepository->findBy(['user' => $currentUser]),
         ]);
     }
 
-    #[Route('/course/{id}/view', name: 'app_parcours_view')]
+    #[Route('/parcours/{id}/view', name: 'app_parcours_view')]
     public function viewParcours(Course $course, User $user): Response
     {
         return $this->render('courses_orienteering/view.html.twig', [

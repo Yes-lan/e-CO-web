@@ -34,12 +34,42 @@ courses:
     search_placeholder: "Rechercher..."
     no_courses: "Aucune course disponible."
     create_course: "Créer une course"
-    view: "Voir"
-    view_on_map: "Voir sur la carte"
-    edit: "Modifier"
-    delete: "Supprimer"
     loading: "Chargement des courses..."
     error_loading: "Erreur de chargement des courses"
+    
+    actions:
+        view: "Voir"
+        edit: "Modifier"
+        delete: "Supprimer"
+        back: "Retour"
+        save: "Enregistrer"
+        cancel: "Annuler"
+    
+    view:
+        title: "Détails de la Course"
+        details: "Informations"
+        runners_list: "Liste des coureurs"
+    
+    edit:
+        title: "Modifier la Course"
+    
+    form:
+        name: "Nom de la course"
+        parcours: "Parcours associé"
+        select_parcours: "Sélectionner un parcours..."
+        runners: "Nombre de coureurs"
+        start: "Date de début"
+        end: "Date de fin"
+    
+    runners:
+        name: "Nom"
+        departure: "Départ"
+        arrival: "Arrivée"
+    
+    delete:
+        confirm: "Êtes-vous sûr de vouloir supprimer cette course"
+        error: "Erreur lors de la suppression"
+        failed: "Échec de la suppression"
     
     table:
         name: "Nom de la Course"
@@ -50,6 +80,9 @@ courses:
         created_date: "Créé le"
         actions: "Actions"
         max_per_page: "Max par page"
+        start: "Début"
+        end: "Fin"
+        runners: "Coureurs"
     
     modal:
         create_title: "Créer une Nouvelle Course"
