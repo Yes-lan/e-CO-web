@@ -6,34 +6,70 @@
 {% endblock %}
 
 {% block body %}
-<div class="parcours-view-page">
-    <div class="parcours-view-header">
-        <h1>{{ course.name }}</h1>
-        <h2>{{'User : '|trans}}{{user.email}}</h2>
-        <span>{{'status : '|trans}}{{ course.status }}</span><br>
-        <span>{{'created at : '|trans}}{{ course.createAt|date('d/m/Y') }}</span><br>
-        <span>{{'updated at : '|trans}}{{ course.updateAt|date('d/m/y') }}</span><br>
-        <span>
-        {% if course.sameStartFinish %}
-            <!-- TODO: ajouter la traduction -->
-            {{ 'parcours.baliseStartFinishY'|trans}}
-        {% else %}
-            {{ 'parcours.baliseStartFinishN'|trans}}
-        {% endif %}
-        </span>
-        <!-- TODO: ajouter la traduction -->
-        <h2>{{ 'parcours.description'|trans }}</h2>
-        <p>{{ course.description }}</p>
+<div class="map-view-container">
+    <!-- Main Content: Runners Table + Map + Course Info -->
+    <div class="map-content">
+        
+        <!-- Left Column: Runners Table -->
+        <div class="left-column" id="leftColumn" style="display: none;">
+            <div class="runners-panel" id="runnersPanel">
+                <h2>👥 Runners</h2>
+                <div class="runners-table-container">
+                    <table class="runners-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Beacons</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="runnersTableBody">
+                            <tr>
+                                <td colspan="3" class="no-data">Select a course to view runners</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Center Column: Google Map -->
+        <div class="map-panel" id="mapPanel" style="flex: 1 1 0%;">
+            <div id="map" style="position: relative; overflow: hidden;">
+                <!-- Google Map will be rendered here -->
+            </div>
+        </div>
+        
+        <!-- Right Column: Course Info Panel -->
+        <div class="course-info-panel" id="courseInfoPanel" style="display: block;">
+            <h1>📋 Course Information</h1>
+            <div class="parcours-view-page">
+                <h2>{{ course.name }}</h2>
+                <span>{{ 'User : '|trans }}{{ user.email }}</span><br>
+                <span>{{ 'status : '|trans }}{{ course.status }}</span><br>
+                <span>{{ 'created at : '|trans }}{{ course.createAt|date('d/m/Y') }}</span><br>
+                <span>{{ 'updated at : '|trans }}{{ course.updateAt|date('d/m/y') }}</span><br>
+                <span>
+                    {% if course.sameStartFinish %}
+                        {{ 'parcours.baliseStartFinishY'|trans }}
+                    {% else %}
+                        {{ 'parcours.baliseStartFinishN'|trans }}<br>
+                    {% endif %}
+                </span>
+                <br><span><h3>{{ 'course description'|trans}}</span></h3>
+                <p>{{ course.description }}</p>
+            </div>
+        </div>
+        
     </div>
 </div>
 
-
-    {% block javascripts %}
-        
-        
-        <!-- Load libraries from local assets (no CDN needed) -->
-        <script src="{{ asset('assets/js/qrcode.min.js') }}" onload="window.qrCodeLibraryLoaded = true; console.log('QRCode library loaded from local assets');"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" data-turbo-track="reload" async onload="window.jspdfLibraryLoaded = true; console.log('jsPDF library loaded');"></script>
-    {% endblock %}
-
+{% block javascripts %}
+    <!-- Load libraries from local assets (no CDN needed) -->
+    <script src="{{ asset('assets/js/qrcode.min.js') }}" 
+            onload="window.qrCodeLibraryLoaded = true; console.log('QRCode library loaded from local assets');"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" 
+            data-turbo-track="reload" async 
+            onload="window.jspdfLibraryLoaded = true; console.log('jsPDF library loaded');"></script>
+{% endblock %}
 {% endblock %}

@@ -36,6 +36,8 @@ courses:
     create_course: "Create a course"
     loading: "Loading courses..."
     error_loading: "Error loading courses"
+    course_description: "Course Description"
+    placement_baliseST: "the start and finish markers are placed at the same point"
     
     actions:
         view: "View"
@@ -127,7 +129,9 @@ parcours:
     qr_permanent: "These QR codes are permanent and never change for this course."
     qr_print_info: "You can safely print and place them on the field. They will remain valid even if you view this page multiple times."
     download_all_qr: "Download all QR codes"
-    
+    parcours.baliseStartFinishN: "start and finish beacons in different locations"
+    parcours.baliseStartFinishY: "start and finish beacons in the same location"
+
     status:
         in_creation: "In progress"
         ready: "Ready for Sessions"

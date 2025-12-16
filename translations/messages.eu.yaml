@@ -36,6 +36,8 @@ courses:
     create_course: "Sortu lasterketa bat"
     loading: "Lasterketak kargatzen..."
     error_loading: "Errorea lasterketak kargatzean"
+    course_description: "Ikastaroaren deskribapena"
+    placement_baliseST: "hasiera eta amaiera markatzaileak puntu berean daude"
     
     actions:
         view: "Ikusi"
@@ -127,6 +129,9 @@ parcours:
     qr_permanent: "QR kode hauek iraunkorrak dira eta ez dira inoiz aldatzen ikastaro honetarako."
     qr_print_info: "Inprimatu eta zelairatu seguru jar ditzakezu. Baliozkoak izango dira orrialde hau hainbat aldiz ikusi arren."
     download_all_qr: "Deskargatu QR kode guztiak"
+    parcours.baliseStartFinishN: "hasiera eta amaiera balizak kokapen desberdinetan"
+    parcours.baliseStartFinishY: "hasiera eta amaiera balizak kokapen berean"
+
     
     status:
         in_creation: "Sorkuntzan"

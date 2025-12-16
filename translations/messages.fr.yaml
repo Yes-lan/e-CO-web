@@ -36,6 +36,8 @@ courses:
     create_course: "Créer une course"
     loading: "Chargement des courses..."
     error_loading: "Erreur de chargement des courses"
+    course_description: "Description de la Course"
+    placement_baliseST: "les balises de départ et d'arrivée sont placées au même point"
     
     actions:
         view: "Voir"
@@ -127,6 +129,8 @@ parcours:
     qr_permanent: "Ces QR codes sont permanents et ne changent jamais pour ce parcours."
     qr_print_info: "Vous pouvez les imprimer et les placer sur le terrain en toute sécurité. Ils resteront valides même si vous consultez cette page plusieurs fois."
     download_all_qr: "Télécharger tous les QR codes"
+    parcours.baliseStartFinishN: "balises départ et arrivée à des endroits différents"
+    parcours.baliseStartFinishY: "balises départ et arrivée au même endroit"
     
     status:
         in_creation: "En cours de création"
