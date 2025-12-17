@@ -44,8 +44,30 @@ body{
   padding:10px 12px;
   border:1px solid #e1e1e1;
   border-radius:4px;
+  margin-top:12px;
   margin-bottom:12px;
   box-sizing:border-box;
+}
+
+
+.title{
+  text-align: center;
+  margin-bottom:20px;
+  color:var(--primary);
+  font-weight:700;
+  font-size:70px;
+  font-family: 'Goudy Bookletter 1911', Georgia, serif;
+}
+
+.subtitle{
+  text-align: center;
+  margin-bottom:20px;
+  color:var(--primary);
+  font-weight:700;
+}
+
+.remember{
+  margin-bottom:12px;
 }
 
 .checkbox{font-size:14px;color:#555}
@@ -68,6 +90,11 @@ body{
   font-size:13px;
   display:flex;
   justify-content:space-between;
+}
+
+.forget-password{
+  margin-top:12px;
+  text-align:right;
 }
 
 .login-help{margin-top:12px;text-align:center}

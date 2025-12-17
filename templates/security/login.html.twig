@@ -49,46 +49,48 @@
   </defs>
 </svg>
 
+<h1 class="title "> e - CO </h1>
+
     </div>
     <div class="login-card">
-    <form method="post">
-    {% if error %}
-        <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-    {% endif %}
+        <form method="post">
+            {% if error %}
+                <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
 
-    {% for message in app.flashes('success') %}
-        <div style="padding: 15px; margin-bottom: 20px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 4px;">
-            ✅ {{ message }}
-        </div>
-    {% endfor %}
+            {% for message in app.flashes('success') %}
+                <div style="padding: 15px; margin-bottom: 20px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 4px;">
+                    ✅ {{ message }}
+                </div>
+            {% endfor %}
 
-    {% if app.user %}
-        <div class="mb-3">
-            {{ 'login.already_logged_in'|trans({'%username%': app.user.userIdentifier}) }} <a href="{{ path('app_logout') }}">{{ 'login.logout'|trans }}</a>
-        </div>
-    {% endif %}
+            {% if app.user %}
+                <div class="mb-3">
+                    {{ 'login.already_logged_in'|trans({'%username%': app.user.userIdentifier}) }} <a href="{{ path('app_logout') }}">{{ 'login.logout'|trans }}</a>
+                </div>
+            {% endif %}
 
-    <h1 class="h3 mb-3 font-weight-normal">{{ 'login.please_sign_in'|trans }}</h1>
-    <label for="inputEmail">{{ 'login.email'|trans }}</label>
-    <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
-    <label for="inputPassword">{{ 'login.password'|trans }}</label>
-    <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
-    <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+            <h1 class="h3 mb-3 font-weight-normal subtitle ">{{ 'login.please_sign_in'|trans }}</h1>
+            <label for="inputEmail">{{ 'login.email'|trans }}</label>
+            <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
+            <label for="inputPassword">{{ 'login.password'|trans }}</label>
+            <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
+            <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
 
-    <div class="checkbox mb-3">
-        <label>
-            <input type="checkbox" name="_remember_me"> {{ 'login.remember_me'|trans }}
-        </label>
-    </div>
+            <div class=" remember checkbox mb-3">
+                <label>
+                    <input type="checkbox" name="_remember_me"> {{ 'login.remember_me'|trans }}
+                </label>
+            </div>
 
-    <button class="btn btn-lg btn-primary" type="submit">
-        {{ 'login.sign_in'|trans }}
-    </button>
-    
-    <div class="text-center mt-3">
-        <a href="{{ path('app_forgot_password_request') }}">{{ 'login.forgot_password'|trans }}</a>
-    </div>
-    </form>
+            <button class="btn btn-lg btn-primary" type="submit">
+                {{ 'login.sign_in'|trans }}
+            </button>
+            
+            <div class="forget-password">
+                <a href="{{ path('app_forgot_password_request') }}">{{ 'login.forgot_password'|trans }}</a>
+            </div>
+        </form>
     </div>
 </div>
 
