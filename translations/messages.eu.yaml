@@ -32,6 +32,7 @@ map:
     waypoint: "Baliza"
     time: "Denbora"
     departure: "Irteera"
+    arrival: "Helmuga"
     no_data: "Ez dago daturik eskuragarri"
     beacon: "Baliza"
     validation_status: "Balioztatze"

@@ -38,11 +38,18 @@ class ParcoursController extends AbstractController
     }
 
     #[Route('/parcours/{id}/view', name: 'app_parcours_view')]
-    public function viewParcours(Course $course, User $user): Response
+    public function viewParcours(Course $course): Response
     {
+        $currentUser = $this->getUser();
+        
+        // Check authorization: only the owner (or admin) can view
+        if (!$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
+            throw $this->createAccessDeniedException('You do not have permission to view this course.');
+        }
+
         return $this->render('courses_orienteering/view.html.twig', [
             'course' => $course,
-            'user' => $user,
+            'user' => $currentUser,
         ]);
     }
 

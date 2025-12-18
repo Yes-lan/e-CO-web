@@ -32,6 +32,7 @@ map:
     waypoint: "Balise"
     time: "Temps"
     departure: "Départ"
+    arrival: "Arrivée"
     no_data: "Aucune donnée disponible"
     beacon: "Balise"
     validation_status: "Validation"

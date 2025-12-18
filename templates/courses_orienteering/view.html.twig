@@ -9,26 +9,55 @@
 <div class="parcours-view-page">
     <div class="parcours-view-header">
         <h1>{{ course.name }}</h1>
-        <h2>{{'User : '|trans}}{{user.email}}</h2>
-        <span>{{'status : '|trans}}{{ course.status }}</span><br>
-        <span>{{'created at : '|trans}}{{ course.createAt|date('d/m/Y') }}</span><br>
-        <span>{{'updated at : '|trans}}{{ course.updateAt|date('d/m/y') }}</span><br>
-        <span>
-        {% if course.sameStartFinish %}
-            <!-- TODO: ajouter la traduction -->
-            {{ 'parcours.baliseStartFinishY'|trans}}
-        {% else %}
-            {{ 'parcours.baliseStartFinishN'|trans}}
-        {% endif %}
-        </span>
-        <!-- TODO: ajouter la traduction -->
-        <h2>{{ 'parcours.description'|trans }}</h2>
-        <p>{{ course.description }}</p>
+        <div class="parcours-header-actions">
+            <a href="{{ path('app_parcours_list') }}" class="btn btn-secondary">
+                {{ 'courses.actions.back'|trans }}
+            </a>
+        </div>
     </div>
 
     {# Map widget to display beacons/waypoints #}
     <div class="course-map-section">
         <h2>{{ 'parcours.map_view'|trans }}</h2>
+        
+        {# Course details displayed horizontally (matching session view layout) #}
+        <div class="session-details-horizontal" style="display: flex; gap: 2rem; margin: 1rem 0; padding: 1rem; background: #f5f5f5; border-radius: 8px; flex-wrap: wrap;">
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'parcours.name'|trans }}:</strong>
+                <span>{{ course.name }}</span>
+            </div>
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'parcours.status'|trans }}:</strong>
+                <span>{{ course.status }}</span>
+            </div>
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'parcours.created_at'|trans }}:</strong>
+                <span>{{ course.createAt|date('d/m/Y') }}</span>
+            </div>
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'parcours.updated_at'|trans }}:</strong>
+                <span>{{ course.updateAt|date('d/m/Y') }}</span>
+            </div>
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'parcours.same_start_finish'|trans }}:</strong>
+                <span>
+                {% if course.sameStartFinish %}
+                    {{ 'parcours.baliseStartFinishY'|trans}}
+                {% else %}
+                    {{ 'parcours.baliseStartFinishN'|trans}}
+                {% endif %}
+                </span>
+            </div>
+        </div>
+        
+        {# Description moved here to match session layout #}
+        {% if course.description %}
+        <div class="course-description" style="margin: 1rem 0; padding: 1rem; background: #f9f9f9; border-left: 4px solid #007bff; border-radius: 4px;">
+            <strong>{{ 'parcours.description'|trans }}:</strong>
+            <p style="margin: 0.5rem 0 0 0;">{{ course.description }}</p>
+        </div>
+        {% endif %}
+        
         {% include 'widgets/map_widget.html.twig' with {
             'course': course,
             'showCourseInfo': true,
@@ -45,8 +74,29 @@
             function initViewMapCallback() {
                 console.log('Google Maps API loaded for course view');
             }
+            
+            // Only load Google Maps if not already loaded or loading
+            if (!window.google || !window.google.maps) {
+                // Check if script tag doesn't already exist
+                const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+                if (!existingScript) {
+                    const script = document.createElement('script');
+                    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBi8sXKGGafzB837kvxraWuqohlZ-JJRu8&libraries=geometry,places&callback=initViewMapCallback';
+                    script.async = true;
+                    script.defer = true;
+                    document.head.appendChild(script);
+                    console.log('Loading Google Maps API...');
+                } else {
+                    console.log('Google Maps API script already in DOM, waiting for load...');
+                }
+            } else {
+                console.log('Google Maps API already loaded');
+                // Trigger initialization manually
+                if (typeof initViewMapCallback === 'function') {
+                    initViewMapCallback();
+                }
+            }
         </script>
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBi8sXKGGafzB837kvxraWuqohlZ-JJRu8&libraries=geometry,places&callback=initViewMapCallback" async defer></script>
         
         <!-- View Map Widget Script -->
         <script src="{{ asset('assets/js/view_map.js') }}" defer></script>

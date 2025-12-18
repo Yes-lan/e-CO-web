@@ -5,7 +5,10 @@
  * Minimal implementation - leverages Doctrine entities and server-side data
  */
 
-class ViewMapWidget {
+// Prevent redeclaration if the script is loaded multiple times (Turbo Drive)
+if (typeof window.ViewMapWidget === 'undefined') {
+
+window.ViewMapWidget = class ViewMapWidget {
     constructor(mapId) {
         this.mapId = mapId;
         this.mapElement = document.getElementById(mapId);
@@ -24,9 +27,12 @@ class ViewMapWidget {
         if (beaconsScript) {
             try {
                 this.beacons = JSON.parse(beaconsScript.textContent);
+                console.log(`Loaded ${this.beacons.length} beacons for map ${mapId}`);
             } catch (e) {
                 console.error('Error parsing beacons data:', e);
             }
+        } else {
+            console.warn(`No beacons script tag found in map ${mapId}`);
         }
 
         this.map = null;
@@ -53,6 +59,8 @@ class ViewMapWidget {
             zoom: 15,
             center: defaultCenter,
             mapTypeId: google.maps.MapTypeId.ROADMAP,
+            tilt: 0, // Disable 45° imagery (diagonal/tilt view)
+            //rotateControl: false, // Disable rotation control
             mapTypeControl: true,
             mapTypeControlOptions: {
                 style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
@@ -95,10 +103,31 @@ class ViewMapWidget {
         }
 
         const bounds = new google.maps.LatLngBounds();
+        
+        // Check if start and finish beacons are at the same location
+        const startBeacon = this.beacons.find(b => b.type === 'start');
+        const finishBeacon = this.beacons.find(b => b.type === 'finish');
+        let skipFinish = false;
+        
+        if (startBeacon && finishBeacon) {
+            const sameLocation = 
+                parseFloat(startBeacon.latitude) === parseFloat(finishBeacon.latitude) &&
+                parseFloat(startBeacon.longitude) === parseFloat(finishBeacon.longitude);
+            
+            if (sameLocation) {
+                console.log('Start and finish beacons at same location - merging markers');
+                skipFinish = true;
+            }
+        }
 
         this.beacons.forEach((beacon, index) => {
             // Skip beacons that are not placed
             if (!beacon.latitude || !beacon.longitude || beacon.latitude === 0 || beacon.longitude === 0) {
+                return;
+            }
+            
+            // Skip finish beacon if it's at the same location as start
+            if (skipFinish && beacon.type === 'finish') {
                 return;
             }
 
@@ -107,41 +136,74 @@ class ViewMapWidget {
                 lng: parseFloat(beacon.longitude)
             };
 
-            // Determine beacon type icon
-            let icon = {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 10,
-                fillColor: '#2196F3',
-                fillOpacity: 1,
-                strokeColor: 'white',
-                strokeWeight: 2
-            };
-
+            // Determine beacon type icon - use teardrop pin shape
+            let pinColor = '#2196F3'; // Blue for control beacons
+            let beaconLabel = beacon.name ? beacon.name.toString() : (index + 1).toString();
+            
             if (beacon.type === 'start') {
-                icon.fillColor = '#000000'; // Black for start
+                pinColor = '#000000'; // Black for start
+                // If start and finish are at same location, update label
+                if (skipFinish) {
+                    beaconLabel = 'Start/Finish';
+                }
             } else if (beacon.type === 'finish') {
-                icon.fillColor = '#000000'; // Black for finish
+                pinColor = '#000000'; // Black for finish
             }
 
             const marker = new google.maps.Marker({
                 position: position,
                 map: this.map,
-                icon: icon,
+                icon: {
+                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                    fillColor: pinColor,
+                    fillOpacity: 1,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 2,
+                    scale: 1,
+                    anchor: new google.maps.Point(0, 0)
+                },
                 title: beacon.name || `Beacon ${index + 1}`,
                 label: {
-                    text: beacon.name ? beacon.name.toString() : (index + 1).toString(),
+                    text: beaconLabel,
                     color: 'white',
                     fontSize: '12px',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    className: 'beacon-label-with-outline' // CSS class for text outline
                 }
             });
 
+            // Add CSS for text outline if not already added
+            if (!document.getElementById('beacon-label-style')) {
+                const style = document.createElement('style');
+                style.id = 'beacon-label-style';
+                style.textContent = `
+                    .beacon-label-with-outline {
+                        text-shadow: 
+                            -1px -1px 0 #000,  
+                            1px -1px 0 #000,
+                            -1px 1px 0 #000,
+                            1px 1px 0 #000,
+                            -2px 0 0 #000,
+                            2px 0 0 #000,
+                            0 -2px 0 #000,
+                            0 2px 0 #000 !important;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Determine info window content
+            let beaconType = beacon.type || 'control';
+            if (skipFinish && beacon.type === 'start') {
+                beaconType = 'start/finish';
+            }
+
             const infoWindow = new google.maps.InfoWindow({
                 content: `
-                    <div style="padding: 8px;">
-                        <h4 style="margin: 0 0 8px 0;">${beacon.name || 'Beacon'}</h4>
-                        <p style="margin: 0;"><strong>Type:</strong> ${beacon.type || 'control'}</p>
-                        <p style="margin: 4px 0 0 0;"><small>Lat: ${position.lat.toFixed(6)}, Lng: ${position.lng.toFixed(6)}</small></p>
+                    <div style="padding: 8px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8), -1px -1px 2px rgba(255,255,255,0.8);">
+                        <h4 style="margin: 0 0 8px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${beacon.name || 'Beacon'}</h4>
+                        <p style="margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><strong>Type:</strong> ${beaconType}</p>
+                        <p style="margin: 4px 0 0 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><small>Lat: ${position.lat.toFixed(6)}, Lng: ${position.lng.toFixed(6)}</small></p>
                     </div>
                 `
             });
@@ -220,7 +282,7 @@ class ViewMapWidget {
             }
             
             const data = await response.json();
-            this.displayRunnerPath(data.logs || []);
+            this.displayRunnerPath(data.logs || [], data.waypoints || []);
             this.displayRunnerWaypoints(data.waypoints || []);
         } catch (error) {
             console.error('Error loading runner data:', error);
@@ -238,14 +300,46 @@ class ViewMapWidget {
         }
     }
 
-    displayRunnerPath(logs) {
+    displayRunnerPath(logs, waypoints) {
         if (!logs || logs.length === 0) {
             return;
         }
 
-        const pathCoordinates = logs.map(log => ({
-            lat: parseFloat(log.latitude),
-            lng: parseFloat(log.longitude)
+        // Combine GPS logs and beacon scans, sorted by timestamp
+        const allPoints = [];
+        
+        // Add GPS points
+        logs.forEach(log => {
+            allPoints.push({
+                lat: parseFloat(log.latitude),
+                lng: parseFloat(log.longitude),
+                timestamp: log.timestamp,
+                type: 'gps'
+            });
+        });
+        
+        // Add beacon scan points
+        if (waypoints && waypoints.length > 0) {
+            waypoints.forEach(wp => {
+                allPoints.push({
+                    lat: parseFloat(wp.latitude),
+                    lng: parseFloat(wp.longitude),
+                    timestamp: wp.timestamp,
+                    type: 'beacon_scan'
+                });
+            });
+        }
+        
+        // Sort by timestamp to create accurate path
+        allPoints.sort((a, b) => {
+            const timeA = a.timestamp ? new Date(a.timestamp) : new Date(0);
+            const timeB = b.timestamp ? new Date(b.timestamp) : new Date(0);
+            return timeA - timeB;
+        });
+
+        const pathCoordinates = allPoints.map(point => ({
+            lat: point.lat,
+            lng: point.lng
         }));
 
         // Draw path line in purple
@@ -283,10 +377,10 @@ class ViewMapWidget {
             // Info window for GPS point
             const infoWindow = new google.maps.InfoWindow({
                 content: `
-                    <div style="padding: 8px;">
-                        <h4 style="margin: 0 0 8px 0;">GPS Point ${index + 1}</h4>
-                        <p style="margin: 0;"><strong>Time:</strong> ${log.timestamp ? new Date(log.timestamp).toLocaleString('fr-FR') : 'N/A'}</p>
-                        <p style="margin: 4px 0 0 0;"><small>Lat: ${position.lat.toFixed(6)}, Lng: ${position.lng.toFixed(6)}</small></p>
+                    <div style="padding: 8px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8), -1px -1px 2px rgba(255,255,255,0.8);">
+                        <h4 style="margin: 0 0 8px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">GPS Point ${index + 1}</h4>
+                        <p style="margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><strong>Time:</strong> ${log.timestamp ? new Date(log.timestamp).toLocaleString('fr-FR') : 'N/A'}</p>
+                        <p style="margin: 4px 0 0 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><small>Lat: ${position.lat.toFixed(6)}, Lng: ${position.lng.toFixed(6)}</small></p>
                     </div>
                 `
             });
@@ -338,12 +432,13 @@ class ViewMapWidget {
                 position: position,
                 map: this.map,
                 icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 10,
+                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
                     fillColor: markerColor,
                     fillOpacity: 0.9,
-                    strokeColor: 'white',
-                    strokeWeight: 2
+                    strokeColor: '#ffffff',
+                    strokeWeight: 2,
+                    scale: 1,
+                    anchor: new google.maps.Point(0, 0)
                 },
                 title: `Beacon Scan: ${wp.beaconName || 'Unknown'}`
             });
@@ -352,16 +447,16 @@ class ViewMapWidget {
             const distanceText = distance !== null ? `${distance.toFixed(1)} m` : 'N/A';
             const infoWindow = new google.maps.InfoWindow({
                 content: `
-                    <div style="padding: 8px;">
-                        <h4 style="margin: 0 0 8px 0;">${wp.beaconName || 'Unknown Beacon'}</h4>
-                        <p style="margin: 0;"><strong>Status:</strong> 
+                    <div style="padding: 8px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8), -1px -1px 2px rgba(255,255,255,0.8);">
+                        <h4 style="margin: 0 0 8px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${wp.beaconName || 'Unknown Beacon'}</h4>
+                        <p style="margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><strong>Status:</strong> 
                             <span style="color: ${isValid ? '#4CAF50' : '#F44336'}; font-weight: bold;">
                                 ${isValid ? '✓ Valid' : '✗ Invalid'}
                             </span>
                         </p>
-                        <p style="margin: 4px 0 0 0;"><strong>Distance:</strong> ${distanceText}</p>
-                        <p style="margin: 4px 0 0 0;"><strong>Time:</strong> ${wp.timestamp ? new Date(wp.timestamp).toLocaleString('fr-FR') : 'N/A'}</p>
-                        <p style="margin: 4px 0 0 0;"><small>Lat: ${position.lat.toFixed(6)}, Lng: ${position.lng.toFixed(6)}</small></p>
+                        <p style="margin: 4px 0 0 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><strong>Distance:</strong> ${distanceText}</p>
+                        <p style="margin: 4px 0 0 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><strong>Time:</strong> ${wp.timestamp ? new Date(wp.timestamp).toLocaleString('fr-FR') : 'N/A'}</p>
+                        <p style="margin: 4px 0 0 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);"><small>Lat: ${position.lat.toFixed(6)}, Lng: ${position.lng.toFixed(6)}</small></p>
                     </div>
                 `
             });
@@ -431,6 +526,14 @@ class ViewMapWidget {
     }
 }
 
+// End of ViewMapWidget class definition guard
+}
+
+// Track initialized maps to prevent duplicates
+if (!window.initializedMaps) {
+    window.initializedMaps = new Set();
+}
+
 // Initialize all map widgets when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     // Wait for Google Maps to load
@@ -445,9 +548,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const mapElements = document.querySelectorAll('.google-map');
         mapElements.forEach(mapEl => {
             const mapId = mapEl.id;
-            if (mapId) {
+            if (mapId && !window.initializedMaps.has(mapId)) {
                 console.log(`Initializing map widget: ${mapId}`);
-                new ViewMapWidget(mapId);
+                window.initializedMaps.add(mapId);
+                new window.ViewMapWidget(mapId);
             }
         });
     };
@@ -458,11 +562,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Support for Turbo Drive (if used)
 document.addEventListener('turbo:load', function() {
+    if (!window.google || !window.google.maps) {
+        console.log('Turbo: Waiting for Google Maps API...');
+        return;
+    }
+    
     const mapElements = document.querySelectorAll('.google-map');
     mapElements.forEach(mapEl => {
         const mapId = mapEl.id;
-        if (mapId && window.google && window.google.maps) {
-            new ViewMapWidget(mapId);
+        if (mapId && !window.initializedMaps.has(mapId)) {
+            console.log(`Turbo: Initializing map widget: ${mapId}`);
+            window.initializedMaps.add(mapId);
+            new window.ViewMapWidget(mapId);
         }
     });
 });

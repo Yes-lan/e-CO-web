@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     {% block stylesheets %}
     {% endblock %}
+    <!-- TODO: pour les listes, ajouter un affichage pour les modos (toute la liste + afficher une colonne en plus pour le nom du créateur) -->
+    <!-- TODO: pour les listes, permettre un tri) -->
 
     <!-- Load auth.js first as it's needed by other scripts -->
     <script src="{{ asset('assets/js/translations.js') }}"></script>
@@ -40,7 +42,7 @@
             </div>
 
             <nav class="header-nav">
-                <a href="{{ path('app_courses_list') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_courses' %}active{% endif %}">{{ 'nav.courses'|trans }}</a>
+                <a href="{{ path('app_sessions_list') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_courses' %}active{% endif %}">{{ 'nav.courses'|trans }}</a>
                 <a href="{{ path('app_parcours_list') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_parcours' %}active{% endif %}">{{ 'nav.parcours'|trans }}</a>
             </nav>
 

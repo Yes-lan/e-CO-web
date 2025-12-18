@@ -1,4 +1,5 @@
 # English translations
+# TODO: make sure all the translations are updated
 nav:
     courses: "Courses"
     parcours: "Orienteering Courses"
@@ -32,6 +33,7 @@ map:
     waypoint: "Waypoint"
     time: "Time"
     departure: "Departure"
+    arrival: "Arrival"
     no_data: "No data available"
     beacon: "Beacon"
     validation_status: "Validation"

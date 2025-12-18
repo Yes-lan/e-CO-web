@@ -7,71 +7,41 @@
     <div class="parcours-header">
         <h1>{{ session.sessionName }}</h1>
         <div class="parcours-header-actions">
-            <a href="{{ path('app_courses_list') }}" class="btn btn-secondary">
+            <a href="{{ path('app_sessions_list') }}" class="btn btn-secondary">
                 {{ 'courses.actions.back'|trans }}
             </a>
-            <a href="{{ path('app_courses_edit', {id: session.id}) }}" class="btn btn-primary">
-                {{ 'courses.actions.edit'|trans }}
-            </a>
         </div>
-    </div>
-
-    <div class="course-details">
-        <div class="detail-section">
-            <h2>{{ 'courses.view.details'|trans }}</h2>
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <label>{{ 'courses.table.name'|trans }}:</label>
-                    <span>{{ session.sessionName }}</span>
-                </div>
-                <div class="detail-item">
-                    <label>{{ 'courses.table.parcours'|trans }}:</label>
-                    <span>{{ session.course ? session.course.name : 'N/A' }}</span>
-                </div>
-                <div class="detail-item">
-                    <label>{{ 'courses.table.runners'|trans }}:</label>
-                    <span>{{ session.nbRunner }}</span>
-                </div>
-                <div class="detail-item">
-                    <label>{{ 'courses.table.start'|trans }}:</label>
-                    <span>{{ session.sessionStart ? session.sessionStart|date('Y-m-d H:i:s') : 'N/A' }}</span>
-                </div>
-                <div class="detail-item">
-                    <label>{{ 'courses.table.end'|trans }}:</label>
-                    <span>{{ session.sessionEnd ? session.sessionEnd|date('Y-m-d H:i:s') : 'N/A' }}</span>
-                </div>
-            </div>
-        </div>
-
-        {% if session.runners|length > 0 %}
-        <div class="detail-section">
-            <h2>{{ 'courses.view.runners_list'|trans }}</h2>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>{{ 'courses.runners.name'|trans }}</th>
-                        <th>{{ 'courses.runners.departure'|trans }}</th>
-                        <th>{{ 'courses.runners.arrival'|trans }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for runner in session.runners %}
-                    <tr>
-                        <td>{{ runner.name }}</td>
-                        <td>{{ runner.departure ? runner.departure|date('Y-m-d H:i:s') : 'N/A' }}</td>
-                        <td>{{ runner.arrival ? runner.arrival|date('Y-m-d H:i:s') : 'N/A' }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
     </div>
 
     {# Map widget to display session with runners and waypoints #}
     {% if session.course %}
     <div class="session-map-section">
         <h2>{{ 'courses.view.map'|trans }}</h2>
+        
+        {# Session details displayed horizontally #}
+        <div class="session-details-horizontal" style="display: flex; gap: 2rem; margin: 1rem 0; padding: 1rem; background: #f5f5f5; border-radius: 8px; flex-wrap: wrap;">
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'courses.table.name'|trans }}:</strong>
+                <span>{{ session.sessionName }}</span>
+            </div>
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'courses.table.parcours'|trans }}:</strong>
+                <span>{{ session.course ? session.course.name : 'N/A' }}</span>
+            </div>
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'courses.table.runners'|trans }}:</strong>
+                <span>{{ session.nbRunner }}</span>
+            </div>
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'courses.table.start'|trans }}:</strong>
+                <span>{{ session.sessionStart ? session.sessionStart|date('d/m/Y H:i') : 'N/A' }}</span>
+            </div>
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'courses.table.end'|trans }}:</strong>
+                <span>{{ session.sessionEnd ? session.sessionEnd|date('d/m/Y H:i') : 'N/A' }}</span>
+            </div>
+        </div>
+        
         {% include 'widgets/map_widget.html.twig' with {
             'course': session.course,
             'session': session,
@@ -90,8 +60,29 @@
         function initViewMapCallback() {
             console.log('Google Maps API loaded for session view');
         }
+        
+        // Only load Google Maps if not already loaded or loading
+        if (!window.google || !window.google.maps) {
+            // Check if script tag doesn't already exist
+            const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+            if (!existingScript) {
+                const script = document.createElement('script');
+                script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBi8sXKGGafzB837kvxraWuqohlZ-JJRu8&libraries=geometry,places&callback=initViewMapCallback';
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
+                console.log('Loading Google Maps API...');
+            } else {
+                console.log('Google Maps API script already in DOM, waiting for load...');
+            }
+        } else {
+            console.log('Google Maps API already loaded');
+            // Trigger initialization manually
+            if (typeof initViewMapCallback === 'function') {
+                initViewMapCallback();
+            }
+        }
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBi8sXKGGafzB837kvxraWuqohlZ-JJRu8&libraries=geometry,places&callback=initViewMapCallback" async defer></script>
     
     <!-- View Map Widget Script -->
     <script src="{{ asset('assets/js/view_map.js') }}" defer></script>

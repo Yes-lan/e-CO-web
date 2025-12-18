@@ -8,6 +8,9 @@
     - showRunnersList: boolean (optional, default false) - shows runners selection list
 #}
 
+
+{# TODO: Add a check to see if the user is the owner or has permission to view the course/session #}
+
 {% set showCourseInfo = showCourseInfo|default(false) %}
 {% set showRunnersList = showRunnersList|default(false) %}
 {% set mapId = mapId|default('mapWidget') %}
@@ -17,7 +20,6 @@
     {% if showRunnersList and session %}
         {# Left panel: Runners list for selection #}
         <div class="runners-list-panel">
-            <h3>{{ 'map.runners_list'|trans }}</h3>
             <div class="runners-list" id="{{ mapId }}-runners-list">
                 {% if session.runners|length > 0 %}
                     {% for runner in session.runners %}
@@ -28,6 +30,7 @@
                             </div>
                             <div class="runner-stats">
                                 <small>{{ 'map.departure'|trans }}: {{ runner.departure ? runner.departure|date('H:i') : 'N/A' }}</small>
+                                <small>{{ 'map.arrival'|trans }}: {{ runner.arrival ? runner.arrival|date('H:i') : 'N/A' }}</small>
                             </div>
                         </div>
                     {% endfor %}
@@ -41,33 +44,28 @@
     {# Main map container #}
     <div class="map-display-wrapper {% if not showRunnersList %}full-width{% endif %}">
         {% if showCourseInfo %}
-            {# Course info panel #}
+            {# Course info panel - beacons list only (description is shown above map) #}
             <div class="course-info-panel">
                 <h3>{{ course.name }}</h3>
-                <div class="info-item">
-                    <strong>{{ 'parcours.description'|trans }}:</strong>
-                    <p>{{ course.description }}</p>
-                </div>
-                <div class="info-item">
-                    <strong>{{ 'parcours.status'|trans }}:</strong>
-                    <span class="status-badge">{{ course.status }}</span>
-                </div>
                 <div class="info-item">
                     <strong>{{ 'parcours.beacons_count'|trans }}:</strong>
                     <span>{{ course.beacons|length }}</span>
                 </div>
                 {% if course.beacons|length > 0 %}
-                    <div class="info-item">
-                        <strong>{{ 'parcours.beacons_list'|trans }}:</strong>
-                        <ul class="beacons-list">
-                            {% for beacon in course.beacons %}
-                                <li>
-                                    <span class="beacon-number">{{ loop.index }}</span>
-                                    <span>{{ beacon.name }}</span>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
+                    {% set nonStartFinishBeacons = course.beacons|filter(b => b.type != 'start' and b.type != 'finish') %}
+                    {% if nonStartFinishBeacons|length > 0 %}
+                        <div class="info-item">
+                            <strong>{{ 'parcours.beacons_list'|trans }}:</strong>
+                            <ul class="beacons-list">
+                                {% for beacon in nonStartFinishBeacons %}
+                                    <li>
+                                        <span class="beacon-number">{{ loop.index }}</span>
+                                        <span>{{ beacon.name }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
                 {% endif %}
             </div>
         {% endif %}

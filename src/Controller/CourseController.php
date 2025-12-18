@@ -29,28 +29,45 @@ class CourseController extends AbstractController
         private RunnerRepository $runnerRepository
     ) {}
 
-    #[Route('/courses', name: 'app_courses_list')]
-    public function listCourses(SessionRepository $sessionRepository): Response
+    #[Route('/sessions', name: 'app_sessions_list')]
+    public function listSessions(SessionRepository $sessionRepository): Response
     {
+        $currentUser = $this->getUser();
+        
+        // Get all sessions
+        $allSessions = $sessionRepository->findAll();
+        
+        // Filter sessions to only show those whose course belongs to the current user
+        $userSessions = array_filter($allSessions, function(Session $session) use ($currentUser) {
+            $course = $session->getCourse();
+            return $course && $course->getUser() && $course->getUser()->getId() === $currentUser->getId();
+        });
+        
         return $this->render('sessions/list.html.twig', [
-            // TODO: restreindre parcours utilisateur
-            'sessions' => $sessionRepository->findAll(),
+            'sessions' => $userSessions,
         ]);
     }
 
-    #[Route('/courses/create', name: 'app_courses_create')]
-    public function createCourse(): Response
+    #[Route('/sessions/create', name: 'app_sessions_create')]
+    public function createSession(): Response
     {
         return $this->render('sessions/create.html.twig');
     }
 
-    #[Route('/courses/{id}/view', name: 'app_courses_view')]
-    public function viewCourse(int $id): Response
+    #[Route('/sessions/{id}/view', name: 'app_sessions_view')]
+    public function viewSession(int $id): Response
     {
+        $currentUser = $this->getUser();
         $session = $this->sessionRepository->find($id);
         
         if (!$session) {
             throw $this->createNotFoundException('Session not found');
+        }
+
+        // Check authorization: only the owner (or admin) can view
+        $course = $session->getCourse();
+        if (!$course || !$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
+            throw $this->createAccessDeniedException('You do not have permission to view this session.');
         }
 
         return $this->render('sessions/view.html.twig', [
@@ -58,339 +75,71 @@ class CourseController extends AbstractController
         ]);
     }
 
-    #[Route('/courses/{id}/edit', name: 'app_courses_edit')]
-    public function editCourse(int $id): Response
-    {
-        $session = $this->sessionRepository->find($id);
-        
-        if (!$session) {
-            throw $this->createNotFoundException('Session not found');
-        }
 
-        return $this->render('sessions/edit.html.twig', [
-            'session' => $session,
-        ]);
-    }
-
-    /*
-    #[Route('/api/sessions', name: 'api_sessions_list', methods: ['GET'])]
-    public function apiListCourses(): JsonResponse
-    {
-        $currentUser = $this->getUser();
-        if (!$currentUser) {
-            return new JsonResponse(['error' => 'Unauthorized'], 401);
-        }
-
-        // Get all sessions
-        $allSessions = $this->sessionRepository->findAll();
-        error_log("📋 Total sessions in DB: " . count($allSessions));
-        
-        // Filter sessions to only include those connected to courses created by the current user
-        $sessions = array_filter($allSessions, function($session) use ($currentUser) {
-            $course = $session->getCourse();
-            $hasValidCourse = $course && $course->getUser() && $course->getUser()->getId() === $currentUser->getId();
-            
-            if (!$hasValidCourse) {
-                error_log("❌ Session #{$session->getId()} rejected - Course: " . ($course ? $course->getId() : 'null') . 
-                    ", User: " . ($course && $course->getUser() ? $course->getUser()->getId() : 'null'));
-            }
-            
-            return $hasValidCourse;
-        });
-        
-        error_log("✅ Filtered sessions for user #{$currentUser->getId()}: " . count($sessions));
-        
-        // Re-index array to avoid JSON object instead of array
-        $sessions = array_values($sessions);
-        
-        $coursesData = array_map(function($session) {
-            $parcours = $session->getCourse();
-            return [
-                'id' => $session->getId(),
-                'name' => $session->getSessionName(),
-                'nbRunners' => $session->getNbRunner(),
-                'startDate' => $session->getSessionStart()?->format('Y-m-d H:i:s'),
-                'endDate' => $session->getSessionEnd()?->format('Y-m-d H:i:s'),
-                'parcours' => $parcours ? [
-                    'id' => $parcours->getId(),
-                    'name' => $parcours->getName(),
-                    'description' => $parcours->getDescription()
-                ] : null,
-                'runners' => array_map(function($runner) {
-                    return [
-                        'id' => $runner->getId(),
-                        'name' => $runner->getName(),
-                        'departure' => $runner->getDeparture()?->format('Y-m-d H:i:s'),
-                        'arrival' => $runner->getArrival()?->format('Y-m-d H:i:s'),
-                        'logSessions' => array_map(function($log) {
-                            return [
-                                'id' => $log->getId(),
-                                'type' => $log->getType(),
-                                'time' => $log->getTime()?->format('Y-m-d H:i:s'),
-                                'latitude' => $log->getLatitude(),
-                                'longitude' => $log->getLongitude(),
-                                'additionalData' => $log->getAdditionalData()
-                            ];
-                        }, $runner->getLogSessions()->toArray())
-                    ];
-                }, $session->getRunners()->toArray())
-            ];
-        }, $sessions);
-
-        return new JsonResponse(['courses' => $coursesData]);
-    }
-
-    #[Route('/api/sessions/active', name: 'api_sessions_active', methods: ['GET'])]
-    public function apiListActiveCourses(): JsonResponse
-    {
-        $currentUser = $this->getUser();
-        if (!$currentUser) {
-            return new JsonResponse(['error' => 'Unauthorized'], 401);
-        }
-
-        // Get only active sessions (sessionStart != null AND sessionEnd == null)
-        $allActiveSessions = $this->sessionRepository->createQueryBuilder('s')
-            ->where('s.sessionStart IS NOT NULL')
-            ->andWhere('s.sessionEnd IS NULL')
-            ->getQuery()
-            ->getResult();
-        
-        error_log("🟢 Active sessions in DB: " . count($allActiveSessions));
-        
-        // Filter by user's courses
-        $sessions = array_filter($allActiveSessions, function($session) use ($currentUser) {
-            $course = $session->getCourse();
-            return $course && $course->getUser() && $course->getUser()->getId() === $currentUser->getId();
-        });
-        
-        error_log("✅ Active sessions for user #{$currentUser->getId()}: " . count($sessions));
-        
-        $sessions = array_values($sessions);
-        
-        $coursesData = array_map(function($session) {
-            $parcours = $session->getCourse();
-            return [
-                'id' => $session->getId(),
-                'name' => $session->getSessionName(),
-                'nbRunners' => $session->getNbRunner(),
-                'startDate' => $session->getSessionStart()?->format('Y-m-d H:i:s'),
-                'endDate' => $session->getSessionEnd()?->format('Y-m-d H:i:s'),
-                'parcours' => $parcours ? [
-                    'id' => $parcours->getId(),
-                    'name' => $parcours->getName(),
-                    'description' => $parcours->getDescription()
-                ] : null,
-                'runners' => array_map(function($runner) {
-                    return [
-                        'id' => $runner->getId(),
-                        'name' => $runner->getName(),
-                        'departure' => $runner->getDeparture()?->format('Y-m-d H:i:s'),
-                        'arrival' => $runner->getArrival()?->format('Y-m-d H:i:s'),
-                    ];
-                }, $session->getRunners()->toArray())
-            ];
-        }, $sessions);
-
-        return new JsonResponse(['courses' => $coursesData]);
-    }
-
-    #[Route('/api/sessions/{id}', name: 'api_sessions_get', methods: ['GET'])]
-    public function getCourse(int $id): JsonResponse
-    {
-        $currentUser = $this->getUser();
-        if (!$currentUser) {
-            return new JsonResponse(['error' => 'Unauthorized'], 401);
-        }
-
-        $session = $this->sessionRepository->find($id);
-        
-        if (!$session) {
-            return new JsonResponse(['error' => 'Session not found'], 404);
-        }
-
-        // Check if the session's course belongs to the current user
-        $course = $session->getCourse();
-        if (!$course || !$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
-            return new JsonResponse(['error' => 'Forbidden'], 403);
-        }
-
-        $parcours = $session->getCourse();
-        
-        $sessionData = [
-            'id' => $session->getId(),
-            'name' => $session->getSessionName(),
-            'nbRunners' => $session->getNbRunner(),
-            'sessionStart' => $session->getSessionStart()?->format('Y-m-d H:i:s'),
-            'sessionEnd' => $session->getSessionEnd()?->format('Y-m-d H:i:s'),
-            'course' => $parcours ? [
-                'id' => $parcours->getId(),
-                'name' => $parcours->getName(),
-                'description' => $parcours->getDescription()
-            ] : null,
-            'runners' => array_map(function($runner) {
-                return [
-                    'id' => $runner->getId(),
-                    'name' => $runner->getName(),
-                    'departure' => $runner->getDeparture()?->format('Y-m-d H:i:s'),
-                    'arrival' => $runner->getArrival()?->format('Y-m-d H:i:s'),
-                    'logSessions' => array_map(function($log) {
-                        return [
-                            'id' => $log->getId(),
-                            'type' => $log->getType(),
-                            'time' => $log->getTime()?->format('Y-m-d H:i:s'),
-                            'latitude' => $log->getLatitude(),
-                            'longitude' => $log->getLongitude(),
-                            'additionalData' => $log->getAdditionalData()
-                        ];
-                    }, $runner->getLogSessions()->toArray())
-                ];
-            }, $session->getRunners()->toArray())
-        ];
-
-        return new JsonResponse($sessionData);
-    }
-
-    #[Route('/api/sessions/save', name: 'api_sessions_save', methods: ['POST'])]
-    public function saveCourse(Request $request): JsonResponse
-    {
-        $data = json_decode($request->getContent(), true);
-        
-        if (!$data || !isset($data['sessionName'])) {
-            return new JsonResponse(['error' => 'Invalid data'], 400);
-        }
-
-        $session = new Session();
-        $session->setSessionName($data['sessionName']);
-        $session->setNbRunner($data['nbRunners'] ?? 0);
-        
-        // Auto-start session if requested (default: true)
-        $autoStart = $data['autoStart'] ?? true;
-        if ($autoStart) {
-            // Utiliser le timezone Europe/Paris
-            $session->setSessionStart(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
-        }
-
-        // Link to parcours if provided
-        if (!empty($data['parcoursId'])) {
-            $parcours = $this->courseRepository->find($data['parcoursId']);
-            if ($parcours) {
-                // Verify the course belongs to the current user
-                $currentUser = $this->getUser();
-                if (!$currentUser || !$parcours->getUser() || $parcours->getUser()->getId() !== $currentUser->getId()) {
-                    return new JsonResponse(['error' => 'Cannot create session with a course you do not own'], 403);
-                }
-                $session->setCourse($parcours);
-            }
-        }
-
-        $this->entityManager->persist($session);
-        $this->entityManager->flush();
-
-        return new JsonResponse(['success' => true, 'id' => $session->getId()]);
-    }
-
-    #[Route('/api/sessions/{id}/end', name: 'api_sessions_end', methods: ['PATCH'])]
-    public function endSession(int $id): JsonResponse
-    {
-        $currentUser = $this->getUser();
-        if (!$currentUser) {
-            return new JsonResponse(['error' => 'Unauthorized'], 401);
-        }
-
-        $session = $this->sessionRepository->find($id);
-        
-        if (!$session) {
-            return new JsonResponse(['error' => 'Session not found'], 404);
-        }
-
-        // Vérifier que la session appartient à l'utilisateur
-        $course = $session->getCourse();
-        if (!$course || !$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
-            return new JsonResponse(['error' => 'Unauthorized'], 403);
-        }
-
-        // Terminer la session avec le timezone Europe/Paris
-        $session->setSessionEnd(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
-        $this->entityManager->flush();
-
-        return new JsonResponse(['success' => true]);
-    }
-
-    #[Route('/api/sessions/{id}', name: 'api_sessions_update', methods: ['PUT'])]
-    public function updateCourse(int $id, Request $request): JsonResponse
-    {
-        $currentUser = $this->getUser();
-        if (!$currentUser) {
-            return new JsonResponse(['error' => 'Unauthorized'], 401);
-        }
-
-        $session = $this->sessionRepository->find($id);
-        
-        if (!$session) {
-            return new JsonResponse(['error' => 'Course not found'], 404);
-        }
-
-        // Check ownership via the session's course
-        $course = $session->getCourse();
-        if (!$course || !$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
-            return new JsonResponse(['error' => 'Forbidden'], 403);
-        }
-
-        $data = json_decode($request->getContent(), true);
-        
-        if (!$data) {
-            return new JsonResponse(['error' => 'Invalid data'], 400);
-        }
-
-        if (isset($data['sessionName'])) {
-            $session->setSessionName($data['sessionName']);
-        }
-        if (isset($data['nbRunners'])) {
-            $session->setNbRunner($data['nbRunners']);
-        }
-
-        // Update parcours link if provided
-        if (isset($data['parcoursId'])) {
-            if ($data['parcoursId']) {
-                $parcours = $this->courseRepository->find($data['parcoursId']);
-                if ($parcours) {
-                    $session->setCourse($parcours);
-                }
-            } else {
-                $session->setCourse(null);
-            }
-        }
-
-        $this->entityManager->flush();
-
-        return new JsonResponse(['success' => true, 'id' => $session->getId()]);
-    }
-
-    #[Route('/api/sessions/{id}', name: 'api_sessions_delete', methods: ['DELETE'])]
+    // Note: Session deletion endpoint moved to /sessions/{id}/delete to use session auth instead of JWT
+    // This is necessary for cleanup, but editing is disabled
+    #[Route('/sessions/{id}/delete', name: 'app_sessions_delete', methods: ['DELETE'])]
     public function deleteCourse(int $id): JsonResponse
     {
+        // FIRST - log that we even reached the controller
+        error_log("=== DELETE CONTROLLER REACHED === Session ID: {$id}");
+        
         $currentUser = $this->getUser();
+        error_log("Current user: " . ($currentUser ? $currentUser->getId() . ' (' . $currentUser->getEmail() . ')' : 'NULL'));
+        
         if (!$currentUser) {
-            return new JsonResponse(['error' => 'Unauthorized'], 401);
+            error_log("No user logged in - returning 401");
+            return new JsonResponse(['error' => 'Unauthorized - No user logged in'], 401);
         }
 
         $session = $this->sessionRepository->find($id);
         
         if (!$session) {
-            return new JsonResponse(['error' => 'Course not found'], 404);
+            error_log("Session not found - returning 404");
+            return new JsonResponse(['error' => 'Session not found'], 404);
         }
 
         // Check ownership via the session's course
         $course = $session->getCourse();
-        if (!$course || !$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
-            return new JsonResponse(['error' => 'Forbidden'], 403);
+        error_log("Session found: " . $session->getSessionName());
+        error_log("Course: " . ($course ? $course->getId() . ' (' . $course->getName() . ')' : 'NULL'));
+        
+        if (!$course) {
+            error_log("No course found - returning 400");
+            return new JsonResponse(['error' => 'Session has no associated course'], 400);
+        }
+        
+        $courseUser = $course->getUser();
+        error_log("Course owner: " . ($courseUser ? $courseUser->getId() . ' (' . $courseUser->getEmail() . ')' : 'NULL'));
+        
+        if (!$courseUser || $courseUser->getId() !== $currentUser->getId()) {
+            error_log("OWNERSHIP MISMATCH - Current: " . $currentUser->getId() . ", Owner: " . ($courseUser ? $courseUser->getId() : 'NULL'));
+            return new JsonResponse([
+                'error' => 'Forbidden - You do not own this session\'s course',
+                'debug' => [
+                    'currentUserId' => $currentUser->getId(),
+                    'courseUserId' => $courseUser ? $courseUser->getId() : null,
+                ]
+            ], 403);
         }
 
+        error_log("Ownership OK - Deleting session");
+        
+        // TODO: to change if we want to archive the sessions instead of deleting them
+        // Delete all runners associated with this session first (cascade delete)
+        $runners = $session->getRunners();
+        foreach ($runners as $runner) {
+            error_log("Deleting runner: " . $runner->getId() . ' - ' . $runner->getName());
+            $this->entityManager->remove($runner);
+        }
+        
+        // Now delete the session
         $this->entityManager->remove($session);
         $this->entityManager->flush();
+        error_log("Session deleted successfully");
 
         return new JsonResponse(['success' => true]);
-    }*/
+    }
 
     /**
      * API endpoint to get runner GPS logs and waypoint validations
