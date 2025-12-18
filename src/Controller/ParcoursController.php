@@ -53,7 +53,7 @@ class ParcoursController extends AbstractController
         ]);
     }
 
-    #[Route('/course/edit/{id<\d+>?0}', name: 'app_parcours_edit')]
+    #[Route('/parcours/edit/{id<\d+>?0}', name: 'app_parcours_edit')]
     public function createParcours(Request $request, int $id, CourseRepository $courseRepository): Response
     {
 
@@ -85,6 +85,7 @@ class ParcoursController extends AbstractController
             $course->setCreateAt(new \DateTime());
             $course->setUpdateAt(new \DateTime());
             $course->setPlacementCompletedAt(new \DateTime());
+            $course->setUser($this->getUser());
 
             $this->entityManager->persist($course);
             $this->entityManager->flush();
@@ -97,7 +98,7 @@ class ParcoursController extends AbstractController
         ]);
     }
 
-    #[Route('/course/{id}/tags', name: 'app_parcours_tags')]
+    #[Route('/parcours/{id}/tags', name: 'app_parcours_tags')]
     public function waypointsParcours(Course $course): Response
     {
         return $this->render('courses_orienteering/tags.html.twig', [

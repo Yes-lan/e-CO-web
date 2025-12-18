@@ -1,4 +1,5 @@
 <div class="qr-code-item">
     <h4 style="color: #000000">{{ beacon.name }}</h4>
-    <div id="qr-container-0" style="display: flex; justify-content: center;" title="{{ beacon.qr|escape}}"></div>
+    <div id="qr-container-{{beacon.id}}" class="js-qrcode" style="display: flex; justify-content: center;" title="{{ beacon.qr|escape}}">
+    </div>
 </div>
