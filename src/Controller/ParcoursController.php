@@ -163,6 +163,7 @@ class ParcoursController extends AbstractController
                     $beacon->setLongitude(0.0);
                     $beacon->setType('control');
                     $beacon->setIsPlaced('0');
+                    $beacon->setCreatedAt(new \DateTime());
                     $beacon->setQr('{}');
                     $course->addBeacon($beacon);
                     $this->entityManager->persist($beacon);
