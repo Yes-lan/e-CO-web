@@ -44,7 +44,7 @@
             const beaconsQr=document.getElementsByClassName("js-qrcode");
             for (beaconQr of beaconsQr){
                 new QRCode(document.getElementById(beaconQr.id), {
-                    text:beaconQr.id,
+                    text:beaconQr.title,
                     width:150,
                     height:150});
             }
