@@ -8,20 +8,20 @@
 {% block body %}
 <div class="modal-content modal-large">
         <span class="close" onclick="closeQRModal()">×</span>
-        <h2>🔲 Course QR Codes</h2>
+        <h2>🔲 {{ 'parcours.qr_codes_title'|trans }}</h2>
         
         <!-- Important information about QR code stability -->
         <div style="background: #e7f3ff; border-left: 4px solid #2196F3; padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
             <p style="margin: 0; color: #0c5460; font-weight: 600;">
-                ℹ️ <strong>Important:</strong> These QR codes are permanent and never change for this course.
+                ℹ️ <strong>{{ 'parcours.qr_important'|trans }}</strong> {{ 'parcours.qr_permanent'|trans }}
             </p>
             <p style="margin: 0.5rem 0 0 0; color: #0c5460; font-size: 0.9rem;">
-                You can safely print and place them on the field. They will remain valid even if you view this page multiple times.
+                {{ 'parcours.qr_print_info'|trans }}
             </p>
         </div>
         
         <div style="text-align: right; margin-bottom: 1rem;">
-            <button class="btn btn-primary" id="downloadAllQRBtn" onclick="downloadAllQRCodes()">📥 Download all (PDF)</button>
+            <button class="btn btn-primary" id="downloadAllQRBtn" onclick="downloadAllQRCodes()">📥 {{ 'parcours.download_all_qr'|trans }}</button>
         </div>
         <div id="qrCodesContent" class="qr-codes-grid">
             {% if course.beacons|length > 0 %}

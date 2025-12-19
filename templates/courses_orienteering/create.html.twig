@@ -8,12 +8,12 @@
 {% block body %}
     <div class="course-creation-container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <a href="{{ path('app_parcours_list') }}" class="back-link">← Retour à la liste</a>
+            <a href="{{ path('app_parcours_list') }}" class="back-link">← {{ 'parcours.back_to_list'|trans }}</a>
         </div>
 
         <div class="creation-header">
-            <h1>📍 Créer un Nouveau Parcours</h1>
-            <p>Configurez votre parcours d'orientation étape par étape</p>
+            <h1>📍 {{ 'parcours.create_new_parcours'|trans }}</h1>
+            <p>{{ 'parcours.create_subtitle'|trans }}</p>
         </div>
             {{ form(courseForm) }}
 

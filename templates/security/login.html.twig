@@ -9,8 +9,20 @@
 
 {% block body %}
 <div class="login-wrapper">
+    <div class="language-switcher" style="position: absolute; top: 20px; right: 20px;">
+        <button class="language-dropdown-btn" id="languageDropdownBtn">
+            <span id="currentLanguageFlag">🌐</span>
+            <span id="currentLanguageText">{{ app.request.locale|upper }}</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <div class="language-dropdown-menu" id="languageDropdownMenu">
+            <!-- Languages will be loaded dynamically from API -->
+        </div>
+    </div>
     <div class="login-brand">
-        <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" fill="none" viewBox="0 0 1300 1300">
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" fill="none" viewBox="0 0 1300 1300">
   <path fill="#ffffff00" d="M0 0h1300v1300H0z"/>
   <g clip-path="url(#a)">
     <path fill="#fff" stroke="#00609C" stroke-width="3" stroke-miterlimit="10" d="M650 878.221c158.624 0 287.213-128.611 287.213-287.26S808.624 303.701 650 303.701c-158.624 0-287.213 128.611-287.213 287.26S491.376 878.221 650 878.221Z"/>

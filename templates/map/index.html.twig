@@ -79,31 +79,31 @@
 <div id="pointModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
-        <h3>Control Point Details</h3>
+        <h3>{{ 'map.modal.control_point_details'|trans }}</h3>
         <form id="pointForm">
             <div class="form-group">
-                <label for="pointName">Point Name:</label>
-                <input type="text" id="pointName" placeholder="e.g., Start, Control 1, Finish" required>
+                <label for="pointName">{{ 'map.modal.point_name'|trans }}:</label>
+                <input type="text" id="pointName" placeholder="{{ 'map.modal.point_name_placeholder'|trans }}" required>
             </div>
             <div class="form-group">
-                <label for="pointDescription">Description:</label>
-                <textarea id="pointDescription" placeholder="Description of the control point location"></textarea>
+                <label for="pointDescription">{{ 'map.modal.description'|trans }}:</label>
+                <textarea id="pointDescription" placeholder="{{ 'map.modal.description_placeholder'|trans }}"></textarea>
             </div>
             <div class="form-group">
-                <label for="pointType">Point Type:</label>
+                <label for="pointType">{{ 'map.modal.point_type'|trans }}:</label>
                 <select id="pointType">
-                    <option value="start">Start</option>
-                    <option value="control">Control Point</option>
-                    <option value="finish">Finish</option>
+                    <option value="start">{{ 'map.modal.start'|trans }}</option>
+                    <option value="control">{{ 'map.modal.control_point'|trans }}</option>
+                    <option value="finish">{{ 'map.modal.finish'|trans }}</option>
                 </select>
             </div>
             <div class="coordinates-info">
-                <p>Latitude: <span id="pointLat"></span></p>
-                <p>Longitude: <span id="pointLng"></span></p>
+                <p>{{ 'map.modal.latitude'|trans }}: <span id="pointLat"></span></p>
+                <p>{{ 'map.modal.longitude'|trans }}: <span id="pointLng"></span></p>
             </div>
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Save Point</button>
-                <button type="button" class="btn btn-secondary" id="cancelPoint">Cancel</button>
+                <button type="submit" class="btn btn-primary">{{ 'map.modal.save_point'|trans }}</button>
+                <button type="button" class="btn btn-secondary" id="cancelPoint">{{ 'map.modal.cancel'|trans }}</button>
             </div>
         </form>
     </div>

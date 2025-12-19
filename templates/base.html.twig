@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request.locale }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,8 +14,8 @@
     <!-- TODO: pour les listes, permettre un tri) -->
     <!-- TODO: make error messages better. ex: instead of the "AccessDeniedException" error when trying to access a forbidden session, make a new error page -->
 
-    <!-- Load auth.js first as it's needed by other scripts -->
     <script src="{{ asset('assets/js/translations.js') }}"></script>
+    <script src="{{ asset('assets/js/language-switcher.js') }}"></script>
     
     {% block javascripts %}
     {% endblock %}

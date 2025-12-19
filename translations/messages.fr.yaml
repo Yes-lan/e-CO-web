@@ -36,6 +36,20 @@ map:
     no_data: "Aucune donnée disponible"
     beacon: "Balise"
     validation_status: "Validation"
+    modal:
+        control_point_details: "Détails du Point de Contrôle"
+        point_name: "Nom du Point"
+        point_name_placeholder: "ex: Départ, Contrôle 1, Arrivée"
+        description: "Description"
+        description_placeholder: "Description de l'emplacement du point de contrôle"
+        point_type: "Type de Point"
+        start: "Départ"
+        control_point: "Point de Contrôle"
+        finish: "Arrivée"
+        latitude: "Latitude"
+        longitude: "Longitude"
+        save_point: "Sauvegarder le Point"
+        cancel: "Annuler"
     
 courses:
     title: "Courses"
@@ -145,6 +159,9 @@ parcours:
     beacons_list: "Liste des balises"
     baliseStartFinishY: "Départ et arrivée au même endroit"
     baliseStartFinishN: "Départ et arrivée à des endroits différents"
+    back_to_list: "Retour à la liste"
+    create_new_parcours: "Créer un Nouveau Parcours"
+    create_subtitle: "Configurez votre parcours d'orientation étape par étape"
     
     status:
         in_creation: "En cours de création"
@@ -230,6 +247,18 @@ reset_password:
     fair: "Moyen"
     good: "Bon"
     strong: "Fort"
+    email:
+        greeting: "Bonjour !"
+        message: "Pour réinitialiser votre mot de passe, veuillez visiter le lien suivant"
+        reset_link: "Lien de réinitialisation du mot de passe"
+        expiration: "Ce lien expirera dans %time%."
+        closing: "Cordialement !"
+    check_email_message: "Si un compte correspondant à votre email existe, un email vient d'être envoyé contenant un lien que vous pouvez utiliser pour réinitialiser votre mot de passe."
+    check_spam: "Si vous ne recevez pas d'email, vérifiez votre dossier spam ou"
+    try_again: "réessayez"
     
 testemail:
     page_title: "Test Email - e-CO"
+
+app:
+    default_title: "e-CO Web - Créateur de Parcours d'Orientation"
