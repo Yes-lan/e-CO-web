@@ -1,5 +1,10 @@
 <div class="qr-code-item">
     <h4 style="color: #000000">{{ beacon.name }}</h4>
-    <div id="qr-container-{{beacon.id}}" class="js-qrcode" style="display: flex; justify-content: center;" title="{{ beacon.qr|escape}}">
+    <div 
+        id="qr-container-{{beacon.id}}" 
+        class="js-qrcode" 
+        style="display: flex; 
+        justify-content: center;" 
+        title="{{ {"course_id": course.id, "beacon_id":beacon.id} |json_encode |escape}}">
     </div>
 </div>
