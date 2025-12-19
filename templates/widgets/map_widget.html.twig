@@ -1,0 +1,119 @@
+{# 
+    Map Widget - Displays Google Maps with beacons/waypoints
+    
+    Required parameters:
+    - course: Course entity (required) - contains beacons/waypoints
+    - session: Session entity (optional) - if provided, shows runners list
+    - showCourseInfo: boolean (optional, default false) - shows course details panel
+    - showRunnersList: boolean (optional, default false) - shows runners selection list
+#}
+
+
+
+{% set showCourseInfo = showCourseInfo|default(false) %}
+{% set showRunnersList = showRunnersList|default(false) %}
+{% set mapId = mapId|default('mapWidget') %}
+{% set session = session|default(null) %}
+
+<div class="map-widget-container">
+    {% if showRunnersList and session %}
+        {# Left panel: Runners list for selection #}
+        <div class="runners-list-panel">
+            <div class="runners-list" id="{{ mapId }}-runners-list">
+                {% if session.runners|length > 0 %}
+                    {% for runner in session.runners %}
+                        <div class="runner-item" data-runner-id="{{ runner.id }}" data-map-id="{{ mapId }}">
+                            <div class="runner-name">
+                                <span class="runner-icon">👤</span>
+                                <span>{{ runner.name }}</span>
+                            </div>
+                            <div class="runner-stats">
+                                <small>{{ 'map.departure'|trans }}: {{ runner.departure ? runner.departure|date('H:i') : 'N/A' }}</small>
+                                <small>{{ 'map.arrival'|trans }}: {{ runner.arrival ? runner.arrival|date('H:i') : 'N/A' }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-runners">{{ 'map.no_runners'|trans }}</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    {# Main map container #}
+    <div class="map-display-wrapper {% if not showRunnersList %}full-width{% endif %}">
+        {% if showCourseInfo %}
+            {# Course info panel - beacons list only (description is shown above map) #}
+            <div class="course-info-panel">
+                <h3>{{ course.name }}</h3>
+                <div class="info-item">
+                    <strong>{{ 'parcours.beacons_count'|trans }}:</strong>
+                    <span>{{ course.beacons|length }}</span>
+                </div>
+                {% if course.beacons|length > 0 %}
+                    {% set nonStartFinishBeacons = course.beacons|filter(b => b.type != 'start' and b.type != 'finish') %}
+                    {% if nonStartFinishBeacons|length > 0 %}
+                        <div class="info-item">
+                            <strong>{{ 'parcours.beacons_list'|trans }}:</strong>
+                            <ul class="beacons-list">
+                                {% for beacon in nonStartFinishBeacons %}
+                                    <li>
+                                        <span class="beacon-number">{{ loop.index }}</span>
+                                        <span>{{ beacon.name }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {# Google Map #}
+        <div class="map-container-widget">
+            <div id="{{ mapId }}" class="google-map" 
+                data-course-id="{{ course.id }}"
+                {% if session %}data-session-id="{{ session.id }}"{% endif %}>
+                {# Store beacons data as JSON script tag to avoid HTML attribute encoding issues #}
+                <script type="application/json" class="beacons-data">
+                [
+                    {% for beacon in course.beacons %}
+                    {
+                        "id": {{ beacon.id }},
+                        "name": "{{ beacon.name|e('js') }}",
+                        "latitude": {{ beacon.latitude }},
+                        "longitude": {{ beacon.longitude }},
+                        "type": "{{ beacon.type|default('control')|e('js') }}"
+                    }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ]
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if showRunnersList and session %}
+    {# Runner details panel at the bottom #}
+    <div class="runner-details-panel" id="{{ mapId }}-runner-details" style="display: none;">
+        <div class="runner-details-header">
+            <h3 id="{{ mapId }}-runner-name">{{ 'map.runner_details'|trans }}</h3>
+            <button class="close-details-btn" data-map-id="{{ mapId }}">×</button>
+        </div>
+        <div class="runner-details-content">
+            <table class="runner-waypoints-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'map.beacon'|trans }}</th>
+                        <th>{{ 'map.validation_status'|trans }}</th>
+                        <th>{{ 'map.distance'|trans }}</th>
+                        <th>{{ 'map.time'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody id="{{ mapId }}-waypoints-table">
+                    {# Will be populated by JavaScript #}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}

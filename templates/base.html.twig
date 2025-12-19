@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request.locale }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,9 +10,12 @@
     <link rel="stylesheet" href="{{ asset('assets/css/header.css') }}">
     {% block stylesheets %}
     {% endblock %}
+    <!-- TODO: pour les listes, ajouter un affichage pour les modos (toute la liste + afficher une colonne en plus pour le nom du créateur) -->
+    <!-- TODO: pour les listes, permettre un tri) -->
+    <!-- TODO: make error messages better. ex: instead of the "AccessDeniedException" error when trying to access a forbidden session, make a new error page -->
 
-    <!-- Load auth.js first as it's needed by other scripts -->
     <script src="{{ asset('assets/js/translations.js') }}"></script>
+    <script src="{{ asset('assets/js/language-switcher.js') }}"></script>
     
     {% block javascripts %}
     {% endblock %}
@@ -65,7 +68,7 @@
             </div>
 
             <nav class="header-nav">
-                <a href="{{ path('app_courses_list') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_courses' %}active{% endif %}">{{ 'nav.courses'|trans }}</a>
+                <a href="{{ path('app_sessions_list') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_courses' %}active{% endif %}">{{ 'nav.courses'|trans }}</a>
                 <a href="{{ path('app_parcours_list') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_parcours' %}active{% endif %}">{{ 'nav.parcours'|trans }}</a>
             </nav>
 

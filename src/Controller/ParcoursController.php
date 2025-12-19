@@ -38,47 +38,146 @@ class ParcoursController extends AbstractController
     }
 
     #[Route('/parcours/{id}/view', name: 'app_parcours_view')]
-    public function viewParcours(Course $course, User $user): Response
+    public function viewParcours(Course $course): Response
     {
+        $currentUser = $this->getUser();
+        
+        // Check authorization: only the owner (or admin) can view
+        if (!$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
+            throw $this->createAccessDeniedException('You do not have permission to view this course.');
+        }
+
         return $this->render('courses_orienteering/view.html.twig', [
             'course' => $course,
-            'user' => $user,
+            'user' => $currentUser,
         ]);
     }
 
     #[Route('/parcours/edit/{id<\d+>?0}', name: 'app_parcours_edit')]
     public function createParcours(Request $request, int $id, CourseRepository $courseRepository): Response
     {
-
-        if (empty($id)) {
-            $course = new Course();
-        } else {
+        $isEdit = !empty($id);
+        
+        if ($isEdit) {
             $course = $courseRepository->findOneById($id);
+            if (!$course) {
+                throw $this->createNotFoundException('Parcours not found');
+            }
+            
+            // Check authorization
+            $currentUser = $this->getUser();
+            if (!$course->getUser() || $course->getUser()->getId() !== $currentUser->getId()) {
+                throw $this->createAccessDeniedException('You do not have permission to edit this parcours.');
+            }
+            
+            // Check if parcours is ready (placement completed)
+            if ($course->getStatus() === 'ready') {
+                $this->addFlash('error', 'Cannot edit a parcours that is already ready. The placement has been completed.');
+                return $this->redirectToRoute('app_parcours_list');
+            }
+        } else {
+            $course = new Course();
         }
 
-        $courseForm = $this->createForm(CourseType::class, $course);
+        // For edit mode, pre-populate nbBeacons with existing control beacons count
+        $options = [];
+        if ($isEdit) {
+            $existingBeaconsCount = $course->getBeacons()->filter(
+                fn($beacon) => $beacon->getType() === 'control'
+            )->count();
+            $options['nbBeacons'] = $existingBeaconsCount;
+        }
+
+        $courseForm = $this->createForm(CourseType::class, $course, $options);
 
         $courseForm->handleRequest($request);
         if ($courseForm->isSubmitted() && $courseForm->isValid()) {
-
-
-            for ($i=1; $i <= $courseForm->get('nbBeacons')->getData(); $i++) {
-                $beacon = new Beacon();
-                $beacon->setName($i);
-                $beacon->setLatitude(floatval(0));
-                $beacon->setLongitude(floatval(0));
-                $beacon->setType('control');
-                $beacon->setIsPlaced('0');
-                $beacon->setQr('{}');
-                // Configure the beacon as needed
-                $course->addBeacon($beacon);
-                $this->entityManager->persist($beacon);
+            $nbBeacons = $courseForm->get('nbBeacons')->getData();
+            
+            if ($isEdit) {
+                // Handle beacon count changes in edit mode
+                $existingControlBeacons = $course->getBeacons()->filter(
+                    fn($beacon) => $beacon->getType() === 'control'
+                );
+                $currentCount = $existingControlBeacons->count();
+                
+                if ($nbBeacons > $currentCount) {
+                    // Add new beacons
+                    for ($i = $currentCount + 1; $i <= $nbBeacons; $i++) {
+                        $beacon = new Beacon();
+                        $beacon->setName((string)$i);
+                        $beacon->setLatitude(0.0);
+                        $beacon->setLongitude(0.0);
+                        $beacon->setType('control');
+                        $beacon->setIsPlaced('0');
+                        $beacon->setQr('{}');
+                        $course->addBeacon($beacon);
+                        $this->entityManager->persist($beacon);
+                    }
+                } elseif ($nbBeacons < $currentCount) {
+                    // Remove excess beacons (from the end)
+                    $beaconsToRemove = $currentCount - $nbBeacons;
+                    $beaconsArray = $existingControlBeacons->toArray();
+                    // Sort by name (numeric) descending to remove from the end
+                    usort($beaconsArray, fn($a, $b) => (int)$b->getName() <=> (int)$a->getName());
+                    
+                    for ($i = 0; $i < $beaconsToRemove; $i++) {
+                        $beacon = $beaconsArray[$i];
+                        $course->removeBeacon($beacon);
+                        $this->entityManager->remove($beacon);
+                    }
+                }
+            } else {
+                // Create beacons for new parcours
+                // Create start beacon first
+                $startBeacon = new Beacon();
+                $startBeacon->setName('Départ');
+                $startBeacon->setLatitude(0.0);
+                $startBeacon->setLongitude(0.0);
+                $startBeacon->setType('start');
+                $startBeacon->setIsPlaced('0');
+                $startBeacon->setCreatedAt(new \DateTime());
+                $startBeacon->setQr('{}');
+                $course->addBeacon($startBeacon);
+                $this->entityManager->persist($startBeacon);
+                
+                // Create finish beacon second (unless same as start)
+                if (!$course->isSameStartFinish()) {
+                    $finishBeacon = new Beacon();
+                    $finishBeacon->setName('Arrivée');
+                    $finishBeacon->setLatitude(0.0);
+                    $finishBeacon->setLongitude(0.0);
+                    $finishBeacon->setType('finish');
+                    $finishBeacon->setIsPlaced('0');
+                    $finishBeacon->setCreatedAt(new \DateTime());
+                    $finishBeacon->setQr('{}');
+                    $course->addBeacon($finishBeacon);
+                    $this->entityManager->persist($finishBeacon);
+                }
+                
+                // Create control beacons after start/finish
+                for ($i = 1; $i <= $nbBeacons; $i++) {
+                    $beacon = new Beacon();
+                    $beacon->setName((string)$i);
+                    $beacon->setLatitude(0.0);
+                    $beacon->setLongitude(0.0);
+                    $beacon->setType('control');
+                    $beacon->setIsPlaced('0');
+                    $beacon->setCreatedAt(new \DateTime());
+                    $beacon->setQr('{}');
+                    $course->addBeacon($beacon);
+                    $this->entityManager->persist($beacon);
+                }
+                
+                // Set initial values only for new parcours
+                $course->setStatus('draft');
+                $course->setCreateAt(new \DateTime());
+                $course->setPlacementCompletedAt(new \DateTime());
+                $course->setUser($this->getUser());
             }
-            $course->setStatus('draft');
-            $course->setCreateAt(new \DateTime());
+            
+            // Always update the updateAt timestamp
             $course->setUpdateAt(new \DateTime());
-            $course->setPlacementCompletedAt(new \DateTime());
-            $course->setUser($this->getUser());
 
             $this->entityManager->persist($course);
             $this->entityManager->flush();
@@ -88,6 +187,8 @@ class ParcoursController extends AbstractController
 
         return $this->render('courses_orienteering/create.html.twig', [
             'courseForm' => $courseForm,
+            'isEdit' => $isEdit,
+            'course' => $course,
         ]);
     }
 

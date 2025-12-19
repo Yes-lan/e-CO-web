@@ -6,70 +6,103 @@
 {% endblock %}
 
 {% block body %}
-<div class="map-view-container">
-    <!-- Main Content: Runners Table + Map + Course Info -->
-    <div class="map-content">
-        
-        <!-- Left Column: Runners Table -->
-        <div class="left-column" id="leftColumn" style="display: none;">
-            <div class="runners-panel" id="runnersPanel">
-                <h2>👥 Runners</h2>
-                <div class="runners-table-container">
-                    <table class="runners-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Beacons</th>
-                                <th>Time</th>
-                            </tr>
-                        </thead>
-                        <tbody id="runnersTableBody">
-                            <tr>
-                                <td colspan="3" class="no-data">Select a course to view runners</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+<div class="parcours-view-page">
+    <div class="parcours-view-header">
+        <h1>{{ course.name }}</h1>
+        <div class="parcours-header-actions">
+            <a href="{{ path('app_parcours_list') }}" class="btn btn-secondary">
+                {{ 'courses.actions.back'|trans }}
+            </a>
         </div>
+    </div>
+
+    {# Map widget to display beacons/waypoints #}
+    <div class="course-map-section">
+        <h2>{{ 'parcours.map_view'|trans }}</h2>
         
-        <!-- Center Column: Google Map -->
-        <div class="map-panel" id="mapPanel" style="flex: 1 1 0%;">
-            <div id="map" style="position: relative; overflow: hidden;">
-                <!-- Google Map will be rendered here -->
+        {# Course details displayed horizontally (matching session view layout) #}
+        <div class="session-details-horizontal" style="display: flex; gap: 2rem; margin: 1rem 0; padding: 1rem; background: #f5f5f5; border-radius: 8px; flex-wrap: wrap;">
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'parcours.name'|trans }}:</strong>
+                <span>{{ course.name }}</span>
             </div>
-        </div>
-        
-        <!-- Right Column: Course Info Panel -->
-        <div class="course-info-panel" id="courseInfoPanel" style="display: block;">
-            <h1>📋 Course Information</h1>
-            <div class="parcours-view-page">
-                <h2>{{ course.name }}</h2>
-                <span>{{ 'User : '|trans }}{{ user.email }}</span><br>
-                <span>{{ 'status : '|trans }}{{ course.status }}</span><br>
-                <span>{{ 'created at : '|trans }}{{ course.createAt|date('d/m/Y') }}</span><br>
-                <span>{{ 'updated at : '|trans }}{{ course.updateAt|date('d/m/y') }}</span><br>
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'parcours.status'|trans }}:</strong>
+                <span>{{ course.status }}</span>
+            </div>
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'parcours.created_at'|trans }}:</strong>
+                <span>{{ course.createAt|date('d/m/Y') }}</span>
+            </div>
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'parcours.updated_at'|trans }}:</strong>
+                <span>{{ course.updateAt|date('d/m/Y') }}</span>
+            </div>
+            <div class="detail-item-inline" style="display: flex; gap: 0.5rem;">
+                <strong>{{ 'parcours.same_start_finish'|trans }}:</strong>
                 <span>
-                    {% if course.sameStartFinish %}
-                        {{ 'parcours.baliseStartFinishY'|trans }}
-                    {% else %}
-                        {{ 'parcours.baliseStartFinishN'|trans }}<br>
-                    {% endif %}
+                {% if course.sameStartFinish %}
+                    {{ 'parcours.baliseStartFinishY'|trans}}
+                {% else %}
+                    {{ 'parcours.baliseStartFinishN'|trans}}
+                {% endif %}
                 </span>
-                <br><span><h3>{{ 'course description'|trans}}</span></h3>
-                <p>{{ course.description }}</p>
             </div>
         </div>
         
+        {# Description moved here to match session layout #}
+        {% if course.description %}
+        <div class="course-description" style="margin: 1rem 0; padding: 1rem; background: #f9f9f9; border-left: 4px solid #007bff; border-radius: 4px;">
+            <strong>{{ 'parcours.description'|trans }}:</strong>
+            <p style="margin: 0.5rem 0 0 0;">{{ course.description }}</p>
+        </div>
+        {% endif %}
+        
+        {% include 'widgets/map_widget.html.twig' with {
+            'course': course,
+            'showCourseInfo': true,
+            'showRunnersList': false,
+            'mapId': 'courseViewMap'
+        } %}
     </div>
 </div>
 
-{% block javascripts %}
-    <!-- Load libraries from local assets (no CDN needed) -->
-    <script src="{{ asset('assets/js/qrcode.min.js') }}" 
-            onload="window.qrCodeLibraryLoaded = true; console.log('QRCode library loaded from local assets');"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" 
-            data-turbo-track="reload" async 
-            onload="window.jspdfLibraryLoaded = true; console.log('jsPDF library loaded');"></script>
-{% endblock %}
+    {% block javascripts %}
+        <!-- Google Maps API -->
+        <script>
+            function initViewMapCallback() {
+                console.log('Google Maps API loaded for course view');
+            }
+            
+            // Only load Google Maps if not already loaded or loading
+            if (!window.google || !window.google.maps) {
+                // Check if script tag doesn't already exist
+                const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+                if (!existingScript) {
+                    const script = document.createElement('script');
+                    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyBi8sXKGGafzB837kvxraWuqohlZ-JJRu8&libraries=geometry,places&callback=initViewMapCallback';
+                    script.async = true;
+                    script.defer = true;
+                    document.head.appendChild(script);
+                    console.log('Loading Google Maps API...');
+                } else {
+                    console.log('Google Maps API script already in DOM, waiting for load...');
+                }
+            } else {
+                console.log('Google Maps API already loaded');
+                // Trigger initialization manually
+                if (typeof initViewMapCallback === 'function') {
+                    initViewMapCallback();
+                }
+            }
+        </script>
+        
+        <!-- View Map Widget Script -->
+        <script src="{{ asset('assets/js/view_map.js') }}" defer></script>
+        
+        <!-- Load libraries from local assets (no CDN needed) -->
+        <script src="{{ asset('assets/js/qrcode.min.js') }}" onload="window.qrCodeLibraryLoaded = true; console.log('QRCode library loaded from local assets');"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" data-turbo-track="reload" async onload="window.jspdfLibraryLoaded = true; console.log('jsPDF library loaded');"></script>
+    {% endblock %}
+
 {% endblock %}

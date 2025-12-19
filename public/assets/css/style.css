@@ -1,5 +1,40 @@
 ﻿/* Orienteering Course Builder Styles */
 
+:root {
+    /* Brand Colors */
+    --primary: #00609C;
+    --secondary: #4C8FBA;
+    --tertiary: #66B4E7;
+    --accent: #F6731F;
+
+    /* Functional Colors */
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: #ffc107;
+    --info: #17a2b8;
+
+    /* Extended Palette */
+    --orange: #ff9800;
+    --purple: #667eea;
+    --blue-fresh: #2196F3;
+    --red-bright: #f44336;
+
+    /* Backgrounds */
+    --bg-body: #f5f5f5;
+    --bg-surface: var(--bg-surface);
+    --bg-surface-alt: #f8f9fa;
+    --accent-light: #e3f2fd;
+    /* Light blue background often used with accent */
+
+    /* Typography */
+    --text-dark: var(--text-dark);
+    --text-medium: #666666;
+    --text-light: #999999;
+
+    /* Borders */
+    --border-color: #e0e0e0;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -8,15 +43,15 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
+    background-color: var(--bg-body);
+    color: var(--text-dark);
 }
 
 /* Global Header */
 .app-header {
     background: white;
-    border-bottom: 1px solid #e0e0e0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -40,7 +75,7 @@ body {
 .app-title {
     font-size: 1.75rem;
     font-weight: 700;
-    color: #1976d2;
+    color: var(--accent);
     letter-spacing: 0.5px;
 }
 
@@ -51,8 +86,8 @@ body {
 
 .nav-link {
     padding: 0.75rem 1.5rem;
-    background: #f5f5f5;
-    color: #666;
+    background: var(--bg-body);
+    color: var(--text-medium);
     text-decoration: none;
     border-radius: 6px;
     font-weight: 500;
@@ -60,12 +95,12 @@ body {
 }
 
 .nav-link:hover {
-    background: #e3f2fd;
-    color: #1976d2;
+    background: var(--accent-light);
+    color: var(--accent);
 }
 
 .nav-link.active {
-    background: #1976d2;
+    background: var(--accent);
     color: white;
 }
 
@@ -80,13 +115,13 @@ body {
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: #f5f5f5;
+    background: var(--bg-body);
     border-radius: 20px;
 }
 
 .user-info span {
     font-weight: 500;
-    color: #333;
+    color: var(--text-dark);
 }
 
 .btn-logout {
@@ -94,7 +129,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    background: #ff6b35;
+    background: var(--accent);
     color: white;
     border: none;
     border-radius: 6px;
@@ -105,7 +140,7 @@ body {
 }
 
 .btn-logout:hover {
-    background: #e55a2b;
+    background: color-mix(in srgb, var(--red-bright), black 10%);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
@@ -120,7 +155,7 @@ body {
 }
 
 .btn-settings:hover {
-    background: #f5f5f5;
+    background: var(--bg-body);
 }
 
 .language-switcher {
@@ -133,10 +168,10 @@ body {
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
-    background: #f5f5f5;
-    border: 1px solid #ddd;
+    background: var(--bg-body);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
-    color: #333;
+    color: var(--text-dark);
     font-weight: 600;
     font-size: 0.85rem;
     cursor: pointer;
@@ -144,8 +179,8 @@ body {
 }
 
 .language-dropdown-btn:hover {
-    background: #e8e8e8;
-    border-color: #bbb;
+    background: var(--border-color);
+    border-color: color-mix(in srgb, var(--border-color), black 10%);
 }
 
 #currentLanguageFlag {
@@ -167,7 +202,7 @@ body {
     top: calc(100% + 0.25rem);
     right: 0;
     background: white;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     min-width: 180px;
@@ -194,12 +229,12 @@ body {
 }
 
 .language-dropdown-item:hover {
-    background: #f5f5f5;
+    background: var(--bg-body);
 }
 
 .language-dropdown-item.active {
-    background: #e3f2fd;
-    color: #1976d2;
+    background: var(--accent-light);
+    color: var(--accent);
     font-weight: 600;
 }
 
@@ -225,11 +260,11 @@ body {
 }
 
 .header {
-    background: linear-gradient(135deg, #2c5530, #4a7c59);
+    background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary), white 15%));
     color: white;
     text-align: center;
     padding: 1rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header h1 {
@@ -245,7 +280,7 @@ body {
 .toolbar {
     background: #fff;
     padding: 1rem;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -271,74 +306,74 @@ body {
 }
 
 .btn-primary {
-    background: #2c5530;
+    background: var(--primary);
     color: white;
 }
 
 .btn-primary:hover {
-    background: #1e3a21;
+    background: color-mix(in srgb, var(--primary), black 20%);
 }
 
 .btn-secondary {
-    background: #6c757d;
+    background: var(--secondary);
     color: white;
 }
 
 .btn-secondary:hover {
-    background: #5a6268;
+    background: color-mix(in srgb, var(--secondary), black 10%);
 }
 
 .btn-success {
-    background: #28a745;
+    background: var(--success);
     color: white;
 }
 
 .btn-success:hover {
-    background: #218838;
+    background: color-mix(in srgb, var(--success), black 15%);
 }
 
 .btn-info {
-    background: #17a2b8;
+    background: var(--info);
     color: white;
 }
 
 .btn-info:hover {
-    background: #138496;
+    background: color-mix(in srgb, var(--info), black 15%);
 }
 
 .btn-warning {
-    background: #ffc107;
-    color: #212529;
+    background: var(--warning);
+    color: var(--text-dark);
     border: none;
 }
 
 .btn-warning:hover {
-    background: #e0a800;
+    background: color-mix(in srgb, var(--warning), black 15%);
 }
 
 .btn-danger {
-    background: #dc3545;
+    background: var(--danger);
     color: white;
 }
 
 .btn-danger:hover {
-    background: #c82333;
+    background: color-mix(in srgb, var(--danger), black 10%);
 }
 
 .form-select {
     padding: 0.5rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 0.9rem;
     background: white;
-    color: #333;
+    color: var(--text-dark);
     margin: 0 0.5rem;
     min-width: 180px;
 }
 
 .input {
     padding: 0.5rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 0.9rem;
 }
@@ -358,7 +393,7 @@ body {
     width: 100%;
     height: 100%;
     min-height: 400px;
-    background-color: #f0f0f0;
+    background-color: var(--bg-surface-alt);
     position: relative;
     z-index: 1;
 }
@@ -371,40 +406,40 @@ body {
     padding: 1rem;
     border-radius: 8px;
     font-size: 0.9rem;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    border: 2px solid #007bff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: 2px solid var(--blue-fresh);
     min-width: 300px;
 }
 
 #coordinatesDisplay {
     margin: 0;
     padding: 0.5rem;
-    background: #f8f9fa;
+    background: var(--bg-surface-alt);
     border-radius: 4px;
     font-size: 0.95rem;
 }
 
 #coordinatesDisplay strong {
-    color: #2c5530;
+    color: var(--primary);
 }
 
 .sidebar {
     width: 300px;
-    background: #f8f9fa;
-    border-left: 1px solid #ddd;
+    background: var(--bg-surface-alt);
+    border-left: 1px solid var(--border-color);
     overflow-y: auto;
 }
 
 .control-points-panel,
 .saved-courses-panel {
     padding: 1rem;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .control-points-panel h3,
 .saved-courses-panel h3 {
     margin-bottom: 0.5rem;
-    color: #2c5530;
+    color: var(--primary);
     font-size: 1.1rem;
 }
 
@@ -419,26 +454,26 @@ body {
     padding: 0.5rem;
     margin: 0.25rem 0;
     border-radius: 4px;
-    border-left: 4px solid #2c5530;
+    border-left: 4px solid var(--primary);
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .point-item:hover {
-    background: #f0f8f0;
+    background: color-mix(in srgb, var(--success), white 95%);
     transform: translateX(2px);
 }
 
 .point-item.start {
-    border-left-color: #28a745;
+    border-left-color: var(--success);
 }
 
 .point-item.control {
-    border-left-color: #007bff;
+    border-left-color: var(--blue-fresh);
 }
 
 .point-item.finish {
-    border-left-color: #dc3545;
+    border-left-color: var(--danger);
 }
 
 .point-name {
@@ -448,7 +483,7 @@ body {
 
 .point-coords {
     font-size: 0.8rem;
-    color: #666;
+    color: var(--text-medium);
 }
 
 .course-stats {
@@ -466,7 +501,7 @@ body {
 .no-points,
 .no-courses {
     text-align: center;
-    color: #666;
+    color: var(--text-medium);
     font-style: italic;
     padding: 1rem;
 }
@@ -480,7 +515,7 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
@@ -499,11 +534,11 @@ body {
     top: 1rem;
     font-size: 1.5rem;
     cursor: pointer;
-    color: #666;
+    color: var(--text-medium);
 }
 
 .close:hover {
-    color: #333;
+    color: var(--text-dark);
 }
 
 .form-group {
@@ -521,7 +556,7 @@ body {
 .form-group select {
     width: 100%;
     padding: 0.5rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 0.9rem;
 }
@@ -532,7 +567,7 @@ body {
 }
 
 .coordinates-info {
-    background: #f8f9fa;
+    background: var(--bg-surface-alt);
     padding: 0.5rem;
     border-radius: 4px;
     margin: 1rem 0;
@@ -554,7 +589,7 @@ body {
 }
 
 .saved-course-item:hover {
-    background: #e9ecef;
+    background: var(--bg-surface-alt);
 }
 
 .course-name {
@@ -564,7 +599,7 @@ body {
 
 .course-info {
     font-size: 0.8rem;
-    color: #666;
+    color: var(--text-medium);
 }
 
 /* Homepage Styles */
@@ -577,20 +612,20 @@ body {
 .hero {
     text-align: center;
     padding: 3rem 0;
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    background: linear-gradient(135deg, var(--bg-surface-alt), var(--bg-surface-alt));
     border-radius: 8px;
     margin-bottom: 2rem;
 }
 
 .hero h2 {
-    color: #2c5530;
+    color: var(--primary);
     font-size: 2.5rem;
     margin-bottom: 1rem;
 }
 
 .hero p {
     font-size: 1.2rem;
-    color: #666;
+    color: var(--text-medium);
     margin-bottom: 2rem;
 }
 
@@ -605,7 +640,7 @@ body {
     background: white;
     padding: 2rem;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
     transition: transform 0.3s ease;
 }
@@ -620,7 +655,7 @@ body {
 }
 
 .feature-card h3 {
-    color: #2c5530;
+    color: var(--primary);
     margin-bottom: 1rem;
 }
 
@@ -640,29 +675,29 @@ body {
     .main-content {
         flex-direction: column;
     }
-    
+
     .sidebar {
         width: 100%;
         height: 200px;
     }
-    
+
     .toolbar {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .toolbar-section {
         justify-content: center;
     }
-    
+
     .homepage {
         padding: 1rem;
     }
-    
+
     .hero h2 {
         font-size: 2rem;
     }
-    
+
     .hero p {
         font-size: 1rem;
     }
@@ -674,7 +709,7 @@ body {
 }
 
 .custom-marker {
-    background: #2c5530;
+    background: var(--primary);
     border: 2px solid white;
     border-radius: 50%;
     width: 20px;
@@ -683,11 +718,11 @@ body {
 }
 
 .custom-marker.start {
-    background: #28a745;
+    background: var(--success);
 }
 
 .custom-marker.finish {
-    background: #dc3545;
+    background: var(--danger);
 }
 
 .custom-marker::after {
@@ -710,22 +745,22 @@ body {
 
 .location-control-btn {
     background: white;
-    border: 2px solid #666;
+    border: 2px solid var(--text-medium);
     border-radius: 3px;
     padding: 8px 12px;
     font-size: 11px;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,.3);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
     transition: all 0.3s ease;
 }
 
 .location-control-btn:hover {
-    background: #f0f0f0;
-    border-color: #333;
+    background: var(--bg-surface-alt);
+    border-color: var(--text-dark);
 }
 
 .location-control-btn:active {
-    background: #e0e0e0;
+    background: var(--border-color);
 }
 
 .location-message {
@@ -734,15 +769,16 @@ body {
     border-radius: 4px;
     margin: 5px 0;
     font-size: 0.85rem;
-    border-left: 4px solid #007bff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--blue-fresh);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .location-message.success {
-    border-left-color: #28a745;
-    color: #155724;
-    background-color: #d4edda;
+    border-left-color: var(--success);
+    color: color-mix(in srgb, var(--success), black 40%);
+    background-color: color-mix(in srgb, var(--success), white 85%);
 }
+
 /* ========================================
    COURSE CREATION PAGE STYLES
    ======================================== */
@@ -754,12 +790,12 @@ body {
 }
 
 .creation-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--purple) 0%, color-mix(in srgb, var(--purple), black 15%) 100%);
     color: white;
     padding: 2rem;
     border-radius: 12px;
     margin-bottom: 2rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .creation-header h1 {
@@ -777,13 +813,13 @@ body {
     padding: 2rem;
     border-radius: 12px;
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .form-section h2 {
     margin-top: 0;
-    color: #333;
-    border-bottom: 2px solid #667eea;
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--purple);
     padding-bottom: 0.5rem;
     margin-bottom: 1.5rem;
 }
@@ -796,7 +832,7 @@ body {
     display: block;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: #555;
+    color: color-mix(in srgb, var(--text-dark), white 25%);
 }
 
 .form-section .form-group input,
@@ -804,7 +840,7 @@ body {
 .form-section .form-group select {
     width: 100%;
     padding: 0.75rem;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.3s;
@@ -814,7 +850,7 @@ body {
 .form-section .form-group textarea:focus,
 .form-section .form-group select:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: var(--purple);
 }
 
 .form-section .form-group textarea {
@@ -827,11 +863,11 @@ body {
 }
 
 .waypoint-item {
-    background: #f8f9fa;
+    background: var(--bg-surface-alt);
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1rem;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid var(--purple);
 }
 
 .waypoint-header {
@@ -843,7 +879,7 @@ body {
 
 .waypoint-header h4 {
     margin: 0;
-    color: #667eea;
+    color: var(--purple);
 }
 
 .waypoint-controls {
@@ -863,43 +899,43 @@ body {
 }
 
 .course-creation-container .btn-primary {
-    background: #667eea;
+    background: var(--purple);
     color: white;
 }
 
 .course-creation-container .btn-primary:hover {
-    background: #5568d3;
+    background: color-mix(in srgb, var(--purple), black 10%);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
 }
 
 .course-creation-container .btn-secondary {
-    background: #6c757d;
+    background: var(--secondary);
     color: white;
 }
 
 .course-creation-container .btn-secondary:hover {
-    background: #5a6268;
+    background: color-mix(in srgb, var(--secondary), black 10%);
 }
 
 .course-creation-container .btn-success {
-    background: #28a745;
+    background: var(--success);
     color: white;
 }
 
 .course-creation-container .btn-success:hover {
-    background: #218838;
+    background: color-mix(in srgb, var(--success), black 15%);
 }
 
 .course-creation-container .btn-danger {
-    background: #dc3545;
+    background: var(--danger);
     color: white;
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
 }
 
 .course-creation-container .btn-danger:hover {
-    background: #c82333;
+    background: color-mix(in srgb, var(--danger), black 10%);
 }
 
 .course-creation-container .btn-small {
@@ -913,7 +949,7 @@ body {
     justify-content: flex-end;
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 2px solid #e0e0e0;
+    border-top: 2px solid var(--border-color);
 }
 
 .waypoint-count-selector {
@@ -928,8 +964,8 @@ body {
 }
 
 .info-box {
-    background: #e7f3ff;
-    border-left: 4px solid #2196F3;
+    background: color-mix(in srgb, var(--blue-fresh), white 90%);
+    border-left: 4px solid var(--blue-fresh);
     padding: 1rem;
     border-radius: 4px;
     margin-bottom: 1rem;
@@ -937,13 +973,13 @@ body {
 
 .info-box p {
     margin: 0;
-    color: #0d47a1;
+    color: color-mix(in srgb, var(--accent), black 20%);
 }
 
 .back-link {
     display: inline-block;
     margin-bottom: 1rem;
-    color: #667eea;
+    color: var(--purple);
     text-decoration: none;
     font-weight: 600;
 }
@@ -956,21 +992,21 @@ body {
     position: fixed;
     top: 20px;
     right: 20px;
-    background: #28a745;
+    background: var(--success);
     color: white;
     padding: 1rem 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     animation: slideIn 0.3s ease-out;
 }
 
 .notification.error {
-    background: #dc3545;
+    background: var(--danger);
 }
 
 .notification.info {
-    background: #17a2b8;
+    background: var(--info);
 }
 
 @keyframes slideIn {
@@ -978,6 +1014,7 @@ body {
         transform: translateX(400px);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -989,6 +1026,7 @@ body {
         transform: translateX(0);
         opacity: 1;
     }
+
     to {
         transform: translateX(400px);
         opacity: 0;
@@ -1017,7 +1055,7 @@ body {
 
 .parcours-header h1 {
     font-size: 2rem;
-    color: #1976d2;
+    color: var(--accent);
     margin: 0;
 }
 
@@ -1034,7 +1072,7 @@ body {
     gap: 0.5rem;
     padding: 0.75rem 1rem;
     background: white;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     min-width: 300px;
 }
@@ -1052,7 +1090,7 @@ body {
 
 .status-badge {
     padding: 0.25rem 0.75rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--purple) 0%, color-mix(in srgb, var(--purple), black 15%) 100%);
     color: white;
     border-radius: 12px;
     font-size: 0.85rem;
@@ -1067,14 +1105,14 @@ body {
 
 .parcours-card {
     background: white;
-    border: 2px solid #ddd;
+    border: 2px solid var(--border-color);
     border-radius: 12px;
     padding: 1.25rem;
     transition: all 0.2s ease;
 }
 
 .parcours-card:hover {
-    border-color: #1976d2;
+    border-color: var(--primary);
     box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
     transform: translateY(-2px);
 }
@@ -1085,23 +1123,9 @@ body {
     margin-bottom: 1rem;
 }
 
-.parcours-icon {
-    width: 40px;
-    height: 40px;
-    background: #1976d2;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 1.1rem;
-    flex-shrink: 0;
-}
-
 .parcours-title h3 {
     margin: 0 0 0.25rem 0;
-    color: #333;
+    color: var(--text-dark);
     font-size: 1.1rem;
 }
 
@@ -1111,7 +1135,7 @@ body {
 }
 
 .parcours-description {
-    color: #1976d2;
+    color: var(--text-medium);
     font-size: 0.95rem;
     margin: 0 0 1rem 0;
     line-height: 1.5;
@@ -1122,7 +1146,7 @@ body {
     gap: 1.5rem;
     margin-bottom: 1rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--bg-surface-alt);
 }
 
 .parcours-meta span {
@@ -1130,7 +1154,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     font-size: 0.9rem;
-    color: #666;
+    color: var(--text-medium);
 }
 
 .parcours-actions {
@@ -1154,42 +1178,42 @@ body {
 }
 
 .btn-view {
-    background: #42a5f5;
+    background: color-mix(in srgb, var(--blue-fresh), white 10%);
 }
 
 .btn-view:hover {
-    background: #2196f3;
+    background: var(--blue-fresh);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(66, 165, 245, 0.3);
 }
 
 .btn-qr {
-    background: #66bb6a;
+    background: color-mix(in srgb, var(--success), white 15%);
 }
 
 .btn-qr:hover {
-    background: #4caf50;
+    background: var(--success);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(102, 187, 106, 0.3);
 }
 
 .btn-edit {
-    background: #ff9800;
+    background: var(--orange);
 }
 
 .btn-edit:hover {
-    background: #f57c00;
+    background: color-mix(in srgb, var(--orange), black 10%);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
 }
 
 .btn-delete {
-    background: #ef5350;
+    background: color-mix(in srgb, var(--red-bright), white 10%);
     padding: 0.6rem;
 }
 
 .btn-delete:hover {
-    background: #e53935;
+    background: color-mix(in srgb, var(--red-bright), black 5%);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(239, 83, 80, 0.3);
 }
@@ -1209,7 +1233,7 @@ body {
 
 .course-card {
     background: white;
-    border: 2px solid #ddd;
+    border: 2px solid var(--border-color);
     border-radius: 8px;
     padding: 1.5rem;
     display: grid;
@@ -1220,19 +1244,19 @@ body {
 }
 
 .course-card:hover {
-    border-color: #667eea;
+    border-color: var(--purple);
 }
 
 .course-info h3 {
     margin: 0 0 0.5rem 0;
-    color: #333;
+    color: var(--text-dark);
 }
 
 .course-meta {
     display: flex;
     gap: 1.5rem;
     font-size: 0.9rem;
-    color: #666;
+    color: var(--text-medium);
 }
 
 .course-actions {
@@ -1250,7 +1274,7 @@ body {
 .edit-section {
     margin-bottom: 2rem;
     padding: 1.5rem;
-    background: #f9f9f9;
+    background: var(--bg-surface-alt);
     border-radius: 8px;
 }
 
@@ -1262,7 +1286,7 @@ body {
     background: white;
     padding: 1rem;
     margin-bottom: 0.5rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     display: grid;
     grid-template-columns: 1fr auto;
@@ -1281,7 +1305,7 @@ body {
     text-align: center;
     padding: 1rem;
     background: white;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
 }
 
@@ -1298,7 +1322,7 @@ body {
 .boundary-mini-map {
     width: 100%;
     height: 300px;
-    border: 2px solid #ddd;
+    border: 2px solid var(--border-color);
     border-radius: 8px;
     margin-top: 1rem;
 }
@@ -1319,7 +1343,7 @@ body {
     background: white;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 #map {
@@ -1331,8 +1355,8 @@ body {
 
 .map-info {
     padding: 1rem;
-    background: #f9f9f9;
-    border-top: 1px solid #e0e0e0;
+    background: var(--bg-surface-alt);
+    border-top: 1px solid var(--border-color);
 }
 
 .sidebar {
@@ -1347,7 +1371,7 @@ body {
     background: white;
     padding: 1rem;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
 }
 
@@ -1370,16 +1394,16 @@ body {
     padding: 0.75rem;
     margin-bottom: 0.5rem;
     background: white;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .course-list-item:hover {
-    background: #f5f5f5;
-    border-color: #2196F3;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: var(--bg-body);
+    border-color: var(--blue-fresh);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .course-item-header {
@@ -1390,12 +1414,12 @@ body {
 }
 
 .course-item-header strong {
-    color: #1976d2;
+    color: var(--accent);
     font-size: 0.95rem;
 }
 
 .badge-finished {
-    background: #4caf50;
+    background: var(--success);
     color: white;
     padding: 0.2rem 0.5rem;
     border-radius: 12px;
@@ -1407,19 +1431,19 @@ body {
     display: flex;
     gap: 1rem;
     font-size: 0.8rem;
-    color: #666;
+    color: var(--text-medium);
 }
 
 .no-courses {
     padding: 1rem;
     text-align: center;
-    color: #666;
+    color: var(--text-medium);
     font-style: italic;
 }
 
 .no-points,
 .no-courses {
-    color: #999;
+    color: var(--text-light);
     font-style: italic;
     text-align: center;
     padding: 1rem;
@@ -1428,7 +1452,7 @@ body {
 .course-stats {
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid var(--border-color);
 }
 
 .toolbar {
@@ -1437,7 +1461,7 @@ body {
     align-items: center;
     padding: 1rem;
     background: white;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--border-color);
     flex-wrap: wrap;
     gap: 0.5rem;
 }
@@ -1450,14 +1474,14 @@ body {
 
 .course-name-display {
     font-weight: 600;
-    color: #1976d2;
+    color: var(--accent);
 }
 
 /* Sessions Table Styles */
 .table-container {
     background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
@@ -1467,37 +1491,37 @@ body {
 }
 
 .courses-table thead {
-    background: #f5f5f5;
-    border-bottom: 2px solid #e0e0e0;
+    background: var(--bg-body);
+    border-bottom: 2px solid var(--border-color);
 }
 
 .courses-table th {
     padding: 1rem;
     text-align: left;
     font-weight: 600;
-    color: #333;
+    color: var(--text-dark);
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .courses-table tbody tr {
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--border-color);
     transition: background-color 0.2s ease;
 }
 
 .courses-table tbody tr:hover {
-    background-color: #f9f9f9;
+    background-color: var(--bg-surface-alt);
 }
 
 .courses-table td {
     padding: 1rem;
-    color: #666;
+    color: var(--text-medium);
 }
 
 .courses-table tbody tr td:first-child {
     font-weight: 500;
-    color: #333;
+    color: var(--text-dark);
 }
 
 .table-actions {
@@ -1517,19 +1541,19 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     background: transparent;
-    color: #1976d2;
+    color: var(--accent);
 }
 
 .action-icon-btn:hover {
-    background: #e3f2fd;
+    background: var(--accent-light);
 }
 
 .action-icon-btn.btn-delete {
-    color: #d32f2f;
+    color: color-mix(in srgb, var(--red-bright), black 15%);
 }
 
 .action-icon-btn.btn-delete:hover {
-    background: #ffebee;
+    background: color-mix(in srgb, var(--red-bright), white 90%);
 }
 
 .table-footer {
@@ -1537,21 +1561,21 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    border-top: 1px solid #e0e0e0;
-    background: #fafafa;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-surface-alt);
 }
 
 .pagination-info {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #666;
+    color: var(--text-medium);
     font-size: 0.9rem;
 }
 
 .pagination-info select {
     padding: 0.5rem;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     background: white;
     cursor: pointer;
@@ -1566,9 +1590,9 @@ body {
 
 .pagination-btn {
     padding: 0.5rem 0.75rem;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
     background: white;
-    color: #666;
+    color: var(--text-medium);
     cursor: pointer;
     border-radius: 4px;
     font-size: 0.9rem;
@@ -1576,15 +1600,15 @@ body {
 }
 
 .pagination-btn:hover:not(:disabled) {
-    background: #e3f2fd;
-    color: #1976d2;
-    border-color: #1976d2;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent);
 }
 
 .pagination-btn.active {
-    background: #1976d2;
+    background: var(--accent);
     color: white;
-    border-color: #1976d2;
+    border-color: var(--accent);
 }
 
 .pagination-btn:disabled {
@@ -1594,7 +1618,7 @@ body {
 
 .pagination-dots {
     padding: 0 0.5rem;
-    color: #999;
+    color: var(--text-light);
 }
 
 /* Action Icon Buttons */
@@ -1605,7 +1629,7 @@ body {
     width: 36px;
     height: 36px;
     padding: 0;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
     background: white;
     cursor: pointer;
     border-radius: 6px;
@@ -1619,27 +1643,27 @@ body {
 
 .action-icon-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .btn-view {
     background: white;
-    color: #1976d2;
-    border-color: #1976d2;
+    color: var(--accent);
+    border-color: var(--accent);
 }
 
 .btn-view:hover {
-    background: #e3f2fd;
-    color: #0d47a1;
+    background: var(--accent-light);
+    color: color-mix(in srgb, var(--accent), black 20%);
 }
 
 .btn-delete {
-    color: #f44336;
-    border-color: #f44336;
+    color: var(--red-bright);
+    border-color: var(--red-bright);
 }
 
 .btn-delete:hover {
-    background: #ffebee;
+    background: color-mix(in srgb, var(--red-bright), white 90%);
 }
 
 .table-actions {
@@ -1676,13 +1700,13 @@ body {
 .map-header {
     background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 1rem;
 }
 
 .map-header h1 {
     font-size: 1.25rem;
-    color: #1976d2;
+    color: var(--accent);
     margin: 0 0 1rem 0;
 }
 
@@ -1690,14 +1714,14 @@ body {
     display: block;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: #333;
+    color: var(--text-dark);
     font-size: 0.9rem;
 }
 
 .session-selector select {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 1rem;
     background: white;
@@ -1706,14 +1730,14 @@ body {
 
 .session-selector select:focus {
     outline: none;
-    border-color: #1976d2;
+    border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
 }
 
 .runners-panel {
     background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -1724,8 +1748,8 @@ body {
     padding: 1rem 1.5rem;
     margin: 0;
     font-size: 1.1rem;
-    color: #1976d2;
-    border-bottom: 2px solid #e3f2fd;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent-light);
 }
 
 .runners-table-container {
@@ -1741,7 +1765,7 @@ body {
 .runners-table thead {
     position: sticky;
     top: 0;
-    background: #f5f5f5;
+    background: var(--bg-body);
     z-index: 10;
 }
 
@@ -1750,13 +1774,13 @@ body {
     text-align: left;
     font-size: 0.85rem;
     font-weight: 600;
-    color: #666;
-    border-bottom: 1px solid #ddd;
+    color: var(--text-medium);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .runners-table td {
     padding: 0.75rem;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--bg-surface-alt);
     font-size: 0.9rem;
 }
 
@@ -1766,19 +1790,19 @@ body {
 }
 
 .runners-table tbody tr:hover {
-    background: #f5f5f5;
+    background: var(--bg-body);
 }
 
 .runners-table tbody tr.selected {
-    background: #e3f2fd;
-    border-left: 3px solid #1976d2;
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
 }
 
 .map-panel {
     flex: 1;
     background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -1792,7 +1816,7 @@ body {
 .beacon-validation-panel {
     background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 1.5rem;
     max-height: 250px;
     display: flex;
@@ -1804,13 +1828,13 @@ body {
     position: absolute;
     top: -1.75rem;
     left: 2rem;
-    background: linear-gradient(135deg, #757575 0%, #9e9e9e 100%);
+    background: linear-gradient(135deg, var(--text-medium) 0%, var(--text-light) 100%);
     color: white;
     padding: 0.75rem 2rem;
     border-radius: 20px;
     font-size: 1rem;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     letter-spacing: 0.5px;
     z-index: 10;
 }
@@ -1823,7 +1847,7 @@ body {
     right: 0;
     bottom: 0;
     border-radius: 20px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
     pointer-events: none;
 }
 
@@ -1840,11 +1864,11 @@ body {
 
 .beacon-validation-table th {
     padding: 0.75rem 1rem;
-    background: #f5f5f5;
-    border: 1px solid #ddd;
+    background: var(--bg-body);
+    border: 1px solid var(--border-color);
     font-size: 0.85rem;
     font-weight: 600;
-    color: #666;
+    color: var(--text-medium);
     white-space: nowrap;
     position: sticky;
     left: 0;
@@ -1852,51 +1876,51 @@ body {
 }
 
 .beacon-validation-table th:first-child {
-    background: #e3f2fd;
-    color: #1976d2;
+    background: var(--accent-light);
+    color: var(--accent);
 }
 
 .beacon-validation-table td {
     padding: 0.75rem 1rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     text-align: center;
     font-size: 0.85rem;
 }
 
 .beacon-validation-table tr:first-child td {
-    background: #f9f9f9;
+    background: var(--bg-surface-alt);
 }
 
 .status-valid {
-    color: #4caf50;
+    color: var(--success);
     font-weight: bold;
 }
 
 .status-invalid {
-    color: #f44336;
+    color: var(--red-bright);
     font-weight: bold;
 }
 
 .status-pending {
-    color: #ff9800;
+    color: var(--orange);
 }
 
 .status-validated {
-    color: #4caf50;
+    color: var(--success);
     font-weight: bold;
     font-size: 1.2em;
 }
 
 .no-data {
     text-align: center;
-    color: #999;
+    color: var(--text-light);
     font-style: italic;
 }
 
 .empty-state {
     text-align: center;
     padding: 3rem;
-    color: #999;
+    color: var(--text-light);
 }
 
 .empty-state svg {
@@ -1906,33 +1930,442 @@ body {
     opacity: 0.3;
 }
 
+
+
+
+/* Map style */
 .course-info-panel {
-  flex:0 0 350px; 
-  background:#fff; 
-  border-radius:10px; 
-  padding:1.5rem;
-  box-shadow:0 4px 12px rgba(0,0,0,0.12); 
-  overflow-y:auto;
-  height:auto;            
-  color:#333;
+    flex: 0 0 350px;
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    max-height: calc(100vh - 180px);
 }
 
-.course-info-panel > h1 {
-  display:block;                  
-  background:#2196F3; 
-  color:#fff;
-  text-align:center;              
-  padding:.5rem 1rem;             
-  border-radius:6px;
-  font-size:1.2rem; 
-  font-weight:600; 
-  margin:0 0 1rem;
-}
 .course-info-panel h2 {
-  border-bottom:2px solid #2196F3;
-  margin:0 0 1rem; padding-bottom:.5rem;
-  font-size:1.5rem; font-weight:700; color:#333;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: var(--text-dark);
+    font-size: 1.5rem;
+    border-bottom: 2px solid var(--blue-fresh);
+    padding-bottom: 0.5rem;
 }
 
+.info-item {
+    margin-bottom: 1.2rem;
+    padding: 0.8rem;
+    background: var(--bg-surface-alt);
+    border-radius: 6px;
+    border-left: 3px solid var(--blue-fresh);
+}
 
+.info-item strong {
+    display: block;
+    color: color-mix(in srgb, var(--text-dark), white 25%);
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.status-badge.finished {
+    background: var(--success);
+    color: white;
+}
+
+.status-badge.active {
+    background: var(--orange);
+    color: white;
+}
+
+.beacon-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+}
+
+.beacon-list li {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.beacon-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--blue-fresh);
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 0.85rem;
+    margin-right: 0.8rem;
+    flex-shrink: 0;
+}
+
+.beacon-name {
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+/* ==================== Map Widget Styles ==================== */
+.map-widget-container {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Runners list panel (left side) */
+.runners-list-panel {
+    flex: 0 0 300px;
+    background: var(--bg-surface-alt);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.runners-list-panel h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+    font-size: 1.2rem;
+    border-bottom: 2px solid var(--blue-fresh);
+    padding-bottom: 0.5rem;
+}
+
+.runners-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.runner-item {
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.runner-item:hover {
+    border-color: var(--blue-fresh);
+    transform: translateX(3px);
+    box-shadow: 0 2px 6px rgba(33, 150, 243, 0.2);
+}
+
+.runner-item.active {
+    background: var(--accent-light);
+    border-color: var(--blue-fresh);
+    box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
+}
+
+.runner-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 0.3rem;
+}
+
+.runner-icon {
+    font-size: 1.2rem;
+}
+
+.runner-stats {
+    margin-top: 0.3rem;
+}
+
+.runner-stats small {
+    color: var(--text-medium);
+    font-size: 0.85rem;
+}
+
+.no-runners {
+    text-align: center;
+    color: var(--text-light);
+    padding: 2rem 1rem;
+    font-style: italic;
+}
+
+/* Map display wrapper */
+.map-display-wrapper {
+    flex: 1;
+    display: flex;
+    gap: 1rem;
+    min-height: 500px;
+}
+
+.map-display-wrapper.full-width {
+    width: 100%;
+}
+
+/* Course info panel (for course view) */
+.course-info-panel {
+    flex: 0 0 300px;
+    background: var(--bg-surface-alt);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.course-info-panel h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+    font-size: 1.2rem;
+    border-bottom: 2px solid var(--blue-fresh);
+    padding-bottom: 0.5rem;
+}
+
+.info-item {
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: white;
+    border-radius: 4px;
+    border-left: 3px solid var(--blue-fresh);
+}
+
+.info-item strong {
+    display: block;
+    color: color-mix(in srgb, var(--text-dark), white 25%);
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+}
+
+.info-item p {
+    margin: 0.3rem 0 0 0;
+    color: var(--text-dark);
+}
+
+.beacons-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+}
+
+.beacons-list li {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    margin-bottom: 0.3rem;
+    background: #fff;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+/* Map container */
+.map-container-widget {
+    flex: 1;
+    min-height: 500px;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.google-map {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+}
+
+/* Runner details panel (bottom) */
+.runner-details-panel {
+    margin-top: 1rem;
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.runner-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--blue-fresh);
+}
+
+.runner-details-header h3 {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 1.2rem;
+}
+
+.close-details-btn {
+    background: var(--red-bright);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.close-details-btn:hover {
+    background: color-mix(in srgb, var(--red-bright), black 15%);
+    transform: scale(1.1);
+}
+
+.runner-details-content {
+    overflow-x: auto;
+}
+
+.runner-waypoints-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.runner-waypoints-table thead {
+    background: var(--bg-surface-alt);
+}
+
+.runner-waypoints-table th,
+.runner-waypoints-table td {
+    padding: 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.runner-waypoints-table th {
+    font-weight: 600;
+    color: color-mix(in srgb, var(--text-dark), white 25%);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.runner-waypoints-table td {
+    color: var(--text-dark);
+}
+
+.runner-waypoints-table tbody tr:hover {
+    background: var(--bg-surface-alt);
+}
+
+/* Section wrappers */
+.course-map-section,
+.session-map-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-surface-alt);
+    border-radius: 8px;
+}
+
+.course-map-section h2,
+.session-map-section h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: var(--text-dark);
+    font-size: 1.5rem;
+}
+
+/* Status badge (if not already defined) */
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    text-transform: capitalize;
+}
+
+.status-badge.draft {
+    background: var(--text-light);
+    color: white;
+}
+
+.status-badge.active {
+    background: var(--orange);
+    color: white;
+}
+
+.status-badge.finished {
+    background: var(--success);
+    color: white;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+    .map-widget-container {
+        flex-direction: column;
+    }
+
+    .runners-list-panel,
+    .course-info-panel {
+        flex: 1;
+        max-height: 300px;
+    }
+
+    .map-display-wrapper {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 768px) {
+    .map-container-widget {
+        min-height: 400px;
+    }
+
+    .google-map {
+        min-height: 400px;
+    }
+}
+
+.course-info-panel {
+    flex: 0 0 350px;
+    background: var(--bg-surface);
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    overflow-y: auto;
+    height: auto;
+    color: var(--text-dark);
+}
+
+.course-info-panel>h1 {
+    display: block;
+    background: var(--blue-fresh);
+    color: var(--bg-surface);
+    text-align: center;
+    padding: .5rem 1rem;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 1rem;
+}
+
+.course-info-panel h2 {
+    border-bottom: 2px solid var(--blue-fresh);
+    margin: 0 0 1rem;
+    padding-bottom: .5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}

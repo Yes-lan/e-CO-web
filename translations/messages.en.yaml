@@ -1,4 +1,5 @@
 # English translations
+# TODO: make sure all the translations are updated
 nav:
     courses: "Courses"
     parcours: "Orienteering Courses"
@@ -27,6 +28,29 @@ map:
     scan_time: "Scan Time"
     invalid: "Invalid"
     distance: "Distance"
+    runners_list: "Runners list"
+    runner_details: "Runner details"
+    waypoint: "Waypoint"
+    time: "Time"
+    departure: "Departure"
+    arrival: "Arrival"
+    no_data: "No data available"
+    beacon: "Beacon"
+    validation_status: "Validation"
+    modal:
+        control_point_details: "Control Point Details"
+        point_name: "Point Name"
+        point_name_placeholder: "e.g., Start, Control 1, Finish"
+        description: "Description"
+        description_placeholder: "Description of the control point location"
+        point_type: "Point Type"
+        start: "Start"
+        control_point: "Control Point"
+        finish: "Finish"
+        latitude: "Latitude"
+        longitude: "Longitude"
+        save_point: "Save Point"
+        cancel: "Cancel"
     
 courses:
     title: "Courses"
@@ -51,6 +75,7 @@ courses:
         title: "Course Details"
         details: "Information"
         runners_list: "Runners List"
+        map: "Map and Tracking"
     
     edit:
         title: "Edit Course"
@@ -129,9 +154,16 @@ parcours:
     qr_permanent: "These QR codes are permanent and never change for this course."
     qr_print_info: "You can safely print and place them on the field. They will remain valid even if you view this page multiple times."
     download_all_qr: "Download all QR codes"
-    parcours.baliseStartFinishN: "start and finish beacons in different locations"
-    parcours.baliseStartFinishY: "start and finish beacons in the same location"
-
+    map_view: "Course Map"
+    description: "Description"
+    beacons_count: "Number of beacons"
+    beacons_list: "Beacons list"
+    baliseStartFinishY: "Start and finish at the same location"
+    baliseStartFinishN: "Start and finish at different locations"
+    back_to_list: "Back to list"
+    create_new_parcours: "Create a New Course"
+    create_subtitle: "Configure your orienteering course step by step"
+    
     status:
         in_creation: "In progress"
         ready: "Ready for Sessions"
@@ -141,9 +173,7 @@ parcours:
         beacons: "beacon(s)"
         boundaries: "Boundaries defined"
         no_boundaries: "No boundaries"
-        
-    description:
-        default: "Start at the south entrance on the table"
+        default_description: "Start at the south entrance on the table"
         
     messages:
         created: "Course created successfully!"
@@ -200,9 +230,21 @@ reset_password:
     fair: "Fair"
     good: "Good"
     strong: "Strong"
+    email:
+        greeting: "Hi!"
+        message: "To reset your password, please visit the following link"
+        reset_link: "Reset Password Link"
+        expiration: "This link will expire in %time%."
+        closing: "Cheers!"
+    check_email_message: "If an account matching your email exists, then an email was just sent that contains a link that you can use to reset your password."
+    check_spam: "If you don't receive an email please check your spam folder or"
+    try_again: "try again"
     
 testemail:
     page_title: "Test Email - e-CO"
+
+app:
+    default_title: "e-CO Web - Orienteering Course Creator"
 
 home:
     title: "Home - e-CO Web"

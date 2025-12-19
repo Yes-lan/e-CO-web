@@ -27,6 +27,29 @@ map:
     scan_time: "Eskaneatze ordua"
     invalid: "Baliogabea"
     distance: "Distantzia"
+    runners_list: "Korrikalarien zerrenda"
+    runner_details: "Korrikalariari buruzko xehetasunak"
+    waypoint: "Baliza"
+    time: "Denbora"
+    departure: "Irteera"
+    arrival: "Helmuga"
+    no_data: "Ez dago daturik eskuragarri"
+    beacon: "Baliza"
+    validation_status: "Balioztatze"
+    modal:
+        control_point_details: "Kontrol Puntuaren Xehetasunak"
+        point_name: "Puntuaren Izena"
+        point_name_placeholder: "adib: Irteera, Kontrola 1, Helmuga"
+        description: "Deskribapena"
+        description_placeholder: "Kontrol puntuaren kokapenaren deskribapena"
+        point_type: "Puntu Mota"
+        start: "Irteera"
+        control_point: "Kontrol Puntua"
+        finish: "Helmuga"
+        latitude: "Latitudea"
+        longitude: "Longitudea"
+        save_point: "Gorde Puntua"
+        cancel: "Ezeztatu"
     
 courses:
     title: "Lasterketak"
@@ -51,6 +74,7 @@ courses:
         title: "Lasterketaren Xehetasunak"
         details: "Informazioa"
         runners_list: "Korrikalarien Zerrenda"
+        map: "Mapa eta Jarraipena"
     
     edit:
         title: "Aldatu Lasterketa"
@@ -129,9 +153,15 @@ parcours:
     qr_permanent: "QR kode hauek iraunkorrak dira eta ez dira inoiz aldatzen ikastaro honetarako."
     qr_print_info: "Inprimatu eta zelairatu seguru jar ditzakezu. Baliozkoak izango dira orrialde hau hainbat aldiz ikusi arren."
     download_all_qr: "Deskargatu QR kode guztiak"
-    parcours.baliseStartFinishN: "hasiera eta amaiera balizak kokapen desberdinetan"
-    parcours.baliseStartFinishY: "hasiera eta amaiera balizak kokapen berean"
-
+    map_view: "Ibilbidearen Mapa"
+    description: "Deskribapena"
+    beacons_count: "Balizen kopurua"
+    beacons_list: "Balizen zerrenda"
+    baliseStartFinishY: "Irteera eta helmuga leku berean"
+    baliseStartFinishN: "Irteera eta helmuga leku desberdinetan"
+    back_to_list: "Itzuli zerrendara"
+    create_new_parcours: "Sortu Ibilbide Berria"
+    create_subtitle: "Konfiguratu zure orientazio ibilbidea urrats bakoitzean"
     
     status:
         in_creation: "Sorkuntzan"
@@ -142,9 +172,7 @@ parcours:
         beacons: "baliza"
         boundaries: "Mugak definituta"
         no_boundaries: "Mugarik ez"
-        
-    description:
-        default: "Hasi hego sarreran mahaian"
+        default_description: "Hasi hego sarreran mahaian"
         
     messages:
         created: "Ikastaroa ondo sortu da!"
@@ -201,9 +229,21 @@ reset_password:
     fair: "Ertaina"
     good: "Ona"
     strong: "Sendoa"
+    email:
+        greeting: "Kaixo!"
+        message: "Zure pasahitza berrezartzeko, bisitatu esteka hau mesedez"
+        reset_link: "Pasahitza Berrezartzeko Esteka"
+        expiration: "Esteka hau iraungiko da %time% barru."
+        closing: "Ongi izan!"
+    check_email_message: "Zure emailarekin bat datorren kontu bat badago, email bat bidali berri da zure pasahitza berrezartzeko erabil dezakezun esteka batekin."
+    check_spam: "Ez baduzu emailik jasotzen, begiratu zure spam karpetan edo"
+    try_again: "saiatu berriro"
     
 testemail:
     page_title: "Proba Emaila - e-CO"
+
+app:
+    default_title: "e-CO Web - Orientazio Ibilbide Sortzailea"
 
 home:
     title: "Hasiera - e-CO Web"

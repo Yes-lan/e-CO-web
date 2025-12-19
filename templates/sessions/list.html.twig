@@ -55,12 +55,12 @@
         <script>
             // Delete session function
             async function deleteSession(sessionId, sessionName) {
-                if (!confirm(`{{ 'courses.delete.confirm'|trans }}: ${sessionName}?`)) {
+                if (!confirm(`{{ 'sessions.delete.confirm'|trans }}: ${sessionName}?`)) {
                     return;
                 }
 
                 try {
-                    const response = await fetch(`/api/sessions/${sessionId}`, {
+                    const response = await fetch(`/sessions/${sessionId}/delete`, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json',

@@ -10,7 +10,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -31,16 +31,13 @@ class CourseType extends AbstractType
             ->add('description', TextareaType::class, [
                 'required' => true,
             ])
-            //->add('status')
-            //->add('createAt')
-            //->add('placementCompletedAt')
-            //->add('updateAt')
             ->add('sameStartFinish', CheckboxType::class, [
                 'required' => false,
             ])
-            ->add('nbBeacons', NumberType::class, [
+            ->add('nbBeacons', IntegerType::class, [
                 'mapped' => false,
                 'required' => true,
+                'data' => $options['nbBeacons'], // Will be null for create, count for edit
                 'constraints' => [
                     new NotNull([
                         'message' => 'Le nombre de balises ne peut pas être vide.',
@@ -55,19 +52,6 @@ class CourseType extends AbstractType
                     ]),
                 ],
             ])
-
-
-
-
-            /*->add('beacons', EntityType::class, [
-                'class' => Beacon::class,
-                'choice_label' => 'id',
-                'multiple' => true,
-            ])
-            ->add('user', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => 'id',
-            ])*/
             ->add('submit', SubmitType::class)
         ;
     }
@@ -76,6 +60,9 @@ class CourseType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Course::class,
+            'nbBeacons' => null, // Will be set in edit mode
         ]);
+        
+        $resolver->setAllowedTypes('nbBeacons', ['null', 'int']);
     }
 }
