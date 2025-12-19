@@ -1,6 +1,8 @@
 ﻿// Translation helper for JavaScript
 // This file provides client-side translations that match the server-side Symfony translations
 
+// TODO: check if this file is used and usefull
+
 const translations = {
     fr: {
         'courses.view': 'Voir',

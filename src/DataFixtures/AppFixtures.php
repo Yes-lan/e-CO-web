@@ -282,21 +282,11 @@ class AppFixtures extends Fixture
                     $beacon->setPlacedAt(new \DateTime('2025-12-07 21:18:34'));
                 }
 
-                // Construct QR JSON based on SQL logic
-                $qrType = match ($bData[3]) {
-                    'start' => 'START',
-                    'finish' => 'FINISH',
-                    default => 'WAYPOINT'
-                };
-                // Simulating the UUID/ID logic from SQL roughly
-                $waypointId = $index + 1; // logical ID
+                // Construct QR JSON - only course_id and beacon_id
+                // Note: course_id will be null until beacon is persisted and associated
                 $qr = json_encode([
-                    "type" => $qrType,
-                    "courseId" => null, // Would be DB ID, simplified here
-                    "courseName" => $cData['name'],
-                    "waypointId" => $waypointId,
-                    "waypointName" => $bData[0],
-                    "courseCreated" => $cData['created']
+                    "course_id" => null, // Would be DB ID, simplified here
+                    "beacon_id" => null  // Will be set after persist
                 ]);
                 $beacon->setQr($qr);
 

@@ -1,0 +1,13 @@
+
+{# Build URL: get current path and remove _locale parameter from query string using regex #}
+{% set currentPath = app.request.pathInfo %}
+{% set queryString = app.request.queryString|default('') %}
+{% set cleanQuery = queryString|replace({('_locale=' ~ app.request.locale): ''})|trim('&') %}
+{% set separator = cleanQuery ? '&' : '' %}
+{% set finalUrl = currentPath ~ '?' ~ cleanQuery ~ separator ~ '_locale=' ~ active_language.code %}
+<a href="{{ finalUrl }}" 
+   class="language-dropdown-item {{ active_language.code == app.request.locale ? 'active' : '' }}"
+   onclick="localStorage.setItem('preferred_locale', '{{ active_language.code }}');">
+    <span class="language-flag fi fi-{{ active_language.code == 'en' ? 'gb' : (active_language.code == 'eu' ? 'eu' : active_language.code) }}"></span>
+    <span class="language-name">{{ active_language.displayedText }}</span>
+</a>

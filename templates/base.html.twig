@@ -15,7 +15,7 @@
     <!-- TODO: make error messages better. ex: instead of the "AccessDeniedException" error when trying to access a forbidden session, make a new error page -->
 
     <script src="{{ asset('assets/js/translations.js') }}"></script>
-    <script src="{{ asset('assets/js/language-switcher.js') }}"></script>
+    <!-- <script src="{{ asset('assets/js/language-switcher.js') }}"></script> -->
     
     {% block javascripts %}
     {% endblock %}
@@ -74,16 +74,26 @@
 
             <div class="header-actions">
                 <div class="language-switcher">
-                    <button class="language-dropdown-btn" id="languageDropdownBtn">
-                        {# active_languages #}
-                        <span id="currentLanguageFlag">🌐</span>
-                        <span id="currentLanguageText">{{ app.request.locale|upper }}</span>
+                    <input type="checkbox" id="languageDropdownToggle" class="language-dropdown-toggle">
+                    <label for="languageDropdownToggle" class="language-dropdown-btn">
+                        {% set currentLang = null %}
+                        {% for lang in active_languages %}
+                            {% if lang.code == app.request.locale %}
+                                {% set currentLang = lang %}
+                            {% endif %}
+                        {% endfor %}
+                        <span id="currentLanguageFlag" class="fi fi-{{ app.request.locale == 'en' ? 'gb' : (app.request.locale == 'eu' ? 'eu' : app.request.locale) }}"></span>
+                        <span id="currentLanguageText">{{ currentLang ? currentLang.displayedText : app.request.locale|upper }}</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                    </button>
+                    </label>
                     <div class="language-dropdown-menu" id="languageDropdownMenu">
-                        <!-- Languages will be loaded dynamically from API -->
+                    {% if active_languages|length > 0 %}
+                        {% for active_language in active_languages %}
+                            {% include 'widgets/languages.html.twig' %}
+                        {% endfor %}
+                    {% endif %}
                     </div>
                 </div>
                 <div class="user-info">

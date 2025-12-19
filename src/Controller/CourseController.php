@@ -160,6 +160,29 @@ class CourseController extends AbstractController
         $courseBeacons = [];
         
         if ($course) {
+            // Include start beacon
+            if ($course->getStartBeacon()) {
+                $beacon = $course->getStartBeacon();
+                $courseBeacons[$beacon->getId()] = [
+                    'id' => $beacon->getId(),
+                    'name' => $beacon->getName(),
+                    'latitude' => $beacon->getLatitude(),
+                    'longitude' => $beacon->getLongitude(),
+                ];
+            }
+            
+            // Include finish beacon (if different from start)
+            if ($course->getFinishBeacon() && $course->getFinishBeacon()->getId() !== $course->getStartBeacon()?->getId()) {
+                $beacon = $course->getFinishBeacon();
+                $courseBeacons[$beacon->getId()] = [
+                    'id' => $beacon->getId(),
+                    'name' => $beacon->getName(),
+                    'latitude' => $beacon->getLatitude(),
+                    'longitude' => $beacon->getLongitude(),
+                ];
+            }
+            
+            // Include control beacons (waypoints)
             foreach ($course->getBeacons() as $beacon) {
                 $courseBeacons[$beacon->getId()] = [
                     'id' => $beacon->getId(),

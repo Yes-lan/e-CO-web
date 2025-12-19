@@ -51,7 +51,7 @@ class AdvancedFixtures extends Fixture implements DependentFixtureInterface
             $course = new Course();
             $course->setName($cData['name']);
             $course->setDescription($cData['description']);
-            $course->setStatus('published');
+            $course->setStatus('ready');
             $course->setUser($sandra); // Assign to Sandra
             $now = new \DateTimeImmutable();
             $course->setCreateAt(\DateTime::createFromImmutable($now));
@@ -84,6 +84,9 @@ class AdvancedFixtures extends Fixture implements DependentFixtureInterface
             $finishBeacon = $this->createBeacon('Arrivée', $cData['baseLat'] + 0.001, $cData['baseLon'] + 0.001, 'finish', $course, $now);
             $manager->persist($finishBeacon);
             $beacons[] = $finishBeacon;
+
+            // Flush to get beacon IDs before creating sessions and logs
+            $manager->flush();
 
             // Create Session
             $session = new Session();
@@ -140,16 +143,11 @@ class AdvancedFixtures extends Fixture implements DependentFixtureInterface
         $beacon->setCreatedAt(new \DateTime($date->format('Y-m-d H:i:s')));
         $beacon->setPlacedAt(new \DateTime($date->format('Y-m-d H:i:s')));
 
-        $qrType = match ($type) {
-            'start' => 'START',
-            'finish' => 'FINISH',
-            default => 'WAYPOINT'
-        };
-
+        // QR code contains only course_id and beacon_id
+        // Note: beacon_id will be null until beacon is persisted
         $qr = json_encode([
-            "type" => $qrType,
-            "courseName" => $course->getName(),
-            "waypointName" => $name,
+            "course_id" => $course->getId(),
+            "beacon_id" => null  // Will be set after persist
         ]);
         $beacon->setQr($qr);
         $beacon->addCourse($course);

@@ -110,6 +110,7 @@ class ParcoursController extends AbstractController
                         $beacon->setLongitude(0.0);
                         $beacon->setType('control');
                         $beacon->setIsPlaced('0');
+                        $beacon->setCreatedAt(new \DateTime());
                         $beacon->setQr('{}');
                         $course->addBeacon($beacon);
                         $this->entityManager->persist($beacon);
@@ -475,12 +476,8 @@ class ParcoursController extends AbstractController
             // Generate QR codes for all created beacons now that we have their IDs
             foreach ($createdBeacons as $beacon) {
                 $qrData = json_encode([
-                    'type' => 'WAYPOINT',
-                    'courseId' => $parcours->getId(),
-                    'courseName' => $parcours->getName(),
-                    'waypointId' => $beacon->getId(),
-                    'waypointName' => $beacon->getName(),
-                    'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+                    'course_id' => $parcours->getId(),
+                    'beacon_id' => $beacon->getId()
                 ]);
                 $beacon->setQr($qrData);
             }
@@ -524,25 +521,16 @@ class ParcoursController extends AbstractController
         $this->entityManager->flush();
 
         // Generate QR codes for start/finish beacons
-        $qrType = $parcours->isSameStartFinish() ? 'START_FINISH' : 'START';
         $startQrData = json_encode([
-            'type' => $qrType,
-            'courseId' => $parcours->getId(),
-            'courseName' => $parcours->getName(),
-            'waypointId' => $startBeacon->getId(),
-            'waypointName' => $startBeacon->getName(),
-            'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+            'course_id' => $parcours->getId(),
+            'beacon_id' => $startBeacon->getId()
         ]);
         $startBeacon->setQr($startQrData);
 
         if (!$parcours->isSameStartFinish() && $finishBeacon !== null) {
             $finishQrData = json_encode([
-                'type' => 'FINISH',
-                'courseId' => $parcours->getId(),
-                'courseName' => $parcours->getName(),
-                'waypointId' => $finishBeacon->getId(),
-                'waypointName' => $finishBeacon->getName(),
-                'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+                'course_id' => $parcours->getId(),
+                'beacon_id' => $finishBeacon->getId()
             ]);
             $finishBeacon->setQr($finishQrData);
         }
@@ -679,12 +667,8 @@ class ParcoursController extends AbstractController
             if (!empty($newBeacons)) {
                 foreach ($newBeacons as $beacon) {
                     $qrData = json_encode([
-                        'type' => 'WAYPOINT',
-                        'courseId' => $parcours->getId(),
-                        'courseName' => $parcours->getName(),
-                        'waypointId' => $beacon->getId(),
-                        'waypointName' => $beacon->getName(),
-                        'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+                        'course_id' => $parcours->getId(),
+                        'beacon_id' => $beacon->getId()
                     ]);
                     $beacon->setQr($qrData);
                 }
@@ -721,12 +705,8 @@ class ParcoursController extends AbstractController
                     
                     // Generate QR code
                     $qrData = json_encode([
-                        'type' => 'START_FINISH',
                         'courseId' => $parcours->getId(),
-                        'courseName' => $parcours->getName(),
-                        'waypointId' => $startBeacon->getId(),
-                        'waypointName' => $startBeacon->getName(),
-                        'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+                        'beaconId' => $startBeacon->getId()
                     ]);
                     $startBeacon->setQr($qrData);
                 }
@@ -778,24 +758,16 @@ class ParcoursController extends AbstractController
                 // Generate QR codes if new beacons were created
                 if ($parcours->getStartBeacon() && !$parcours->getStartBeacon()->getQr()) {
                     $startQrData = json_encode([
-                        'type' => 'START',
-                        'courseId' => $parcours->getId(),
-                        'courseName' => $parcours->getName(),
-                        'waypointId' => $parcours->getStartBeacon()->getId(),
-                        'waypointName' => $parcours->getStartBeacon()->getName(),
-                        'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+                        'course_id' => $parcours->getId(),
+                        'beacon_id' => $parcours->getStartBeacon()->getId()
                     ]);
                     $parcours->getStartBeacon()->setQr($startQrData);
                 }
                 
                 if ($parcours->getFinishBeacon() && !$parcours->getFinishBeacon()->getQr()) {
                     $finishQrData = json_encode([
-                        'type' => 'FINISH',
-                        'courseId' => $parcours->getId(),
-                        'courseName' => $parcours->getName(),
-                        'waypointId' => $parcours->getFinishBeacon()->getId(),
-                        'waypointName' => $parcours->getFinishBeacon()->getName(),
-                        'courseCreated' => $parcours->getCreateAt()->format('Y-m-d H:i:s')
+                        'course_id' => $parcours->getId(),
+                        'beacon_id' => $parcours->getFinishBeacon()->getId()
                     ]);
                     $parcours->getFinishBeacon()->setQr($finishQrData);
                 }

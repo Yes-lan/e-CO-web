@@ -163,6 +163,11 @@ body {
     display: inline-block;
 }
 
+/* Hide the checkbox */
+.language-dropdown-toggle {
+    display: none;
+}
+
 .language-dropdown-btn {
     display: flex;
     align-items: center;
@@ -211,7 +216,8 @@ body {
     overflow: hidden;
 }
 
-.language-dropdown-menu.show {
+/* Show dropdown when checkbox is checked */
+.language-dropdown-toggle:checked ~ .language-dropdown-menu {
     display: block;
 }
 
@@ -226,6 +232,8 @@ body {
     text-align: left;
     cursor: pointer;
     transition: background 0.2s ease;
+    text-decoration: none;
+    color: inherit;
 }
 
 .language-dropdown-item:hover {
