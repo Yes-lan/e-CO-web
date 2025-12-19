@@ -8,8 +8,43 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
+use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            uriTemplate: '/beacons',
+            security: "is_granted('ROLE_USER')",
+            provider: 'App\State\UserBeaconProvider'
+        ),
+        new Get(
+            uriTemplate: '/beacons/{id}',
+            security: "is_granted('ROLE_USER') and object.getUser() == user"
+        ),
+        new Post(
+            uriTemplate: '/beacons',
+            security: "is_granted('ROLE_USER')",
+            processor: 'App\State\BeaconProcessor'
+        ),
+        new Patch(
+            uriTemplate: '/beacons/{id}',
+            security: "is_granted('ROLE_USER') and object.getUser() == user",
+            processor: 'App\State\BeaconProcessor'
+        ),
+        new Delete(
+            uriTemplate: '/beacons/{id}',
+            security: "is_granted('ROLE_USER') and object.getUser() == user"
+        ),
+    ],
+    normalizationContext: ['groups' => ['course:read']],
+    denormalizationContext: ['groups' => ['course:write']],
+    security: "is_granted('ROLE_USER')"
+)]
 #[ORM\Entity(repositoryClass: BeaconRepository::class)]
 class Beacon
 {
