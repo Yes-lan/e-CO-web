@@ -33,17 +33,17 @@ class AdvancedFixtures extends Fixture implements DependentFixtureInterface
         $coursesDetails = [
             [
                 'name' => 'Bois de la Bastide 2',
-                'description' => 'Un parcours composé de 12 balises situées au bois de la bastide à Limoges.',
+                'description' => 'Un parcours composé de 20 balises situées au bois de la bastide à Limoges.',
                 'baseLat' => 45.8700,
                 'baseLon' => 1.2950,
-                'numBeacons' => 12,
+                'numBeacons' => 20,
             ],
             [
                 'name' => 'Centre Ville 2',
-                'description' => 'Un parcours composé de 12 balises situées au centre ville de Limoges.',
+                'description' => 'Un parcours composé de 20 balises situées au centre ville de Limoges.',
                 'baseLat' => 45.8300,
                 'baseLon' => 1.2600,
-                'numBeacons' => 12,
+                'numBeacons' => 20,
             ]
         ];
 
@@ -68,11 +68,11 @@ class AdvancedFixtures extends Fixture implements DependentFixtureInterface
             $manager->persist($startBeacon);
             $beacons[] = $startBeacon;
 
-            // 10 Controls (waypoints)
-            for ($i = 1; $i <= 10; $i++) {
-                // Random offset for coordinates (~200-500m)
-                $latOffset = (rand(-50, 50) / 10000);
-                $lonOffset = (rand(-50, 50) / 10000);
+            // 20 Controls (waypoints)
+            for ($i = 1; $i <= 20; $i++) {
+                // Random offset for coordinates (~200-800m)
+                $latOffset = (rand(-80, 80) / 10000);
+                $lonOffset = (rand(-80, 80) / 10000);
                 $bName = "Balise $i";
                 $beacon = $this->createBeacon($bName, $cData['baseLat'] + $latOffset, $cData['baseLon'] + $lonOffset, 'control', $course, $now);
                 $manager->persist($beacon);
@@ -90,10 +90,10 @@ class AdvancedFixtures extends Fixture implements DependentFixtureInterface
             $session->setCourse($course);
             $session->setSessionName('Session ' . $cData['name']);
             $session->setNbRunner(2);
-            $sessionStart = new \DateTimeImmutable('2025-12-19 14:00:00');
-            $session->setSessionStart($sessionStart);
-            $session->setSessionEnd($sessionStart->modify('+2 hours'));
             $manager->persist($session);
+
+            // Define session start time (e.g., today at 9:00 AM)
+            $sessionStart = new \DateTimeImmutable('today 09:00:00');
 
             // Create Runners
             // Lilou: 1.5x faster. 
@@ -190,22 +190,26 @@ class AdvancedFixtures extends Fixture implements DependentFixtureInterface
             $scan->setTime(clone $segmentStartTime);
             $scan->setLatitude($startBeacon->getLatitude());
             $scan->setLongitude($startBeacon->getLongitude());
-            $scan->setAdditionalData('beacon_scan_' . $startBeacon->getName());
+            // additionalData contains only the beacon ID as string (will be converted to int)
+            $scan->setAdditionalData((string)$startBeacon->getId());
             $manager->persist($scan);
 
             // Interpolate GPS logs between startBeacon and endBeacon
-            // Log every 10 seconds
-            $steps = floor($secondsPerSegment / 10);
+            // Log every 5 seconds for more granular tracking
+            $steps = floor($secondsPerSegment / 5);
 
             $latDiff = $endBeacon->getLatitude() - $startBeacon->getLatitude();
             $lonDiff = $endBeacon->getLongitude() - $startBeacon->getLongitude();
 
             for ($k = 0; $k < $steps; $k++) {
                 $progress = $k / $steps; // 0 to just under 1
-                $currentLat = $startBeacon->getLatitude() + ($latDiff * $progress);
-                $currentLon = $startBeacon->getLongitude() + ($lonDiff * $progress);
+                // Add slight randomness to simulate real GPS drift (~2-5 meters)
+                $randomLat = (rand(-5, 5) / 100000);
+                $randomLon = (rand(-5, 5) / 100000);
+                $currentLat = $startBeacon->getLatitude() + ($latDiff * $progress) + $randomLat;
+                $currentLon = $startBeacon->getLongitude() + ($lonDiff * $progress) + $randomLon;
 
-                $logTime = (clone $segmentStartTime)->modify('+' . (int) ($k * 10) . ' seconds');
+                $logTime = (clone $segmentStartTime)->modify('+' . (int) ($k * 5) . ' seconds');
 
                 $gps = new LogSession();
                 $gps->setRunner($runner);
@@ -227,7 +231,8 @@ class AdvancedFixtures extends Fixture implements DependentFixtureInterface
         $scanFinish->setTime($finishTime);
         $scanFinish->setLatitude($lastBeacon->getLatitude());
         $scanFinish->setLongitude($lastBeacon->getLongitude());
-        $scanFinish->setAdditionalData('beacon_scan_' . $lastBeacon->getName());
+        // additionalData contains only the beacon ID as string
+        $scanFinish->setAdditionalData((string)$lastBeacon->getId());
         $manager->persist($scanFinish);
     }
 }

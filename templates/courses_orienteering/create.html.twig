@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ 'parcours.create_page_title'|trans }}{% endblock %}
+{% block title %}{{ isEdit ? 'Modifier le parcours' : 'parcours.create_page_title'|trans }}{% endblock %}
 
 {% block stylesheets %}
 {% endblock %}
@@ -12,8 +12,8 @@
         </div>
 
         <div class="creation-header">
-            <h1>📍 {{ 'parcours.create_new_parcours'|trans }}</h1>
-            <p>{{ 'parcours.create_subtitle'|trans }}</p>
+            <h1>📍 {{ isEdit ? 'Modifier le parcours' : 'parcours.create_new_parcours'|trans }}</h1>
+            <p>{{ isEdit ? 'Modifiez les informations de votre parcours' : 'parcours.create_subtitle'|trans }}</p>
         </div>
             {{ form(courseForm) }}
 

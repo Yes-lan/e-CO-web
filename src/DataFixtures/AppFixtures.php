@@ -331,13 +331,19 @@ class AppFixtures extends Fixture
                     $session = new Session();
                     $session->setCourse($courseEntity);
                     $session->setSessionName($sessData['name']);
-                    $session->setNbRunner(0); // Defined as 0 in app.sql, but we can add runners if needed
+                    
+                    // Create runners for specific sessions
+                    $nbRunners = rand(3, 6);
+                    $session->setNbRunner($nbRunners);
                     $session->setSessionStart(new \DateTimeImmutable($sessData['start']));
                     $session->setSessionEnd(new \DateTimeImmutable($sessData['end']));
                     $manager->persist($session);
+                    
+                    // Generate runners and logs for specific sessions
+                    $baseDate = new \DateTimeImmutable($sessData['start']);
+                    $this->createRunnersWithLogs($manager, $session, $courseEntity, $baseDate, $nbRunners, $runnerNames);
                 }
-                continue; // Skip random generation for these courses to strictly follow app.sql for them? Or maybe add random ones too? 
-                // Let's assume we ONLY want the specific ones for these courses as referenced in the SQL dump.
+                continue;
             }
 
             // Determine how many sessions to generate (1 to 3)
@@ -365,59 +371,91 @@ class AppFixtures extends Fixture
                 $manager->persist($session);
 
                 // Create Runners for this session
-                for ($r = 0; $r < $nbRunners; $r++) {
-                    $runner = new Runner();
-                    $runner->setSession($session);
-                    // Pick a random name
-                    $rName = $runnerNames[array_rand($runnerNames)] . ' ' . $r;
-                    // If it's the specific 'test' case, we could stick to original names, but mixing is fine.
-                    // Let's stick to the generated ones for simplicity unless strictly required.
-                    $runner->setName($rName);
-
-                    $departureImmutable = $baseDate->modify('+' . rand(0, 30) . ' minutes');
-                    // Convert to Mutable DateTime for Runner entity
-                    $departure = \DateTime::createFromImmutable($departureImmutable);
-                    $runner->setDeparture($departure);
-
-                    $arrivalImmutable = $departureImmutable->modify('+' . rand(20, 90) . ' minutes');
-                    $arrival = \DateTime::createFromImmutable($arrivalImmutable);
-                    $runner->setArrival($arrival);
-
-                    $manager->persist($runner);
-
-                    // Generate a few GPS logs
-                    // GPS Log at start
-                    $logGps = new LogSession();
-                    $logGps->setRunner($runner);
-                    $logGps->setType('gps');
-                    $logGps->setTime(clone $departure);
-                    // Use the course start beacon coordinates if available, or just random nearby
-                    $firstBeacon = $courseEntity->getBeacons()->first(); // simplified
-                    if ($firstBeacon) {
-                        $logGps->setLatitude($firstBeacon->getLatitude());
-                        $logGps->setLongitude($firstBeacon->getLongitude());
-                    } else {
-                        $logGps->setLatitude(45.8338);
-                        $logGps->setLongitude(1.2612);
-                    }
-                    $manager->persist($logGps);
-
-                    // Generate a "start" scan
-                    $scanLog = new LogSession();
-                    $scanLog->setRunner($runner);
-                    $scanLog->setType('beacon_scan');
-                    $scanLog->setTime(clone $departure);
-                    if ($firstBeacon) {
-                        $scanLog->setLatitude($firstBeacon->getLatitude());
-                        $scanLog->setLongitude($firstBeacon->getLongitude());
-                        // Just use index as ID for simplicity or a hash
-                        $scanLog->setAdditionalData('beacon_' . ($firstBeacon->getId() ?? 0));
-                    }
-                    $manager->persist($scanLog);
-                }
+                $this->createRunnersWithLogs($manager, $session, $courseEntity, $baseDate, $nbRunners, $runnerNames);
             }
         }
 
         $manager->flush();
+    }
+
+    /**
+     * Create runners with GPS logs and beacon scans for a session
+     */
+    private function createRunnersWithLogs(
+        ObjectManager $manager,
+        Session $session,
+        Course $courseEntity,
+        \DateTimeImmutable $baseDate,
+        int $nbRunners,
+        array $runnerNames
+    ): void {
+        for ($r = 0; $r < $nbRunners; $r++) {
+            $runner = new Runner();
+            $runner->setSession($session);
+            $rName = $runnerNames[array_rand($runnerNames)] . ' ' . $r;
+            $runner->setName($rName);
+
+            $departureImmutable = $baseDate->modify('+' . rand(0, 30) . ' minutes');
+            $departure = \DateTime::createFromImmutable($departureImmutable);
+            $runner->setDeparture($departure);
+
+            $arrivalImmutable = $departureImmutable->modify('+' . rand(20, 90) . ' minutes');
+            $arrival = \DateTime::createFromImmutable($arrivalImmutable);
+            $runner->setArrival($arrival);
+
+            $manager->persist($runner);
+
+            // Generate GPS logs and beacon scans for realistic tracking
+            $beaconsArray = $courseEntity->getBeacons()->toArray();
+            $numBeacons = count($beaconsArray);
+            
+            if ($numBeacons > 0) {
+                $runDuration = ($arrival->getTimestamp() - $departure->getTimestamp()) / 60; // minutes
+                $timePerBeacon = ($runDuration * 60) / $numBeacons; // seconds per beacon
+                
+                $currentTime = clone $departure;
+                
+                // Iterate through beacons
+                foreach ($beaconsArray as $idx => $beacon) {
+                    // Beacon scan at this beacon
+                    $scanLog = new LogSession();
+                    $scanLog->setRunner($runner);
+                    $scanLog->setType('beacon_scan');
+                    $scanLog->setTime(clone $currentTime);
+                    $scanLog->setLatitude($beacon->getLatitude());
+                    $scanLog->setLongitude($beacon->getLongitude());
+                    $scanLog->setAdditionalData((string)($beacon->getId() ?? 0));
+                    $manager->persist($scanLog);
+                    
+                    // GPS logs between this beacon and next (every 10 seconds)
+                    if ($idx < $numBeacons - 1) {
+                        $nextBeacon = $beaconsArray[$idx + 1];
+                        $steps = floor($timePerBeacon / 10);
+                        
+                        for ($s = 0; $s < $steps; $s++) {
+                            $progress = $s / max($steps, 1);
+                            $gpsLat = $beacon->getLatitude() + (($nextBeacon->getLatitude() - $beacon->getLatitude()) * $progress);
+                            $gpsLon = $beacon->getLongitude() + (($nextBeacon->getLongitude() - $beacon->getLongitude()) * $progress);
+                            
+                            // Add GPS drift
+                            $gpsLat += (rand(-3, 3) / 100000);
+                            $gpsLon += (rand(-3, 3) / 100000);
+                            
+                            $gpsTime = (clone $currentTime)->modify('+' . ($s * 10) . ' seconds');
+                            
+                            $logGps = new LogSession();
+                            $logGps->setRunner($runner);
+                            $logGps->setType('gps');
+                            $logGps->setTime($gpsTime);
+                            $logGps->setLatitude($gpsLat);
+                            $logGps->setLongitude($gpsLon);
+                            $manager->persist($logGps);
+                        }
+                    }
+                    
+                    $currentTime->modify('+' . (int)$timePerBeacon . ' seconds');
+                }
+            }
+        }
     }
 }
